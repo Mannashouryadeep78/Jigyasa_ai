@@ -1,0 +1,121 @@
+import React, { useState, useEffect } from 'react';
+import LandingPage from './components/LandingPage';
+import LoginScreen from './components/LoginScreen';
+import Dashboard from './components/Dashboard';
+import ResumeUpload from './components/ResumeUpload';
+import WelcomeScreen from './components/WelcomeScreen';
+import InterviewRoom from './components/InterviewRoom';
+import AssessmentReport from './components/AssessmentReport';
+import InterviewPrepTool from './components/InterviewPrepTool';
+import { api } from './api/client';
+import { useAuth } from './contexts/AuthContext';
+
+export default function App() {
+  const { user } = useAuth();
+  const [publicPhase, setPublicPhase] = useState('landing'); // landing, auth
+  const [authMode, setAuthMode] = useState('login'); // login, register, otp
+  
+  const [phase, setPhase] = useState('dashboard'); // dashboard, upload, welcome, interview, report
+  const [session, setSession] = useState(null);
+  const [candidateName, setCandidateName] = useState('');
+  const [resumeFile, setResumeFile] = useState(null);
+  const [initialMessage, setInitialMessage] = useState('');
+  const [isInitializing, setIsInitializing] = useState(false);
+
+  const [initialHistory, setInitialHistory] = useState(null);
+
+  useEffect(() => {
+     // Ignore user kicks for now, render handled in JSX body
+  }, [user]);
+
+  const handleStartNew = () => {
+    setCandidateName(user?.user_metadata?.full_name || 'Candidate');
+    setPhase('upload');
+  };
+
+  const handleViewReport = (sessionId) => {
+    setSession(sessionId);
+    setPhase('report');
+  };
+
+  const handleUpload = (file) => {
+    setResumeFile(file);
+    setPhase('welcome');
+  };
+
+  const handleStartInterview = async () => {
+    setIsInitializing(true);
+    try {
+        const res = await api.createSession(user.id, candidateName, resumeFile);
+        setSession(res.session_id);
+        setInitialMessage(res.message);
+        setInitialHistory(null); // Clear history
+        setIsInitializing(false);
+        setPhase('interview');
+    } catch (err) {
+        setIsInitializing(false);
+        console.error("Error starting session", err);
+        alert("Server failed to start the session. Ensure your backend is running.");
+    }
+  };
+
+  const handleContinue = async (sessionId) => {
+      try {
+          const res = await api.getSession(sessionId);
+          setSession(sessionId);
+          setCandidateName(res.candidate_name);
+          setInitialHistory(res.history);
+          setInitialMessage(''); // We rely on history
+          setPhase('interview');
+      } catch (err) {
+          console.error("Failed to load session", err);
+          alert("Couldn't continue the session.");
+      }
+  };
+
+  const handleFinish = () => {
+    setPhase('report');
+  };
+
+  if (!user) {
+      if (publicPhase === 'prep') {
+          return <InterviewPrepTool onBack={() => setPublicPhase('landing')} />;
+      }
+      if (publicPhase === 'landing') {
+          return <LandingPage onGoToAuth={(mode) => {
+              if (mode === 'prep') {
+                  setPublicPhase('prep');
+              } else {
+                  setAuthMode(mode);
+                  setPublicPhase('auth');
+              }
+          }} />;
+      }
+      return <LoginScreen initialMode={authMode} onBack={() => setPublicPhase('landing')} />;
+  }
+
+  return (
+    <>
+      {phase === 'dashboard' && <Dashboard onStartNew={handleStartNew} onViewReport={handleViewReport} onContinue={handleContinue} />}
+      {phase === 'upload' && <ResumeUpload onUpload={handleUpload} />}
+      {phase === 'welcome' && (
+         <WelcomeScreen onStart={handleStartInterview} candidateName={candidateName} isInitializing={isInitializing} />
+      )}
+      {phase === 'interview' && (
+        <InterviewRoom 
+          sessionId={session} 
+          candidateName={candidateName} 
+          initialMessage={initialMessage}
+          initialHistory={initialHistory}
+          onFinish={handleFinish}
+        />
+      )}
+      {phase === 'report' && (
+         <div className="relative">
+             <button onClick={() => setPhase('dashboard')} className="fixed top-6 left-6 z-50 bg-slate-800 text-white px-4 py-2 rounded-lg font-medium hover:bg-slate-700 shadow-lg">← Back to Dashboard</button>
+             <AssessmentReport sessionId={session} />
+         </div>
+      )}
+    </>
+  );
+}
