@@ -11,6 +11,9 @@ export function useTTS() {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
     }
+    if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+    }
     fetchIdRef.current += 1; // Invalidate any incoming inflight requests
     setIsSpeaking(false);
   }, []);
@@ -27,6 +30,11 @@ export function useTTS() {
         // If a new TTS was requested while this one was downloading, discard this one
         if (currentFetchId !== fetchIdRef.current) {
             return;
+        }
+
+        // Render IP block protection: if blob is tiny, it's a silent failure from edge-tts
+        if (!audioBlob || audioBlob.size < 100) {
+            throw new Error("Backend returned empty audio (Cloud IP block). Triggering native fallback.");
         }
         
         const url = URL.createObjectURL(audioBlob);
@@ -47,14 +55,30 @@ export function useTTS() {
 
         audio.play().catch(e => {
             console.error("Audio playback prevented:", e);
-            // Don't revoke the URL here or it causes ERR_FILE_NOT_FOUND in the media fetcher
             if (currentFetchId === fetchIdRef.current) setIsSpeaking(false);
             if (onFinish) onFinish();
         });
     } catch (e) {
-        console.error("Failed to fetch TTS:", e);
-        if (currentFetchId === fetchIdRef.current) setIsSpeaking(false);
-        if (onFinish) onFinish();
+        console.warn("Backend TTS failed, using browser Native TTS instead:", e);
+        if (currentFetchId !== fetchIdRef.current) return;
+        
+        if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US';
+            utterance.rate = 1.0;
+            utterance.onend = () => {
+                 if (currentFetchId === fetchIdRef.current) setIsSpeaking(false);
+                 if (onFinish) onFinish();
+            };
+            utterance.onerror = () => {
+                 if (currentFetchId === fetchIdRef.current) setIsSpeaking(false);
+                 if (onFinish) onFinish();
+            };
+            window.speechSynthesis.speak(utterance);
+        } else {
+            if (currentFetchId === fetchIdRef.current) setIsSpeaking(false);
+            if (onFinish) onFinish();
+        }
     }
   }, [stop]);
 
