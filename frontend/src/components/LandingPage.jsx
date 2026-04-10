@@ -42,25 +42,25 @@ export default function LandingPage({ onGoToAuth }) {
                 <ellipse cx="-10%" cy="50%" rx="60%" ry="80%" fill="none" stroke="#000" strokeWidth="1" />
             </svg>
 
-            <nav className="relative z-20 max-w-7xl mx-auto flex items-center justify-between p-6 md:p-10">
-                <div className="flex items-center gap-3">
-                    <img src="/logo.png" alt="Jigyasa Logo" className="h-10 md:h-12 object-contain" />
-                    <span className="font-bold text-2xl tracking-tight text-white">Jigyasa.Ai</span>
+            <nav className="relative z-20 max-w-7xl mx-auto flex items-center justify-between p-4 sm:p-6 md:p-10">
+                <div className="flex items-center gap-2 md:gap-3 overflow-hidden">
+                    <img src="/logo.png" alt="Jigyasa Logo" className="h-8 sm:h-10 md:h-12 object-contain shrink-0" />
+                    <span className="font-bold text-lg sm:text-xl md:text-2xl tracking-tight text-white truncate max-w-[100px] sm:max-w-none">Jigyasa.Ai</span>
                 </div>
                 <div className="hidden md:flex items-center gap-12 text-xs font-bold tracking-widest text-white/70 uppercase">
                     <a href="#features" className="hover:text-white transition">Features <sup className="text-[9px]">3</sup></a>
                     <a href="#how-it-works" className="hover:text-white transition">How it Works <sup className="text-[9px]">1</sup></a>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2 sm:gap-4 shrink-0">
                     <button 
                       onClick={() => onGoToAuth('login')}
-                      className="text-xs font-bold uppercase tracking-wider text-white/80 hover:text-white transition px-2"
+                      className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-white/80 hover:text-white transition px-1 sm:px-2"
                     >
                         Sign In
                     </button>
                     <button 
                       onClick={() => onGoToAuth('register')}
-                      className="text-xs font-bold uppercase tracking-wider px-6 py-3 rounded-full bg-[#1e1d24]/50 backdrop-blur-md hover:bg-white hover:text-black border border-white/10 transition duration-300"
+                      className="text-[10px] sm:text-xs font-bold uppercase tracking-wider px-3 py-2 sm:px-6 sm:py-3 rounded-full bg-[#1e1d24]/50 backdrop-blur-md hover:bg-white hover:text-black border border-white/10 transition duration-300 whitespace-nowrap"
                     >
                         Register
                     </button>
@@ -75,7 +75,7 @@ export default function LandingPage({ onGoToAuth }) {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.1 }}
-                        className="text-5xl md:text-[5.5rem] font-medium tracking-tighter mb-8 leading-[0.95] text-white"
+                        className="text-[2.6rem] sm:text-5xl md:text-[5.5rem] font-medium tracking-tighter mb-8 leading-[1.05] md:leading-[0.95] text-white"
                     >
                         <span className="text-white/60 font-light">{"}"}</span> Interview<br/>
                         <span className="text-white">Is an Automated <br/>
@@ -123,8 +123,8 @@ export default function LandingPage({ onGoToAuth }) {
             >
                 <div className="grid md:grid-cols-3 gap-6 relative z-20">
                     {features.map((f, i) => (
-                        <div key={i} className="flex flex-col p-8 rounded-[2rem] bg-[#1a0f0a]/90 backdrop-blur-xl border border-white/5 hover:border-white/20 transition group shadow-2xl">
-                            <h3 className="text-5xl font-medium tracking-tighter text-[#f5cca8] mb-4">{f.title.split(' ')[0]}</h3>
+                        <div key={i} className="flex flex-col p-6 sm:p-8 rounded-[2rem] bg-[#1a0f0a]/90 backdrop-blur-xl border border-white/5 hover:border-white/20 transition group shadow-2xl overflow-hidden">
+                            <h3 className="text-3xl sm:text-4xl md:text-5xl font-medium tracking-tighter text-[#f5cca8] mb-4 break-words">{f.title.split(' ')[0]}</h3>
                             <div className="text-xs tracking-widest uppercase font-bold text-white/50 mb-4">{f.title.split(' ').slice(1).join(' ')}</div>
                             <p className="text-white/60 leading-relaxed text-sm">
                                 {f.description}
@@ -143,7 +143,7 @@ export default function LandingPage({ onGoToAuth }) {
             >
                 <div 
                     onClick={() => onGoToAuth('prep')}
-                    className="cursor-pointer group flex flex-col md:flex-row items-center justify-between p-8 md:p-12 rounded-[2.5rem] bg-gradient-to-r from-[#b45309]/10 to-[#1a0f0a] border border-[#b45309]/20 hover:border-[#b45309]/50 transition-all shadow-2xl overflow-hidden relative"
+                    className="cursor-pointer group flex flex-col md:flex-row items-center justify-between p-6 sm:p-8 md:p-12 rounded-[2.5rem] bg-gradient-to-r from-[#b45309]/10 to-[#1a0f0a] border border-[#b45309]/20 hover:border-[#b45309]/50 transition-all shadow-2xl overflow-hidden relative"
                 >
                     <div className="absolute right-0 top-0 w-64 h-64 bg-[#b45309]/10 blur-3xl rounded-full pointer-events-none"></div>
                     
@@ -151,7 +151,7 @@ export default function LandingPage({ onGoToAuth }) {
                         <div className="text-xs tracking-widest uppercase font-bold text-[#b45309] mb-4 flex items-center gap-2">
                            <Zap className="w-4 h-4" /> Beta Release
                         </div>
-                        <h3 className="text-4xl md:text-5xl font-medium tracking-tighter text-white mb-4">
+                        <h3 className="text-3xl sm:text-4xl md:text-5xl font-medium tracking-tighter text-white mb-4">
                             Resume-to-Prep Matrix
                         </h3>
                         <p className="text-white/60 leading-relaxed font-medium">
