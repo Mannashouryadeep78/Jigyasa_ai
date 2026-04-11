@@ -1,76 +1,105 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileSearch, Mic, CheckCircle2, ArrowRight } from 'lucide-react';
+import { FileSearch, CheckCircle2, Mic } from 'lucide-react';
 
 export default function WelcomeScreen({ onStart, candidateName, isInitializing }) {
-  return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', fontFamily: 'Inter, sans-serif', position: 'relative' }}>
-      {/* Ambient glow */}
-      <div style={{ position: 'fixed', top: '20%', left: '50%', transform: 'translateX(-50%)', width: '500px', height: '400px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,102,241,0.1) 0%, transparent 70%)', filter: 'blur(40px)', pointerEvents: 'none' }} />
 
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
-        className="glass" style={{ width: '100%', maxWidth: '460px', borderRadius: '1.5rem', padding: '2.5rem', position: 'relative', overflow: 'hidden', zIndex: 1 }}>
-        {/* Top accent */}
-        <div style={{ position: 'absolute', top: 0, left: '20%', right: '20%', height: '1px', background: 'linear-gradient(90deg, transparent, rgba(99,102,241,0.6), transparent)' }} />
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-[#e0ccb8] text-white p-4 md:p-8 selection:bg-black selection:text-white">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="max-w-xl w-full bg-[#1a0f0a] border border-white/5 rounded-[3rem] p-10 md:p-14 shadow-2xl relative overflow-hidden"
+      >
+        {/* Orbital rings */}
+        <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20 mix-blend-overlay" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="80%" cy="20%" rx="50%" ry="100%" fill="none" stroke="#fff" strokeWidth="1" />
+            <ellipse cx="-10%" cy="80%" rx="60%" ry="80%" fill="none" stroke="#fff" strokeWidth="1" />
+        </svg>
 
         <AnimatePresence mode="wait">
           {isInitializing ? (
-            <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '1.5rem 0', gap: '1.5rem' }}>
-              {/* Animated resume scan */}
-              <div style={{ width: '72px', height: '90px', borderRadius: '0.75rem', background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.15)', position: 'relative', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0.75rem' }}>
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: 'linear-gradient(90deg, transparent, #6366f1, transparent)', boxShadow: '0 0 12px rgba(99,102,241,0.8)', animation: 'scan 1.8s ease-in-out infinite' }} />
-                <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '5px', opacity: 0.2 }}>
-                  {['55%','100%','75%','100%','65%','90%'].map((w, i) => (
-                    <div key={i} style={{ height: '4px', background: 'white', borderRadius: '2px', width: w }} />
-                  ))}
+            <motion.div 
+              key="loader"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="relative z-10 flex flex-col items-center text-center space-y-8 py-10"
+            >
+                <div className="relative w-24 h-32 bg-white/5 border border-white/10 rounded-xl overflow-hidden flex items-center justify-center p-2 mb-4 shadow-lg">
+                   <div className="absolute top-0 left-0 w-full h-[2px] bg-[#b45309] shadow-[0_0_15px_3px_rgba(180,83,9,0.8)] animate-[scan_2s_ease-in-out_infinite]" />
+                   <div className="w-full h-full flex flex-col gap-2 p-2 opacity-30">
+                       <div className="w-1/2 h-2 bg-white rounded-full"></div>
+                       <div className="w-full h-2 bg-white rounded-full"></div>
+                       <div className="w-3/4 h-2 bg-white rounded-full"></div>
+                       <div className="w-full h-2 bg-white rounded-full"></div>
+                       <div className="w-2/3 h-2 bg-white rounded-full"></div>
+                       <div className="w-full h-2 bg-white rounded-full"></div>
+                   </div>
                 </div>
-              </div>
-              <div>
-                <h2 style={{ fontSize: '1.4rem', fontWeight: 800, letterSpacing: '-0.03em', color: 'white', margin: '0 0 0.4rem' }}>Building your interview</h2>
-                <p style={{ color: 'rgba(241,245,249,0.4)', fontSize: '0.8rem', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', margin: 0, animation: 'pulse 2s infinite' }}>Analysing resume · Customising questions...</p>
-              </div>
-              <style>{`
-                @keyframes scan { 0%{top:0;opacity:0} 10%{opacity:1} 90%{opacity:1} 100%{top:100%;opacity:0} }
-                @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
-              `}</style>
+                <div>
+                   <h2 className="text-3xl font-medium tracking-tighter text-white mb-2">Analyzing Profile</h2>
+                   <p className="text-white/50 tracking-widest uppercase text-xs font-bold animate-pulse">Building Custom Interview Engine...</p>
+                </div>
             </motion.div>
           ) : (
-            <motion.div key="rules" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              {/* Header */}
-              <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-                <h1 style={{ fontSize: '1.6rem', fontWeight: 900, letterSpacing: '-0.04em', margin: '0 0 0.4rem', color: 'white' }}>
-                  Ready, <span className="text-gradient">{candidateName}</span>?
-                </h1>
-                <p style={{ color: 'rgba(241,245,249,0.4)', fontSize: '0.85rem', margin: 0 }}>A few things before we begin</p>
-              </div>
-
-              {/* Rules */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '2rem' }}>
-                {[
-                  { icon: <FileSearch size={17} />, color: '#6366f1', title: 'Tailored Questions', body: 'The AI has read your resume and will ask specific questions based on your actual experience.' },
-                  { icon: <Mic size={17} />, color: '#a855f7', title: 'Speak Naturally', body: 'Pause for a few seconds to auto-submit your turn. No button needed — just talk.' },
-                  { icon: <CheckCircle2 size={17} />, color: '#22c55e', title: 'Quiet Environment', body: 'Find a quiet room with your microphone enabled for best results.' },
-                ].map((r, i) => (
-                  <motion.div key={i} initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 + i * 0.08 }}
-                    style={{ display: 'flex', alignItems: 'flex-start', gap: '0.875rem', padding: '1rem 1.1rem', borderRadius: '0.875rem', background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                    <div style={{ width: '36px', height: '36px', borderRadius: '0.6rem', background: `${r.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: r.color, flexShrink: 0, marginTop: '0.05rem' }}>
-                      {r.icon}
-                    </div>
-                    <div>
-                      <h3 style={{ fontWeight: 700, fontSize: '0.875rem', margin: '0 0 0.2rem', color: 'white', letterSpacing: '-0.01em' }}>{r.title}</h3>
-                      <p style={{ fontSize: '0.8rem', color: 'rgba(241,245,249,0.45)', margin: 0, lineHeight: 1.55 }}>{r.body}</p>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-
-              <button onClick={onStart} className="btn-primary" style={{ width: '100%', padding: '0.9rem', fontSize: '0.8rem', gap: '0.5rem', justifyContent: 'center' }}>
-                I'm Ready — Start Interview <ArrowRight size={15} />
-              </button>
+            <motion.div
+              key="rules"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="relative z-10"
+            >
+                <h1 className="text-3xl md:text-4xl font-medium tracking-tighter mb-4 text-white text-center"><span className="text-[#b45309]">{"{"}</span> Interview Rules <span className="text-[#b45309]">{"}"}</span></h1>
+                <p className="text-white/50 font-medium mb-10 text-center tracking-wide">Welcome, <span className="text-white font-bold">{candidateName}</span>! Before we begin:</p>
+                
+                <ul className="space-y-6 mb-12 text-white/80">
+                    <li className="flex items-start bg-white/5 p-6 rounded-2xl border border-white/10">
+                        <div className="bg-[#b45309]/20 p-2 rounded-full mr-4 border border-[#b45309]/30">
+                            <FileSearch className="w-5 h-5 text-[#f5cca8]" />
+                        </div>
+                        <div>
+                            <h3 className="font-bold tracking-widest text-[#f5cca8] text-xs uppercase mb-1">Tailored Assessment</h3>
+                            <p className="text-sm font-medium">The AI is analyzing your uploaded resume and formulating specific questions matched to your experience.</p>
+                        </div>
+                    </li>
+                    <li className="flex items-start bg-white/5 p-6 rounded-2xl border border-white/10">
+                        <div className="bg-[#b45309]/20 p-2 rounded-full mr-4 border border-[#b45309]/30">
+                            <Mic className="w-5 h-5 text-[#f5cca8]" />
+                        </div>
+                        <div>
+                            <h3 className="font-bold tracking-widest text-[#f5cca8] text-xs uppercase mb-1">Auto-Detection</h3>
+                            <p className="text-sm font-medium">Speak naturally. Pausing for a few seconds will automatically submit your turn to the system.</p>
+                        </div>
+                    </li>
+                    <li className="flex items-start bg-white/5 p-6 rounded-2xl border border-white/10">
+                        <div className="bg-[#b45309]/20 p-2 rounded-full mr-4 border border-[#b45309]/30">
+                            <CheckCircle2 className="w-5 h-5 text-[#f5cca8]" />
+                        </div>
+                        <div>
+                            <h3 className="font-bold tracking-widest text-[#f5cca8] text-xs uppercase mb-1">Environment Check</h3>
+                            <p className="text-sm font-medium">Please ensure you are in a quiet room and have granted microphone permissions.</p>
+                        </div>
+                    </li>
+                </ul>
+                
+                <button
+                  onClick={onStart}
+                  className="w-full py-4 bg-white hover:bg-white/90 text-[#1a0f0a] rounded-full transition-all font-bold tracking-widest uppercase text-xs flex items-center justify-center gap-2 shadow-xl shadow-white/5"
+                >
+                  I'm Ready, Start Interview
+                </button>
             </motion.div>
           )}
         </AnimatePresence>
+        
+        <style dangerouslySetInnerHTML={{__html: `
+          @keyframes scan {
+              0% { top: 0; opacity: 0; }
+              10% { opacity: 1; }
+              90% { opacity: 1; }
+              100% { top: 100%; opacity: 0; }
+          }
+        `}} />
       </motion.div>
     </div>
   );

@@ -1,34 +1,37 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { FileUp, CheckCircle2, Users, Cpu, MessageSquare, ArrowRight } from 'lucide-react';
+import { FileUp, CheckCircle2, Users, Cpu, MessageSquare } from 'lucide-react';
 
 const MODES = [
   {
     id: 'hr',
-    icon: <Users size={20} />,
+    icon: <Users className="w-7 h-7" />,
     title: 'HR Round',
-    sub: 'Behavioural & Culture Fit',
-    desc: 'Values, teamwork, conflict resolution, and career goals. Works for any field.',
-    color: '#22c55e',
-    glow: 'rgba(34,197,94,0.15)',
+    subtitle: 'Behavioural & Culture Fit',
+    description: 'Values, teamwork, conflict resolution, career goals, and communication. Suitable for any field or industry.',
+    accent: '#22c55e',
+    bg: 'rgba(34,197,94,0.08)',
+    border: 'rgba(34,197,94,0.25)',
   },
   {
     id: 'technical',
-    icon: <Cpu size={20} />,
+    icon: <Cpu className="w-7 h-7" />,
     title: 'Technical Round',
-    sub: 'Resume-Specific Deep Dive',
-    desc: 'Probes your actual projects and domain — engineering, data, medicine, design, finance.',
-    color: '#6366f1',
-    glow: 'rgba(99,102,241,0.15)',
+    subtitle: 'Resume-Specific Deep Dive',
+    description: 'Probes your actual projects, tools, and domain expertise — whether you are in engineering, data science, medicine, design, or finance.',
+    accent: '#3b82f6',
+    bg: 'rgba(59,130,246,0.08)',
+    border: 'rgba(59,130,246,0.25)',
   },
   {
     id: 'gd',
-    icon: <MessageSquare size={20} />,
+    icon: <MessageSquare className="w-7 h-7" />,
     title: 'Group Discussion',
-    sub: 'Debate & Articulation',
-    desc: 'AI plays a live debate partner. Practice structuring arguments and handling counterpoints.',
-    color: '#a855f7',
-    glow: 'rgba(168,85,247,0.15)',
+    subtitle: 'Debate & Articulation',
+    description: 'The AI plays a live debate partner. Practice structuring arguments, handling counterpoints, and leading a discussion confidently.',
+    accent: '#a855f7',
+    bg: 'rgba(168,85,247,0.08)',
+    border: 'rgba(168,85,247,0.25)',
   },
 ];
 
@@ -37,103 +40,134 @@ export default function ResumeUpload({ onUpload }) {
   const [selectedMode, setSelectedMode] = useState(null);
   const [dragging, setDragging] = useState(false);
 
-  const handleFile = (f) => { if (f) setFile(f); };
-  const handleDrop = (e) => { e.preventDefault(); setDragging(false); handleFile(e.dataTransfer.files[0]); };
-  const handleSubmit = () => { if (selectedMode) onUpload(file, selectedMode); };
+  const handleFileChange = (e) => {
+    if (e.target.files && e.target.files[0]) setFile(e.target.files[0]);
+  };
 
-  const selected = MODES.find(m => m.id === selectedMode);
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setDragging(false);
+    if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]);
+  };
+
+  const handleSubmit = () => {
+    if (selectedMode) onUpload(file, selectedMode);
+  };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', fontFamily: 'Inter, sans-serif', position: 'relative' }}>
-      {/* Ambient glow */}
-      <div style={{ position: 'fixed', top: '20%', left: '50%', transform: 'translateX(-50%)', width: '600px', height: '400px', borderRadius: '50%', background: `radial-gradient(circle, ${selectedMode ? MODES.find(m=>m.id===selectedMode)?.glow : 'rgba(99,102,241,0.08)'} 0%, transparent 70%)`, filter: 'blur(40px)', pointerEvents: 'none', transition: 'background 0.5s' }} />
+    <div className="min-h-screen bg-[#e0ccb8] p-4 md:p-8 flex flex-col items-center justify-center selection:bg-black selection:text-white">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-3xl bg-[#1a0f0a] border border-white/5 rounded-[3rem] p-8 md:p-12 shadow-2xl relative overflow-hidden"
+      >
+        {/* Orbital rings */}
+        <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20 mix-blend-overlay" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+          <ellipse cx="80%" cy="20%" rx="50%" ry="100%" fill="none" stroke="#fff" strokeWidth="1" />
+          <ellipse cx="-10%" cy="80%" rx="60%" ry="80%" fill="none" stroke="#fff" strokeWidth="1" />
+        </svg>
 
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
-        style={{ width: '100%', maxWidth: '520px', position: 'relative', zIndex: 1 }}>
-
-        {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 900, letterSpacing: '-0.04em', margin: '0 0 0.4rem', color: 'white' }}>
-            Choose your <span className="text-gradient">round</span>
+        <div className="relative z-10">
+          <h1 className="text-3xl md:text-4xl font-medium tracking-tighter mb-2 text-white text-center">
+            <span className="text-[#b45309]">{"{"}</span> Choose Your Round <span className="text-[#b45309]">{"}"}</span>
           </h1>
-          <p style={{ color: 'rgba(241,245,249,0.4)', fontSize: '0.85rem', margin: 0, fontWeight: 500 }}>
-            Select an interview mode to tailor the AI to your goal
+          <p className="text-white/40 font-medium mb-8 text-center tracking-wide text-sm">
+            Select an interview mode to tailor the AI to your goal.
           </p>
-        </div>
 
-        {/* Mode cards */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.5rem' }}>
-          {MODES.map((mode, i) => {
-            const isSelected = selectedMode === mode.id;
-            return (
-              <motion.button key={mode.id} initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.07 }}
+          {/* Mode Cards */}
+          <div className="grid gap-4 mb-8">
+            {MODES.map((mode) => (
+              <motion.button
+                key={mode.id}
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
                 onClick={() => setSelectedMode(mode.id)}
+                className="w-full text-left p-5 rounded-2xl border-2 transition-all duration-200 flex items-start gap-5"
                 style={{
-                  width: '100%', textAlign: 'left', padding: '1.1rem 1.25rem', borderRadius: '1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '1rem',
-                  background: isSelected ? `${mode.color}10` : 'rgba(255,255,255,0.03)',
-                  border: `1.5px solid ${isSelected ? mode.color + '45' : 'rgba(255,255,255,0.07)'}`,
-                  boxShadow: isSelected ? `0 0 24px ${mode.glow}` : 'none',
-                  transition: 'all 0.2s',
-                }}>
-                {/* Icon */}
-                <div style={{ width: '42px', height: '42px', borderRadius: '0.75rem', background: `${mode.color}14`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: mode.color, flexShrink: 0 }}>
+                  background: selectedMode === mode.id ? mode.bg : 'rgba(255,255,255,0.03)',
+                  borderColor: selectedMode === mode.id ? mode.border : 'rgba(255,255,255,0.07)',
+                  boxShadow: selectedMode === mode.id ? `0 0 20px ${mode.accent}22` : 'none',
+                }}
+              >
+                <div className="shrink-0 w-12 h-12 rounded-xl flex items-center justify-center"
+                  style={{ background: `${mode.accent}18`, color: mode.accent }}>
                   {mode.icon}
                 </div>
-                {/* Text */}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
-                    <span style={{ fontWeight: 700, fontSize: '0.95rem', color: 'white', letterSpacing: '-0.01em' }}>{mode.title}</span>
-                    <span style={{ fontSize: '0.6rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '0.15rem 0.5rem', borderRadius: '999px', background: `${mode.color}15`, color: mode.color }}>{mode.sub}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-3 mb-1">
+                    <span className="text-white font-bold tracking-tight">{mode.title}</span>
+                    <span className="text-[10px] font-bold tracking-widest uppercase px-2 py-0.5 rounded-full"
+                      style={{ background: `${mode.accent}18`, color: mode.accent }}>
+                      {mode.subtitle}
+                    </span>
                   </div>
-                  <p style={{ color: 'rgba(241,245,249,0.45)', fontSize: '0.8rem', margin: 0, lineHeight: 1.5 }}>{mode.desc}</p>
+                  <p className="text-white/45 text-sm leading-relaxed">{mode.description}</p>
                 </div>
-                {/* Radio */}
-                <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: `2px solid ${isSelected ? mode.color : 'rgba(255,255,255,0.18)'}`, background: isSelected ? mode.color : 'transparent', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}>
-                  {isSelected && <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'white' }} />}
+                <div className="shrink-0 w-5 h-5 rounded-full border-2 mt-1 flex items-center justify-center transition-colors"
+                  style={{
+                    borderColor: selectedMode === mode.id ? mode.accent : 'rgba(255,255,255,0.2)',
+                    background: selectedMode === mode.id ? mode.accent : 'transparent',
+                  }}>
+                  {selectedMode === mode.id && <CheckCircle2 className="w-3 h-3 text-white" />}
                 </div>
               </motion.button>
-            );
-          })}
-        </div>
+            ))}
+          </div>
 
-        {/* Resume upload */}
-        <div style={{ marginBottom: '1.25rem' }}>
-          <p style={{ fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(241,245,249,0.3)', margin: '0 0 0.75rem', textAlign: 'center' }}>
-            Resume Upload <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional — makes questions more specific)</span>
-          </p>
-          <div
-            onDragOver={e => { e.preventDefault(); setDragging(true); }}
-            onDragLeave={() => setDragging(false)}
-            onDrop={handleDrop}
-            className="glass"
-            style={{ position: 'relative', borderRadius: '0.875rem', padding: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.875rem', cursor: 'pointer', borderColor: dragging ? 'rgba(99,102,241,0.4)' : file ? 'rgba(34,197,94,0.3)' : undefined, transition: 'all 0.2s' }}>
-            <input type="file" accept=".pdf" onChange={e => handleFile(e.target.files[0])} style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer', zIndex: 10 }} />
-            <div style={{ width: '38px', height: '38px', borderRadius: '0.6rem', background: file ? 'rgba(34,197,94,0.12)' : 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              {file ? <CheckCircle2 size={18} color="#4ade80" /> : <FileUp size={18} color="rgba(241,245,249,0.3)" />}
-            </div>
-            <div>
-              <p style={{ margin: 0, fontWeight: 600, fontSize: '0.85rem', color: file ? '#4ade80' : 'rgba(241,245,249,0.6)' }}>
-                {file ? file.name : 'Click or drag PDF here'}
-              </p>
-              <p style={{ margin: 0, fontSize: '0.72rem', color: 'rgba(241,245,249,0.3)', marginTop: '0.1rem' }}>
-                {file ? 'Resume ready' : 'PDF files only'}
-              </p>
+          {/* Resume Upload (optional) */}
+          <div className="mb-6">
+            <p className="text-white/40 text-xs font-bold tracking-widest uppercase mb-3 text-center">
+              Resume Upload <span className="text-white/20 normal-case font-normal tracking-normal">(optional — makes questions more specific)</span>
+            </p>
+            <div
+              onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+              onDragLeave={() => setDragging(false)}
+              onDrop={handleDrop}
+              className={`relative group cursor-pointer rounded-2xl border border-dashed transition-all duration-300 flex flex-col items-center justify-center py-6 ${
+                dragging ? 'border-[#f5cca8] bg-[#f5cca8]/5' :
+                file ? 'border-[#b45309] bg-[#b45309]/10' :
+                'border-white/15 hover:border-[#b45309]/40 bg-white/2'
+              }`}
+            >
+              <input
+                type="file" accept=".pdf"
+                onChange={handleFileChange}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+              />
+              {file ? (
+                <div className="flex items-center gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-[#f5cca8]" />
+                  <span className="text-[#f5cca8] font-bold text-sm">{file.name}</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3 text-white/30">
+                  <FileUp className="w-5 h-5 group-hover:text-[#b45309] transition-colors" />
+                  <span className="text-xs font-bold tracking-widest uppercase group-hover:text-white/60 transition-colors">Click or drag PDF here</span>
+                </div>
+              )}
             </div>
           </div>
-        </div>
 
-        {/* Actions */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-          <button onClick={handleSubmit} disabled={!selectedMode} className="btn-primary"
-            style={{ width: '100%', padding: '0.9rem', fontSize: '0.8rem', gap: '0.5rem', justifyContent: 'center', opacity: selectedMode ? 1 : 0.4 }}>
-            {selectedMode ? `Start ${selected?.title}` : 'Select a mode to continue'} {selectedMode && <ArrowRight size={15} />}
-          </button>
-          <button onClick={() => onUpload(null, 'hr')}
-            style={{ width: '100%', padding: '0.65rem', borderRadius: '999px', background: 'none', border: 'none', color: 'rgba(241,245,249,0.25)', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', cursor: 'pointer', transition: 'color 0.2s' }}
-            onMouseEnter={e => e.currentTarget.style.color = 'rgba(241,245,249,0.5)'}
-            onMouseLeave={e => e.currentTarget.style.color = 'rgba(241,245,249,0.25)'}>
-            Skip — Quick Start (HR Mode)
-          </button>
+          {/* Action buttons */}
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={handleSubmit}
+              disabled={!selectedMode}
+              className="w-full py-4 bg-white hover:bg-white/90 text-[#1a0f0a] rounded-full transition-all font-bold tracking-widest uppercase text-xs shadow-xl disabled:opacity-40 disabled:grayscale disabled:cursor-not-allowed"
+            >
+              {selectedMode
+                ? `Start ${MODES.find(m => m.id === selectedMode)?.title}`
+                : 'Select a Mode to Continue'}
+            </button>
+            <button
+              type="button"
+              onClick={() => onUpload(null, 'hr')}
+              className="w-full py-3 text-white/30 hover:text-white/60 font-bold text-[10px] tracking-widest uppercase transition-colors"
+            >
+              Skip — Quick Start (HR Mode)
+            </button>
+          </div>
         </div>
       </motion.div>
     </div>
