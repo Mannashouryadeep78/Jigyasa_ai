@@ -78,10 +78,20 @@ export function useSpeechRecognition({ onTranscriptSubmit }) {
     recognition.lang = 'en-US';
 
     recognition.onresult = (event) => {
-        let full = '';
-        for(let j=0; j < event.results.length; j++) {
-            full += event.results[j][0].transcript;
+        let finalTrans = '';
+        let interimTrans = '';
+        
+        for (let i = 0; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+                finalTrans += event.results[i][0].transcript + ' ';
+            } else {
+                // On mobile Android/iOS, interim results can incorrectly contain the entire accumulated string history.
+                // Reassigning ensures we only ever append the most recent finalized interim state, preventing extreme stuttering loops.
+                interimTrans = event.results[i][0].transcript;
+            }
         }
+        
+        const full = (finalTrans + interimTrans).trim();
         transcriptRef.current = full;
         setTranscript(full);
 
