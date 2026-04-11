@@ -3,8 +3,8 @@ import json
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from graph.state import InterviewState
 from services.groq_client import get_llm, get_json_llm
-from prompts.system import MASTER_PROMPT
-from prompts.rubric import RUBRIC_PROMPT
+from prompts.system import get_system_prompt
+from prompts.rubric import get_rubric_prompt
 
 llm = get_llm()
 json_llm = get_json_llm()
@@ -15,25 +15,39 @@ def format_transcript(messages):
         if isinstance(msg, HumanMessage):
             transcript += f"Candidate: {msg.content}\n"
         elif isinstance(msg, AIMessage):
-            transcript += f"Screener: {msg.content}\n"
+            transcript += f"Interviewer: {msg.content}\n"
     return transcript.replace("{", "{{").replace("}", "}}")
 
 def greeter(state: InterviewState):
+    mode = state.get("interview_mode", "hr")
     name = state.get("candidate_name", "there")
-    greeting = f"Hi {name}, it's great to meet you! I'm the AI Screener. I'll be asking you a few questions today. How are you doing?"
+    
+    greetings = {
+        "hr": f"Hi {name}, great to meet you! I'm Alex, your HR interviewer today. I'll be asking a few questions to get to know you better. How are you doing?",
+        "technical": f"Hey {name}, welcome! I'm Jordan and I'll be your technical interviewer today. I've had a chance to look over your background — excited to dive in. How are you?",
+        "gd": f"Hi {name}! I'm Morgan, your Group Discussion facilitator today. We're going to debate a topic together — I'll play an active participant so it feels as real as possible. Ready to jump in?",
+    }
+    greeting = greetings.get(mode, greetings["hr"])
     return {"messages": [AIMessage(content=greeting)], "current_phase": "greeting", "questions_asked": []}
 
 def question_selector(state: InterviewState):
-    # Truncate resume to prevent exceeding LLM context or TPM limits
+    mode = state.get("interview_mode", "hr")
     safe_resume = state.get("resume_text", "No resume provided.")[:3000].replace("{", "{{").replace("}", "}}")
-    sys_msg = SystemMessage(content=MASTER_PROMPT.format(
+    
+    system_prompt = get_system_prompt(mode)
+    sys_msg = SystemMessage(content=system_prompt.format(
         candidate_name=state.get("candidate_name", "there"),
         resume_text=safe_resume
     ))
     
-    prompt = "Please ask the next question from your question bank that hasn't been asked yet. Keep it brief."
+    # Mode-specific instruction for question selection
+    instructions = {
+        "hr": "Please ask the next HR question from your question bank that hasn't been asked yet. Keep it brief and conversational.",
+        "technical": "Ask the next technical question about a specific part of their resume that hasn't been explored yet. Be specific and targeted.",
+        "gd": "Introduce the discussion topic if you haven't already, or introduce a new angle / counterpoint to keep the debate alive. Stay sharp and brief.",
+    }
+    prompt = instructions.get(mode, instructions["hr"])
     
-    # Keep only the last 6 messages in context to aggressively prevent TPM crashes
     history = state["messages"][-6:] if len(state["messages"]) > 6 else state["messages"]
     messages = [sys_msg] + history + [HumanMessage(content=prompt)]
     response = llm.invoke(messages)
@@ -41,14 +55,15 @@ def question_selector(state: InterviewState):
     return {"messages": [response], "current_phase": "question", "followup_count": 0}
 
 def responder(state: InterviewState):
-    # Generates a natural reply/followup
+    mode = state.get("interview_mode", "hr")
     safe_resume = state.get("resume_text", "No resume provided.")[:3000].replace("{", "{{").replace("}", "}}")
-    sys_msg = SystemMessage(content=MASTER_PROMPT.format(
+    
+    system_prompt = get_system_prompt(mode)
+    sys_msg = SystemMessage(content=system_prompt.format(
         candidate_name=state.get("candidate_name", "there"),
         resume_text=safe_resume
     ))
     
-    # Keep only the last 6 messages in context
     history = state["messages"][-6:] if len(state["messages"]) > 6 else state["messages"]
     messages = [sys_msg] + history
     
@@ -56,25 +71,36 @@ def responder(state: InterviewState):
     return {"messages": [response], "followup_count": state.get("followup_count", 0) + 1, "current_phase": "followup"}
 
 def followup_decider(state: InterviewState):
-    # This is a pure routing node — logic lives in edges.py.
-    # MUST return empty dict, not full state, because messages uses operator.add
-    # and returning state would re-append ALL messages, doubling the history.
+    # Pure routing node — logic lives in edges.py
     return {}
 
 def edge_case_handler(state: InterviewState):
-    # Handles brief/vague responses
-    msg = "I'd love to hear a bit more about that. Could you elaborate or give a specific example?"
+    mode = state.get("interview_mode", "hr")
+    prompts = {
+        "hr": "I'd love to hear a bit more about that. Could you walk me through a specific example?",
+        "technical": "Interesting — could you give me more technical detail on how that actually worked?",
+        "gd": "That's an interesting point — could you expand on your reasoning a bit more?",
+    }
+    msg = prompts.get(mode, prompts["hr"])
     return {"messages": [AIMessage(content=msg)], "current_phase": "followup"}
 
 def closer(state: InterviewState):
-    msg = "That's all the questions I have! Thank you so much for your time. The team will review this and get back to you soon. Have a great day!"
+    mode = state.get("interview_mode", "hr")
+    closers = {
+        "hr": "That's all the questions I have for today! It was really lovely getting to know you. The team will review this and be in touch soon. Best of luck!",
+        "technical": "That wraps up our technical session! Really enjoyed exploring your background. The team will be in touch with feedback. Have a great day!",
+        "gd": "Great discussion today — you brought some really solid arguments to the table! That's a wrap on our GD session. The feedback will be shared with you soon.",
+    }
+    msg = closers.get(mode, closers["hr"])
     return {"messages": [AIMessage(content=msg)], "current_phase": "closer"}
 
 def assessor(state: InterviewState):
+    mode = state.get("interview_mode", "hr")
     transcript = format_transcript(state["messages"])
-    # Truncate strictly to fit inside llama-3.1-8b-instant 8192 token limit
-    transcript = transcript[-25000:] 
-    prompt = RUBRIC_PROMPT.format(transcript=transcript)
+    transcript = transcript[-25000:]
+    
+    rubric_prompt = get_rubric_prompt(mode)
+    prompt = rubric_prompt.format(transcript=transcript)
     
     raw_content = ""
     try:
@@ -86,11 +112,13 @@ def assessor(state: InterviewState):
             json_str = match.group(0)
             assessment = json.loads(json_str)
         else:
-            # Fallback to direct parse if regex fails to match a top-level brace
             assessment = json.loads(raw_content.replace("```json", "").replace("```", "").strip())
     except Exception as e:
         error_msg = str(e)
-        content_preview = raw_content[:200] if raw_content else "No content generated (API blocked)."
-        assessment = {"error": f"Parse Error: {error_msg} | Content: {content_preview}...", "scores": {}, "quotes": {}, "wrong_answers": []}
+        content_preview = raw_content[:200] if raw_content else "No content generated."
+        assessment = {
+            "error": f"Parse Error: {error_msg} | Content: {content_preview}...",
+            "scores": {}, "quotes": {}, "wrong_answers": []
+        }
         
     return {"assessment": assessment, "current_phase": "finished"}

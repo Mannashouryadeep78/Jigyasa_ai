@@ -87,18 +87,22 @@ async def get_current_user(authorization: str = Header(None)):
 
 
 # ─── /session ────────────────────────────────────────────────────────────────
+VALID_MODES = {"hr", "technical", "gd"}
+
 @app.post("/session")
 async def create_session(
     request: Request,
     user_id: str = Form(...),
     candidate_name: str = Form(...),
+    interview_mode: str = Form("hr"),
     file: UploadFile = File(None),
     current_user: dict = Depends(get_current_user),
 ):
     check_rate_limit(request.client.host)
-    # Validate that the user_id in the form matches the authenticated user
     if current_user.get("id") != user_id:
         raise HTTPException(status_code=403, detail="user_id does not match authenticated user.")
+    if interview_mode not in VALID_MODES:
+        interview_mode = "hr"  # safe fallback
 
     session_id = str(uuid.uuid4())
     log_session(session_id, candidate_name, user_id)
@@ -106,7 +110,7 @@ async def create_session(
     resume_text = ""
     if file:
         file_bytes = await file.read()
-        if file.filename.endswith(".pdf"):
+        if file.filename and file.filename.endswith(".pdf"):
             resume_text = extract_text_from_pdf(file_bytes)
 
     config = {"configurable": {"thread_id": session_id}}
@@ -114,6 +118,7 @@ async def create_session(
         "session_id": session_id,
         "candidate_name": candidate_name,
         "resume_text": resume_text,
+        "interview_mode": interview_mode,
         "messages": [],
         "current_phase": "start",
         "questions_asked": [],
@@ -275,6 +280,59 @@ You MUST output strictly in JSON format. The root must be a JSON object with a s
     except Exception as e:
         print("Prep Route Error:", str(e))
         raise HTTPException(status_code=500, detail="Failed to parse resume or generate questions.")
+
+
+# ─── /ats/check ─────────────────────────────────────────────────────────────
+# PUBLIC endpoint — no auth required. Max value on landing page.
+@app.post("/ats/check")
+async def ats_check(
+    request: Request,
+    file: UploadFile = File(...),
+):
+    check_rate_limit(request.client.host)
+    import json, re
+    from langchain_core.messages import HumanMessage
+    from services.groq_client import get_json_llm
+    from services.pdf_parser import extract_text_from_pdf
+
+    try:
+        file_bytes = await file.read()
+        resume_text = extract_text_from_pdf(file_bytes)
+        safe_resume = resume_text[:6000].replace("{", "{{").replace("}", "}}")
+
+        prompt = f"""You are an elite ATS (Applicant Tracking System) expert and resume coach. Analyse the following resume and produce a detailed ATS compatibility report.
+
+Resume:
+{safe_resume}
+
+Evaluate across these criteria and return ONLY valid JSON:
+{{
+  "ats_score": <integer 0-100>,
+  "grade": <"A" | "B" | "C" | "D" | "F">,
+  "sections_found": [<list of section headings detected>],
+  "sections_missing": [<important sections that are absent, e.g. "Professional Summary", "LinkedIn URL", "Certifications">],
+  "keyword_gaps": [<3-6 specific things missing, e.g. "Quantified achievements (numbers/metrics)", "Strong action verbs", "Industry keywords">],
+  "formatting_issues": [<2-4 formatting problems that hurt ATS parsing, e.g. "Tables detected — ATS cannot parse tables", "No clear section dividers">],
+  "quick_wins": [<exactly 4 specific, actionable one-sentence improvements the candidate can make TODAY>],
+  "ats_verdict": <one sentence honest verdict on ATS pass likelihood>
+}}
+
+Output nothing but the JSON."""
+
+        json_llm = get_json_llm()
+        response = json_llm.invoke([HumanMessage(content=prompt)])
+        raw = response.content
+
+        match = re.search(r'\{{.*\}}', raw, re.DOTALL)
+        if match:
+            data = json.loads(match.group(0))
+        else:
+            data = json.loads(raw.replace("```json", "").replace("```", "").strip())
+
+        return data
+    except Exception as e:
+        print("ATS Check Error:", str(e))
+        raise HTTPException(status_code=500, detail="Failed to analyse resume. Please try again.")
 
 
 # ─── /tts ────────────────────────────────────────────────────────────────────

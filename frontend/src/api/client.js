@@ -34,10 +34,11 @@ client.interceptors.request.use((config) => {
 });
 
 export const api = {
-  createSession: async (userId, candidateName, resumeFile = null) => {
+  createSession: async (userId, candidateName, resumeFile = null, interviewMode = 'hr') => {
     const formData = new FormData();
     formData.append("user_id", userId);
     formData.append("candidate_name", candidateName);
+    formData.append("interview_mode", interviewMode);
     if (resumeFile) {
         formData.append("file", resumeFile);
     }
@@ -88,5 +89,15 @@ export const api = {
   generateAnalyticsGuidance: async (history) => {
       const res = await client.post('/analytics/guidance', { history });
       return res.data;
-  }
+  },
+
+  // Public endpoint — no auth token needed
+  checkATS: async (resumeFile) => {
+      const formData = new FormData();
+      formData.append("file", resumeFile);
+      const res = await axios.post(`${baseURL}/ats/check`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      return res.data;
+  },
 };

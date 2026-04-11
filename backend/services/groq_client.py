@@ -17,7 +17,7 @@ def get_llm():
     """
     return ChatGroq(
         temperature=0.7,
-        model_name="llama-3.1-8b-instant",
+        model_name="llama-3.3-70b-versatile",  # Upgraded for interview quality
         groq_api_key=GROQ_API_KEY,
         request_timeout=25
     )

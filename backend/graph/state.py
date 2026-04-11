@@ -6,6 +6,7 @@ class InterviewState(TypedDict):
     session_id: str
     candidate_name: str
     resume_text: str
+    interview_mode: str          # "hr" | "technical" | "gd"
     messages: Annotated[List[BaseMessage], operator.add]
     current_phase: str
     questions_asked: List[str]

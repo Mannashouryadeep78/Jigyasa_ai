@@ -1,16 +1,18 @@
 from langgraph.graph import StateGraph, START, END
-from langgraph.checkpoint.memory import MemorySaver
 from graph.state import InterviewState
 from graph.nodes import (
-    greeter, question_selector, responder, 
+    greeter, question_selector, responder,
     followup_decider, edge_case_handler, closer, assessor
 )
 from graph.edges import (
     route_from_start, decide_followup
 )
 
-from langgraph.checkpoint.sqlite import SqliteSaver
-import sqlite3
+from langgraph.checkpoint.postgres import PostgresSaver
+import psycopg
+import os
+
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 def build_graph():
     builder = StateGraph(InterviewState)
@@ -52,8 +54,14 @@ def build_graph():
     builder.add_edge("closer", "assessor")
     builder.add_edge("assessor", END)
     
-    # Compile with persistent storage so /resume works across server restarts!
-    memory = SqliteSaver.from_conn_string("checkpoints.db")
+    # ── PostgreSQL Checkpointer ─────────────────────────────────────────────
+    # Sessions survive server restarts and can run on multiple workers.
+    # DATABASE_URL must be a Supabase Postgres connection string (Transaction
+    # mode pooler recommended: postgresql://postgres.[ref]:[pwd]@aws-0-[region]
+    # .pooler.supabase.com:6543/postgres)
+    conn = psycopg.connect(DATABASE_URL, autocommit=True)
+    memory = PostgresSaver(conn)
+    memory.setup()  # Creates the LangGraph checkpoint tables if they don't exist
     graph = builder.compile(checkpointer=memory)
     return graph
 

@@ -19,6 +19,7 @@ export default function App() {
   const [session, setSession] = useState(null);
   const [candidateName, setCandidateName] = useState('');
   const [resumeFile, setResumeFile] = useState(null);
+  const [interviewMode, setInterviewMode] = useState('hr');
   const [initialMessage, setInitialMessage] = useState('');
   const [isInitializing, setIsInitializing] = useState(false);
 
@@ -38,15 +39,16 @@ export default function App() {
     setPhase('report');
   };
 
-  const handleUpload = (file) => {
+  const handleUpload = (file, mode = 'hr') => {
     setResumeFile(file);
+    setInterviewMode(mode);
     setPhase('welcome');
   };
 
   const handleStartInterview = async () => {
     setIsInitializing(true);
     try {
-        const res = await api.createSession(user.id, candidateName, resumeFile);
+        const res = await api.createSession(user.id, candidateName, resumeFile, interviewMode);
         setSession(res.session_id);
         setInitialMessage(res.message);
         setInitialHistory(null); // Clear history

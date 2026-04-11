@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Mic, FileText, Zap, ChevronRight, ShieldCheck } from 'lucide-react';
+import ATSChecker from './ATSChecker';
 
 export default function LandingPage({ onGoToAuth }) {
 
@@ -48,6 +49,7 @@ export default function LandingPage({ onGoToAuth }) {
                     <span className="font-bold text-lg sm:text-xl md:text-2xl tracking-tight text-white truncate max-w-[100px] sm:max-w-none">Jigyasa.Ai</span>
                 </div>
                 <div className="hidden md:flex items-center gap-12 text-xs font-bold tracking-widest text-white/70 uppercase">
+                    <a href="#ats-checker" className="hover:text-white transition">ATS Check <sup className="text-[9px]">Free</sup></a>
                     <a href="#features" className="hover:text-white transition">Features <sup className="text-[9px]">3</sup></a>
                     <a href="#how-it-works" className="hover:text-white transition">How it Works <sup className="text-[9px]">1</sup></a>
                 </div>
@@ -77,10 +79,10 @@ export default function LandingPage({ onGoToAuth }) {
                         transition={{ duration: 0.5, delay: 0.1 }}
                         className="text-[2.6rem] sm:text-5xl md:text-[5.5rem] font-medium tracking-tighter mb-8 leading-[1.05] md:leading-[0.95] text-white"
                     >
-                        <span className="text-white/60 font-light">✦</span> Master<br/>
-                        <span className="text-white">Your Next Big <br/>
-                        Technical<br/>
-                        <span className="font-bold text-[#f5cca8]">Interview</span></span>
+                        <span className="text-white/60 font-light">✦</span> Ace<br/>
+                        <span className="text-white">Your Next<br/>
+                        HR, Technical<br/>
+                        <span className="font-bold text-[#f5cca8]">or GD Round</span></span>
                     </motion.h1>
                     {/* Hacking the text gradient to map the reference properly */}
                     {/* The reference uses huge text overlaying the middle gradient. We'll simulate this. */}
@@ -94,7 +96,7 @@ export default function LandingPage({ onGoToAuth }) {
                         transition={{ duration: 0.5, delay: 0.2 }}
                         className="text-sm md:text-base text-white/80 font-medium mb-10 max-w-sm leading-relaxed"
                     >
-                        <span className="font-mono text-white/60">✦</span> Your personalized AI coach. Upload your resume and experience ultra-realistic, voice-activated interviews with instant grading feedback.
+                        <span className="font-mono text-white/60">✦</span> AI mock interviews for every field — HR rounds, technical deep dives, and group discussions. Plus a free ATS resume score, no login needed.
                     </motion.p>
                     
                     <motion.div 
@@ -173,7 +175,10 @@ export default function LandingPage({ onGoToAuth }) {
 
         </div>
 
-        {/* How It Works Section - Adapted to fit cleanly in the soft wrapper */}
+        {/* ATS Resume Checker Section */}
+        <ATSChecker onGoToAuth={onGoToAuth} />
+
+        {/* How It Works Section */}
         <section id="how-it-works" className="relative z-10 w-full py-24 my-8 rounded-[2rem] bg-white/40 shadow-sm border border-white/50">
             <div className="max-w-6xl mx-auto px-6">
                 <div className="text-center mb-16">
