@@ -5,167 +5,187 @@ export function useSpeechRecognition({ onTranscriptSubmit }) {
   const [transcript, setTranscript] = useState('');
   const recognitionRef = useRef(null);
   const silenceTimerRef = useRef(null);
+  const maxDurationTimerRef = useRef(null);
   const transcriptRef = useRef('');
   const isListeningRef = useRef(false);
   const submitCallbackRef = useRef(onTranscriptSubmit);
-
-  useEffect(() => {
-    isListeningRef.current = isListening;
-  }, [isListening]);
+  // KEY FIX: Track which result index we have already consumed to prevent re-reading on mobile restarts
+  const lastResultIndexRef = useRef(0);
+  // Accumulated final text across multiple recognition sessions (needed because mobile stops/starts)
+  const accumulatedFinalRef = useRef('');
 
   useEffect(() => {
     submitCallbackRef.current = onTranscriptSubmit;
   }, [onTranscriptSubmit]);
 
-  const maxDurationTimerRef = useRef(null);
-  const lastSubmittedRef = useRef(null);
-
-  const submitTranscript = () => {
-      const finalTranscript = transcriptRef.current.trim();
-      let validTranscript = finalTranscript;
-      
-      // Prevent browser STT zombie-buffer bug where it immediately spits out the previous sentence
-      if (finalTranscript && finalTranscript === lastSubmittedRef.current) {
-          validTranscript = ''; // Ignore the zombie text and treat as blank/silence
-      }
-      
-      if (validTranscript) {
-          lastSubmittedRef.current = validTranscript;
-      }
-      
-      // Allow empty transcript to be submitted to handle blank answer logic
-      submitCallbackRef.current(validTranscript);
-      setTranscript('');
-      transcriptRef.current = '';
-  };
-
-  const stopListening = useCallback((submit = false) => {
-    if (recognitionRef.current) {
-      try {
-          recognitionRef.current.stop();
-      } catch(e) {}
-    }
-    setIsListening(false);
-    isListeningRef.current = false;
-    
+  const clearTimers = () => {
     if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
     if (maxDurationTimerRef.current) clearTimeout(maxDurationTimerRef.current);
-    
-    if (submit) {
-       submitTranscript();
+  };
+
+  const submitTranscript = useCallback(() => {
+    const finalText = transcriptRef.current.trim();
+    if (finalText) {
+        submitCallbackRef.current(finalText);
+    } else {
+        // Submit empty to advance the session gracefully on silence
+        submitCallbackRef.current('');
     }
+    // Full reset
+    transcriptRef.current = '';
+    accumulatedFinalRef.current = '';
+    lastResultIndexRef.current = 0;
+    setTranscript('');
   }, []);
+
+  const stopListening = useCallback((submit = false) => {
+    isListeningRef.current = false;
+    clearTimers();
+
+    if (recognitionRef.current) {
+      try { recognitionRef.current.stop(); } catch (e) {}
+      recognitionRef.current = null;
+    }
+
+    setIsListening(false);
+
+    if (submit) {
+      submitTranscript();
+    }
+  }, [submitTranscript]);
 
   const startListening = useCallback(() => {
     if (isListeningRef.current) return;
-    
+
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-      console.warn('Speech Recognition API not supported in this browser.');
+      console.warn('Speech Recognition not supported in this browser.');
       return;
     }
 
-    // Stop any existing instance
+    // Full cleanup before starting fresh
     if (recognitionRef.current) {
-        try { recognitionRef.current.stop(); } catch(e) {}
+      try { recognitionRef.current.stop(); } catch (e) {}
+      recognitionRef.current = null;
     }
+    clearTimers();
+
+    // Full state reset before starting a new session
+    transcriptRef.current = '';
+    accumulatedFinalRef.current = '';
+    lastResultIndexRef.current = 0;
+    setTranscript('');
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
     recognitionRef.current = recognition;
-    
-    recognition.continuous = true;
+
+    // KEY FIX: Use continuous=false and restart manually.
+    // Mobile browsers (Android Chrome, iOS Safari) have critical bugs with continuous=true:
+    // they accumulate and re-deliver old result buffers on every restart, causing infinite repetition.
+    recognition.continuous = false;
     recognition.interimResults = true;
     recognition.lang = 'en-US';
+    recognition.maxAlternatives = 1;
 
     recognition.onresult = (event) => {
-        let finalTrans = '';
-        let interimTrans = '';
-        
-        for (let i = 0; i < event.results.length; ++i) {
-            if (event.results[i].isFinal) {
-                finalTrans += event.results[i][0].transcript + ' ';
-            } else {
-                // On mobile Android/iOS, interim results can incorrectly contain the entire accumulated string history.
-                // Reassigning ensures we only ever append the most recent finalized interim state, preventing extreme stuttering loops.
-                interimTrans = event.results[i][0].transcript;
-            }
-        }
-        
-        const full = (finalTrans + interimTrans).trim();
-        transcriptRef.current = full;
-        setTranscript(full);
+      // Only read results starting from the last known index to prevent re-processing old results
+      let newFinalText = '';
+      let newInterimText = '';
 
-        if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-        
-        silenceTimerRef.current = setTimeout(() => {
-            stopListening(true);
-        }, 5000);
+      for (let i = lastResultIndexRef.current; i < event.results.length; i++) {
+        if (event.results[i].isFinal) {
+          newFinalText += event.results[i][0].transcript + ' ';
+          lastResultIndexRef.current = i + 1; // advance the pointer
+        } else {
+          newInterimText = event.results[i][0].transcript;
+        }
+      }
+
+      if (newFinalText) {
+        accumulatedFinalRef.current += newFinalText;
+      }
+
+      const displayText = (accumulatedFinalRef.current + newInterimText).trim();
+      transcriptRef.current = displayText;
+      setTranscript(displayText);
+
+      // Reset the silence timer on each new word
+      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+      silenceTimerRef.current = setTimeout(() => {
+        if (isListeningRef.current) {
+          stopListening(true);
+        }
+      }, 3000); // 3 seconds of silence triggers submission
     };
 
     recognition.onerror = (event) => {
-        console.error("Speech recognition error", event.error);
-        if (event.error !== 'no-speech') {
-            setIsListening(false);
-            isListeningRef.current = false;
-        }
+      console.error('Speech recognition error:', event.error);
+      if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+        // Microphone permission denied - stop completely
+        stopListening(false);
+      }
+      // For network, aborted, audio-capture - just stop and let user retry
     };
 
     recognition.onend = () => {
-        // If it ended due to Chrome's native no-speech (which happens automatically around 8-10s of silence)
-        // AND we haven't hit our actual intended 15s or 120s timeouts, we should secretly restart it
-        // so the user still has time to think!
-        if (isListeningRef.current) {
-             try {
-                 recognition.start();
-             } catch(e) {
-                 setIsListening(false);
-                 isListeningRef.current = false;
-             }
-        } else {
-             setIsListening(false);
-             isListeningRef.current = false;
+      // If we're still supposed to be listening AND have accumulated some text,
+      // restart without resetting to capture more speech.
+      // If we have NO text yet and still listening, also restart (user is just thinking).
+      if (isListeningRef.current) {
+        // Reset result index because a new recognition session starts fresh from index 0
+        lastResultIndexRef.current = 0;
+        try {
+          const newRecognition = new SpeechRecognition();
+          recognitionRef.current = newRecognition;
+          newRecognition.continuous = false;
+          newRecognition.interimResults = true;
+          newRecognition.lang = 'en-US';
+          newRecognition.maxAlternatives = 1;
+          newRecognition.onresult = recognition.onresult;
+          newRecognition.onerror = recognition.onerror;
+          newRecognition.onend = recognition.onend;
+          newRecognition.start();
+        } catch (e) {
+          console.warn('Could not restart recognition:', e);
+          setIsListening(false);
+          isListeningRef.current = false;
         }
+      }
     };
 
-    setTranscript('');
-    transcriptRef.current = '';
-    
     try {
       recognition.start();
       setIsListening(true);
       isListeningRef.current = true;
-      
-      // Give the user 20 seconds to THINK and start speaking before assuming they stepped away
-      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+
+      // 20-second silence guard (no speech at all detected)
       silenceTimerRef.current = setTimeout(() => {
-          if (isListeningRef.current && transcriptRef.current.trim() === '') {
-              isListeningRef.current = false; // prevent onend from restarting
-              stopListening(true); 
-          }
+        if (isListeningRef.current && transcriptRef.current.trim() === '') {
+          stopListening(true);
+        }
       }, 20000);
 
-      // Max 120s timer
-      if (maxDurationTimerRef.current) clearTimeout(maxDurationTimerRef.current);
+      // Hard 120-second max cap
       maxDurationTimerRef.current = setTimeout(() => {
-          if (isListeningRef.current) {
-              isListeningRef.current = false; // prevent onend from restarting
-              stopListening(true);
-          }
+        if (isListeningRef.current) {
+          stopListening(true);
+        }
       }, 120000);
 
     } catch (e) {
-      console.warn("Recognition start failed", e);
+      console.warn('Recognition start failed:', e);
     }
   }, [stopListening]);
 
   useEffect(() => {
-      // Cleanup on unmount
-      return () => {
-          if (recognitionRef.current) {
-              try { recognitionRef.current.stop(); } catch(e){}
-          }
-          if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+    return () => {
+      isListeningRef.current = false;
+      clearTimers();
+      if (recognitionRef.current) {
+        try { recognitionRef.current.stop(); } catch (e) {}
       }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const toggleListening = useCallback(() => {
