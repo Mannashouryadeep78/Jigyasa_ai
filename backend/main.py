@@ -207,47 +207,119 @@ class AnalyticsRequest(BaseModel):
 
 @app.post("/analytics/guidance")
 async def generate_analytics_guidance(req: AnalyticsRequest):
-    import json
-    from langchain_core.messages import HumanMessage
+    import json, re
+    from langchain_core.messages import HumanMessage, SystemMessage
     from services.groq_client import get_json_llm
 
-    key_totals = {}
-    key_counts = {}
-    for score_obj in req.history:
-        for k, v in score_obj.items():
-            key_totals[k] = key_totals.get(k, 0) + v
-            key_counts[k] = key_counts.get(k, 0) + 1
-            
-    averages = {k: round(key_totals[k] / key_counts[k], 2) for k in key_totals}
-    avg_str = json.dumps(averages)
+    # Each item in history has: session_name, date, scores (dict of str->float)
+    # Calculate per-field averages across all sessions
+    key_totals: dict[str, float] = {}
+    key_counts: dict[str, int] = {}
+    session_context = []
 
-    prompt = f"""You are a senior engineering manager and executive coach.
-The candidate has taken multiple interview assessments. We have calculated their AVERAGE scores (out of 5) across multiple dimensions:
-{avg_str}
+    for item in req.history:
+        if not isinstance(item, dict):
+            continue
+        # Support both flat scores dict (old) and rich {session_name, date, scores} (new)
+        scores = item.get("scores", item)  # fall back to item itself if no "scores" key
+        name = item.get("session_name", "Unknown Interview")
+        date = item.get("date", "")
 
-Analyze their average metrics. Write a highly personalized, encouraging 2-paragraph development plan explaining what they excel at, where they are falling behind compared to industry peers, and 3 specific actionable steps they can take to improve.
-IMPORTANT: You MUST explicitly recommend that they use our complimentary 'Resume-to-Prep Matrix' question generator tool to practice and improve their weaknesses.
+        if not isinstance(scores, dict):
+            continue
 
-Output strictly in JSON format. The root must be an object with:
-"overview" (string: 2 paragraphs),
-"action_items" (array of strings: exactly 3 precise steps)
-Output nothing else but the JSON."""
+        session_lines = []
+        for k, v in scores.items():
+            try:
+                val = float(v)
+                key_totals[k] = key_totals.get(k, 0.0) + val
+                key_counts[k] = key_counts.get(k, 0) + 1
+                session_lines.append(f"  {k}: {val}/5")
+            except (ValueError, TypeError):
+                continue
+
+        if session_lines:
+            session_context.append(f"- {name} ({date}):\n" + "\n".join(session_lines))
+
+    if not key_totals:
+        return {
+            "overview": "No completed interview data found yet. Complete at least one interview session to receive your personalised coaching report.",
+            "action_items": [
+                "Complete your first Jigyasa interview session to unlock AI coaching.",
+                "Use the Resume-to-Prep Matrix tool on the home page to generate practice questions.",
+                "Review the interview guidance articles in your dashboard."
+            ]
+        }
+
+    averages = {k: round(key_totals[k] / key_counts[k], 2) for k in key_totals if key_counts[k] > 0}
+
+    # Sort to highlight weakest areas first
+    sorted_scores = sorted(averages.items(), key=lambda x: x[1])
+    weakest = sorted_scores[:2]
+    strongest = sorted(averages.items(), key=lambda x: x[1], reverse=True)[:2]
+
+    sessions_text = "\n".join(session_context) if session_context else "Score data provided."
+    averages_text = "\n".join([f"  {k}: {v}/5" for k, v in averages.items()])
+
+    system_msg = "You are a senior engineering manager and expert interview coach. You provide highly personalised, data-driven feedback to candidates based on their actual interview performance data. Always respond in JSON."
+
+    user_msg = f"""A candidate has completed {len(session_context)} interview session(s) on the Jigyasa AI Interview Platform. Here is their full performance history:
+
+{sessions_text}
+
+Their CALCULATED AVERAGE scores across all sessions (out of 5):
+{averages_text}
+
+Their STRONGEST areas: {', '.join([f"{k} ({v}/5)" for k, v in strongest])}
+Their WEAKEST areas (needs most improvement): {', '.join([f"{k} ({v}/5)" for k, v in weakest])}
+
+Write a personalised 2-paragraph coaching report:
+- Paragraph 1: Acknowledge their strengths with the exact scores, be specific and encouraging.
+- Paragraph 2: Clearly identify their 1-2 weakest areas by name and exact average score, explain what this means practically, and tell them to use Jigyasa's complimentary Resume-to-Prep Matrix question generator (on the landing page) to get a custom question bank for targeted practice.
+
+Then provide exactly 3 specific, actionable improvement steps tailored to their WEAKEST areas. At least one step must mention using the Resume-to-Prep Matrix question generator.
+
+Respond ONLY with this JSON structure:
+{{
+  "overview": "paragraph 1 text\\n\\nparagraph 2 text",
+  "action_items": ["step 1", "step 2", "step 3"]
+}}"""
 
     try:
         json_llm = get_json_llm()
-        response = json_llm.invoke([HumanMessage(content=prompt)])
+        response = json_llm.invoke([
+            SystemMessage(content=system_msg),
+            HumanMessage(content=user_msg)
+        ])
         raw_content = response.content
-        import re
-        match = re.search(r'\{.*\}', raw_content, re.DOTALL)
-        if match:
-            json_str = match.group(0)
-            data = json.loads(json_str)
-        else:
-            data = json.loads(raw_content.replace("```json", "").replace("```", "").strip())
+        # Try direct parse first, then regex extraction
+        try:
+            data = json.loads(raw_content)
+        except json.JSONDecodeError:
+            match = re.search(r'\{.*\}', raw_content, re.DOTALL)
+            if match:
+                data = json.loads(match.group(0))
+            else:
+                raise ValueError("No JSON found in response")
+
+        # Validate required keys
+        if "overview" not in data or "action_items" not in data:
+            raise ValueError("Missing required keys in response")
+
         return data
+
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         print("Analytics Route Error:", str(e))
+        # Return meaningful fallback based on computed averages
+        weak_names = [k for k, v in weakest]
         return {
-            "overview": "We couldn't generate a personalized plan right now due to server constraints, but based on your data history, focus on practicing cross-domain technical communication.", 
-            "action_items": ["Review fundamental system design patterns", "Practice thinking out loud during coding", "Take mock interviews to reduce anxiety"]
+            "overview": f"Based on your {len(session_context)} completed interview(s), your average scores show strengths in {strongest[0][0]} ({strongest[0][1]}/5). Your primary area for growth is {weakest[0][0]} ({weakest[0][1]}/5) — a very common gap that can be closed with consistent, targeted practice.\n\nWe recommend using Jigyasa's complimentary Resume-to-Prep Matrix on the home page to generate a custom question bank focused specifically on {', '.join(weak_names)}. This tool analyses your resume and generates role-specific interview questions to help you practise the exact scenarios where you need improvement.",
+            "action_items": [
+                f"Use the Resume-to-Prep Matrix question generator on the Jigyasa home page to get practice questions targeting your weakest area: {weakest[0][0]}.",
+                f"For each upcoming interview, prepare 2-3 strong examples that demonstrate {weakest[0][0]} — structure them using the STAR method (Situation, Task, Action, Result).",
+                "Book a mock interview session every week and track your scores in this Analytics dashboard to monitor improvement over time."
+            ]
         }
+
