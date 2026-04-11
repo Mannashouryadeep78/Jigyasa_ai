@@ -60,5 +60,10 @@ export const api = {
           }
       });
       return res.data;
+  },
+  
+  generateAnalyticsGuidance: async (history) => {
+      const res = await client.post('/analytics/guidance', { history });
+      return res.data;
   }
 };

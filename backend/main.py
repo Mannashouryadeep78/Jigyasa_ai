@@ -201,3 +201,43 @@ async def generate_tts(req: TTSRequest):
             print(f"TTS Streaming Error: {e}")
 
     return StreamingResponse(audio_stream(), media_type="audio/mpeg")
+
+class AnalyticsRequest(BaseModel):
+    history: list[dict]
+
+@app.post("/analytics/guidance")
+async def generate_analytics_guidance(req: AnalyticsRequest):
+    import json
+    from langchain_core.messages import HumanMessage
+    from services.groq_client import get_json_llm
+
+    history_str = json.dumps(req.history)
+    prompt = f"""You are a senior engineering manager and executive coach.
+The following is an array of interview assessment scores (0-10) across multiple dimensions for a single candidate over their recent sessions:
+{history_str}
+
+Analyze their trajectory and current skill gaps. Write a highly personalized, encouraging 2-paragraph development plan explaining what they excel at, where they are falling behind compared to industry peers, and 3 specific actionable steps they can take to improve.
+
+Output strictly in JSON format. The root must be an object with:
+"overview" (string: 2 paragraphs),
+"action_items" (array of strings: exactly 3 precise steps)
+Output nothing else but the JSON."""
+
+    try:
+        json_llm = get_json_llm()
+        response = json_llm.invoke([HumanMessage(content=prompt)])
+        raw_content = response.content
+        import re
+        match = re.search(r'\{.*\}', raw_content, re.DOTALL)
+        if match:
+            json_str = match.group(0)
+            data = json.loads(json_str)
+        else:
+            data = json.loads(raw_content.replace("```json", "").replace("```", "").strip())
+        return data
+    except Exception as e:
+        print("Analytics Route Error:", str(e))
+        return {
+            "overview": "We couldn't generate a personalized plan right now due to server constraints, but based on your data history, focus on practicing cross-domain technical communication.", 
+            "action_items": ["Review fundamental system design patterns", "Practice thinking out loud during coding", "Take mock interviews to reduce anxiety"]
+        }

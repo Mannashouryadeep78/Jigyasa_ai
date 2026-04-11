@@ -77,7 +77,7 @@ export default function LandingPage({ onGoToAuth }) {
                         transition={{ duration: 0.5, delay: 0.1 }}
                         className="text-[2.6rem] sm:text-5xl md:text-[5.5rem] font-medium tracking-tighter mb-8 leading-[1.05] md:leading-[0.95] text-white"
                     >
-                        <span className="text-white/60 font-light">{"}"}</span> Master<br/>
+                        <span className="text-white/60 font-light">✦</span> Master<br/>
                         <span className="text-white">Your Next Big <br/>
                         Technical<br/>
                         <span className="font-bold text-[#f5cca8]">Interview</span></span>
@@ -94,7 +94,7 @@ export default function LandingPage({ onGoToAuth }) {
                         transition={{ duration: 0.5, delay: 0.2 }}
                         className="text-sm md:text-base text-white/80 font-medium mb-10 max-w-sm leading-relaxed"
                     >
-                        <span className="font-mono text-white/60">{"}"}</span> Your personalized AI coach. Upload your resume and experience ultra-realistic, voice-activated interviews with instant grading feedback.
+                        <span className="font-mono text-white/60">✦</span> Your personalized AI coach. Upload your resume and experience ultra-realistic, voice-activated interviews with instant grading feedback.
                     </motion.p>
                     
                     <motion.div 
@@ -152,8 +152,8 @@ export default function LandingPage({ onGoToAuth }) {
                     <div className="absolute right-0 top-0 w-64 h-64 bg-[#b45309]/10 blur-3xl rounded-full pointer-events-none"></div>
                     
                     <div className="text-left max-w-2xl relative z-10">
-                        <div className="text-xs tracking-widest uppercase font-bold text-[#b45309] mb-4 flex items-center gap-2">
-                           <Zap className="w-4 h-4" /> Beta Release
+                        <div className="text-xs tracking-widest uppercase font-bold text-[#f5cca8] mb-4 flex items-center gap-2">
+                           <Zap className="w-4 h-4" /> Complimentary Access
                         </div>
                         <h3 className="text-3xl sm:text-4xl md:text-5xl font-medium tracking-tighter text-white mb-4">
                             Resume-to-Prep Matrix
@@ -177,7 +177,7 @@ export default function LandingPage({ onGoToAuth }) {
         <section id="how-it-works" className="relative z-10 w-full py-24 my-8 rounded-[2rem] bg-white/40 shadow-sm border border-white/50">
             <div className="max-w-6xl mx-auto px-6">
                 <div className="text-center mb-16">
-                    <h2 className="text-3xl md:text-5xl font-medium tracking-tighter text-[#1a0f0a] mb-4">{"}"} How it works</h2>
+                    <h2 className="text-3xl md:text-5xl font-medium tracking-tighter text-[#1a0f0a] mb-4">✦ How it works</h2>
                     <p className="text-[#1a0f0a]/60 font-medium">Three simple steps to automate your technical screening.</p>
                 </div>
                 
