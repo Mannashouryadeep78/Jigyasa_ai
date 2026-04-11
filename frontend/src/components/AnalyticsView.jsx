@@ -92,13 +92,13 @@ export default function AnalyticsView({ sessions, onBack }) {
                         </h3>
                         <div className="flex-1 w-full relative -ml-4">
                             <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 50 }}>
+                                <BarChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 90 }}>
                                     <CartesianGrid strokeDasharray="3 3" stroke="#ffffff1a" vertical={false} />
                                     <XAxis 
                                         dataKey="name" 
                                         stroke="#ffffff80" 
                                         fontSize={10} 
-                                        tickMargin={15} 
+                                        tickMargin={25} 
                                         angle={-35} 
                                         textAnchor="end"
                                     />
@@ -107,7 +107,7 @@ export default function AnalyticsView({ sessions, onBack }) {
                                         contentStyle={{ backgroundColor: '#1a0f0a', borderColor: '#ffffff20', borderRadius: '1rem', color: '#fff' }}
                                         itemStyle={{ fontSize: '13px' }}
                                     />
-                                    <Legend wrapperStyle={{ paddingTop: '20px', fontSize: '12px', color: '#ffffff80' }} />
+                                    <Legend verticalAlign="top" wrapperStyle={{ paddingBottom: '20px', fontSize: '12px', color: '#ffffff80' }} />
                                     <Bar dataKey="User" fill="#f5cca8" radius={[4, 4, 0, 0]} />
                                     <Bar dataKey="Industry_Average" fill="#b4530980" radius={[4, 4, 0, 0]} />
                                 </BarChart>
