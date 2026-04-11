@@ -10,6 +10,29 @@ const client = axios.create({
   },
 });
 
+// ─── Auth Interceptor (Fix #2) ─────────────────────────────────────────────
+// Reads the Supabase session token from localStorage and injects it into every request.
+// Supabase stores it under the key: sb-<project-ref>-auth-token
+client.interceptors.request.use((config) => {
+  try {
+    // Find the Supabase session key dynamically (works regardless of project ref)
+    const supabaseKey = Object.keys(localStorage).find(
+      (k) => k.startsWith('sb-') && k.endsWith('-auth-token')
+    );
+    if (supabaseKey) {
+      const session = JSON.parse(localStorage.getItem(supabaseKey) || '{}');
+      const token = session?.access_token;
+      if (token) {
+        config.headers['Authorization'] = `Bearer ${token}`;
+      }
+    }
+  } catch (e) {
+    // Silent fail — auth will be rejected at the server level if missing
+    console.warn('Could not read auth token from localStorage', e);
+  }
+  return config;
+});
+
 export const api = {
   createSession: async (userId, candidateName, resumeFile = null) => {
     const formData = new FormData();
@@ -28,7 +51,7 @@ export const api = {
   
   respond: async (sessionId, message) => {
     const res = await client.post('/respond', { session_id: sessionId, message });
-    return res.data; // { message: string, status: string }
+    return res.data;
   },
   
   getReport: async (sessionId) => {

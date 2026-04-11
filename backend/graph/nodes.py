@@ -56,9 +56,10 @@ def responder(state: InterviewState):
     return {"messages": [response], "followup_count": state.get("followup_count", 0) + 1, "current_phase": "followup"}
 
 def followup_decider(state: InterviewState):
-    # This is a router node, logic lives in edges.py. 
-    # Here we don't mutate state, we just pass it through.
-    return state
+    # This is a pure routing node — logic lives in edges.py.
+    # MUST return empty dict, not full state, because messages uses operator.add
+    # and returning state would re-append ALL messages, doubling the history.
+    return {}
 
 def edge_case_handler(state: InterviewState):
     # Handles brief/vague responses

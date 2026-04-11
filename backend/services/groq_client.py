@@ -18,7 +18,8 @@ def get_llm():
     return ChatGroq(
         temperature=0.7,
         model_name="llama-3.1-8b-instant",
-        groq_api_key=GROQ_API_KEY
+        groq_api_key=GROQ_API_KEY,
+        request_timeout=25
     )
 
 def get_json_llm():
@@ -29,5 +30,6 @@ def get_json_llm():
         temperature=0.1,
         model_name="llama-3.1-8b-instant",
         groq_api_key=GROQ_API_KEY,
+        request_timeout=25,
         model_kwargs={"response_format": {"type": "json_object"}}
     )

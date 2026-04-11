@@ -1,19 +1,36 @@
-from fastapi import FastAPI, HTTPException, UploadFile, File, Form
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Header, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 import uuid
+import asyncio
+import time
+from collections import defaultdict
 from langchain_core.messages import HumanMessage, AIMessage
 
 from models.schemas import SessionCreate, ChatTurn
 from graph.builder import interview_graph
 from services.supabase_client import get_supabase_client, log_session, save_assessment, update_session_status
 from services.pdf_parser import extract_text_from_pdf
+import httpx
+import os
+
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
 app = FastAPI(title="AI Tutor Screener API")
 
+# ─── CORS (Fix #1) ────────────────────────────────────────────────────────────
+# Restrict to known origins — do NOT use wildcard with credentials
+ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "https://jigyasa-ai-wheat.vercel.app",
+    "https://asa-ai-wheat.vercel.app",
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Allow frontend to access
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -21,25 +38,78 @@ app.add_middleware(
 
 supabase = get_supabase_client()
 
+# ─── Per-Session Locking (Fix #5) ─────────────────────────────────────────────
+# Prevents concurrent /respond calls corrupting the same session's graph state
+_session_locks: dict[str, asyncio.Lock] = {}
+_session_locks_mutex = asyncio.Lock()
+
+async def get_session_lock(session_id: str) -> asyncio.Lock:
+    async with _session_locks_mutex:
+        if session_id not in _session_locks:
+            _session_locks[session_id] = asyncio.Lock()
+        return _session_locks[session_id]
+
+# ─── Rate Limiting (Fix #18) ──────────────────────────────────────────────────
+# Simple in-memory rate limiter: max 30 requests per IP per minute
+_rate_limit_store: dict[str, list[float]] = defaultdict(list)
+RATE_LIMIT = 30
+RATE_WINDOW = 60  # seconds
+
+def check_rate_limit(ip: str):
+    now = time.time()
+    window_start = now - RATE_WINDOW
+    # Purge old timestamps
+    _rate_limit_store[ip] = [t for t in _rate_limit_store[ip] if t > window_start]
+    if len(_rate_limit_store[ip]) >= RATE_LIMIT:
+        raise HTTPException(status_code=429, detail="Too many requests. Please slow down.")
+    _rate_limit_store[ip].append(now)
+
+# ─── Auth Dependency (Fix #2) ─────────────────────────────────────────────────
+# Validates Supabase JWT bearer token and returns user data
+async def get_current_user(authorization: str = Header(None)):
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing or invalid Authorization header. Please sign in.")
+    token = authorization.split(" ", 1)[1]
+    try:
+        resp = httpx.get(
+            f"{SUPABASE_URL}/auth/v1/user",
+            headers={
+                "apikey": SUPABASE_KEY,
+                "Authorization": f"Bearer {token}",
+            },
+            timeout=8,
+        )
+        if resp.status_code != 200:
+            raise HTTPException(status_code=401, detail="Invalid or expired session. Please sign in again.")
+        return resp.json()
+    except httpx.TimeoutException:
+        raise HTTPException(status_code=503, detail="Auth service timeout. Please try again.")
+
+
+# ─── /session ────────────────────────────────────────────────────────────────
 @app.post("/session")
 async def create_session(
+    request: Request,
     user_id: str = Form(...),
     candidate_name: str = Form(...),
-    file: UploadFile = File(None)
+    file: UploadFile = File(None),
+    current_user: dict = Depends(get_current_user),
 ):
+    check_rate_limit(request.client.host)
+    # Validate that the user_id in the form matches the authenticated user
+    if current_user.get("id") != user_id:
+        raise HTTPException(status_code=403, detail="user_id does not match authenticated user.")
+
     session_id = str(uuid.uuid4())
-    log_session(supabase, session_id, candidate_name, user_id)
-    
+    log_session(session_id, candidate_name, user_id)
+
     resume_text = ""
     if file:
         file_bytes = await file.read()
         if file.filename.endswith(".pdf"):
             resume_text = extract_text_from_pdf(file_bytes)
-            
-    # Initialize graph state
+
     config = {"configurable": {"thread_id": session_id}}
-    
-    # Trigger greeter
     initial_state = {
         "session_id": session_id,
         "candidate_name": candidate_name,
@@ -51,96 +121,121 @@ async def create_session(
         "followup_count": 0,
         "turn_count": 0
     }
-    
-    # Run the graph until it pauses (after greeter sends its message, we wait for user input)
-    # Actually, in our graph, it will run until it needs input. 
-    # Let's adjust: The graph should process the user's input, not run infinitely.
-    
+
     for event in interview_graph.stream(initial_state, config):
         pass
-        
+
     state = interview_graph.get_state(config)
     last_message = state.values.get("messages", [])[-1].content if state.values.get("messages") else ""
-    
+
     return {"session_id": session_id, "message": last_message}
 
+
+# ─── /respond ────────────────────────────────────────────────────────────────
 @app.post("/respond")
-async def respond(turn: ChatTurn):
+async def respond(
+    request: Request,
+    turn: ChatTurn,
+    current_user: dict = Depends(get_current_user),
+):
+    check_rate_limit(request.client.host)
+
     config = {"configurable": {"thread_id": turn.session_id}}
     state = interview_graph.get_state(config)
-    
+
     if not state.values:
         raise HTTPException(status_code=404, detail="Session not found")
-        
-    turn_count = state.values.get("turn_count", 0) + 1
-    
-    # Trigger graph execution from START with the new message
-    new_input = {
-        "messages": [HumanMessage(content=turn.message)],
-        "turn_count": turn_count
-    }
-    
-    for event in interview_graph.stream(new_input, config):
-        pass
 
-    state = interview_graph.get_state(config)
-    
-    # Get last message
-    last_message = state.values.get("messages", [])[-1].content
-    status = state.values.get("current_phase")
-    
-    if status == "finished":
-        assessment = state.values.get("assessment", {})
-        save_assessment(supabase, turn.session_id, assessment.get("scores", {}), assessment.get("quotes", {}))
-        update_session_status(supabase, turn.session_id, "finished")
-        
+    # Acquire per-session lock to prevent concurrent state corruption (Fix #5)
+    lock = await get_session_lock(turn.session_id)
+    if lock.locked():
+        raise HTTPException(status_code=409, detail="A response is already being processed for this session. Please wait.")
+
+    async with lock:
+        turn_count = state.values.get("turn_count", 0) + 1
+        new_input = {
+            "messages": [HumanMessage(content=turn.message)],
+            "turn_count": turn_count
+        }
+
+        for event in interview_graph.stream(new_input, config):
+            pass
+
+        state = interview_graph.get_state(config)
+        last_message = state.values.get("messages", [])[-1].content
+        status = state.values.get("current_phase")
+
+        if status == "finished":
+            assessment = state.values.get("assessment", {})
+            save_assessment(turn.session_id, assessment.get("scores", {}), assessment.get("quotes", {}))
+            update_session_status(turn.session_id, "finished")
+
     return {"message": last_message, "status": status}
 
+
+# ─── /report/{session_id} ────────────────────────────────────────────────────
 @app.get("/report/{session_id}")
-async def get_report(session_id: str):
+async def get_report(
+    session_id: str,
+    current_user: dict = Depends(get_current_user),
+):
     config = {"configurable": {"thread_id": session_id}}
     state = interview_graph.get_state(config)
-    
+
     if not state.values:
         raise HTTPException(status_code=404, detail="Session not found")
-        
+
     if state.values.get("current_phase") != "finished":
         return {"status": "in_progress"}
-        
+
     return state.values.get("assessment")
 
+
+# ─── /session/{session_id} ───────────────────────────────────────────────────
 @app.get("/session/{session_id}")
-async def get_session(session_id: str):
+async def get_session(
+    session_id: str,
+    current_user: dict = Depends(get_current_user),
+):
     config = {"configurable": {"thread_id": session_id}}
     state = interview_graph.get_state(config)
-    
+
     if not state.values:
         raise HTTPException(status_code=404, detail="Session not found")
-        
+
     messages = state.values.get("messages", [])
     history = []
-    
-    # We want to format the history roughly how the frontend expects it
     for m in messages:
         if isinstance(m, HumanMessage):
             history.append({"role": "user", "content": m.content})
         elif isinstance(m, AIMessage):
             history.append({"role": "ai", "content": m.content})
-            
+
     return {
         "candidate_name": state.values.get("candidate_name", "Candidate"),
         "history": history,
         "status": state.values.get("current_phase")
     }
 
+
+# ─── /session/{session_id}/discontinue ──────────────────────────────────────
 @app.post("/session/{session_id}/discontinue")
-async def discontinue_session(session_id: str):
-    # Just update the DB to say 'discontinued'
-    update_session_status(supabase, session_id, "discontinued")
+async def discontinue_session(
+    session_id: str,
+    current_user: dict = Depends(get_current_user),
+):
+    update_session_status(session_id, "discontinued")
     return {"status": "success"}
 
+
+# ─── /prep/generate ─────────────────────────────────────────────────────────
 @app.post("/prep/generate")
-async def generate_prep(file: UploadFile = File(...)):
+async def generate_prep(
+    request: Request,
+    file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user),
+):
+    check_rate_limit(request.client.host)
     import json
     from langchain_core.messages import HumanMessage
     from services.groq_client import get_json_llm
@@ -149,10 +244,9 @@ async def generate_prep(file: UploadFile = File(...)):
     try:
         file_bytes = await file.read()
         resume_text = extract_text_from_pdf(file_bytes)
-        
-        # Keep resume text reasonable to prevent TPM limit crashes
+
         safe_resume = resume_text[:6000].replace("{", "{{").replace("}", "}}")
-        
+
         prompt = f"""You are an elite technical interviewer and career coach.
 Based on the following candidate's resume, thoughtfully generate exactly 15 likely interview questions (both technical deep-dives and behavioral).
 For every question, provide a suggested high-quality answer demonstrating their specific expertise.
@@ -160,11 +254,11 @@ For every question, provide a suggested high-quality answer demonstrating their 
 Resume Data:
 {safe_resume}
 
-You MUST output strictly in JSON format. The root must be a JSON object with a single key "qa_pairs" containing an array of exactly 15 objects. Each object must have a "question" (string) and "suggested_answer" (string). Output nothing else but the JSON."""
+You MUST output strictly in JSON format. The root must be a JSON object with a single key \"qa_pairs\" containing an array of exactly 15 objects. Each object must have a \"question\" (string) and \"suggested_answer\" (string). Output nothing else but the JSON."""
 
         json_llm = get_json_llm()
         response = json_llm.invoke([HumanMessage(content=prompt)])
-        
+
         raw_content = response.content
         import re
         match = re.search(r'\{.*\}', raw_content, re.DOTALL)
@@ -173,27 +267,31 @@ You MUST output strictly in JSON format. The root must be a JSON object with a s
             data = json.loads(json_str)
         else:
             data = json.loads(raw_content.replace("```json", "").replace("```", "").strip())
-            
-        # Hard cap the output to exactly 15 to prevent LLM over-generation
+
         if "qa_pairs" in data and isinstance(data["qa_pairs"], list):
             data["qa_pairs"] = data["qa_pairs"][:15]
-            
+
         return data
     except Exception as e:
         print("Prep Route Error:", str(e))
         raise HTTPException(status_code=500, detail="Failed to parse resume or generate questions.")
 
+
+# ─── /tts ────────────────────────────────────────────────────────────────────
 class TTSRequest(BaseModel):
     text: str
 
 @app.post("/tts")
-async def generate_tts(req: TTSRequest):
+async def generate_tts(
+    req: TTSRequest,
+    current_user: dict = Depends(get_current_user),
+):
     import edge_tts
     from fastapi.responses import StreamingResponse
 
     async def audio_stream():
         try:
-            communicate = edge_tts.Communicate(req.text, "en-US-BrianNeural") # Brian sounds like a professional interviewer
+            communicate = edge_tts.Communicate(req.text, "en-US-BrianNeural")
             async for chunk in communicate.stream():
                 if chunk["type"] == "audio":
                     yield chunk["data"]
@@ -202,17 +300,20 @@ async def generate_tts(req: TTSRequest):
 
     return StreamingResponse(audio_stream(), media_type="audio/mpeg")
 
+
+# ─── /analytics/guidance ─────────────────────────────────────────────────────
 class AnalyticsRequest(BaseModel):
     history: list[dict]
 
 @app.post("/analytics/guidance")
-async def generate_analytics_guidance(req: AnalyticsRequest):
+async def generate_analytics_guidance(
+    req: AnalyticsRequest,
+    current_user: dict = Depends(get_current_user),
+):
     import json, re
     from langchain_core.messages import HumanMessage, SystemMessage
     from services.groq_client import get_json_llm
 
-    # Each item in history has: session_name, date, scores (dict of str->float)
-    # Calculate per-field averages across all sessions
     key_totals: dict[str, float] = {}
     key_counts: dict[str, int] = {}
     session_context = []
@@ -220,8 +321,7 @@ async def generate_analytics_guidance(req: AnalyticsRequest):
     for item in req.history:
         if not isinstance(item, dict):
             continue
-        # Support both flat scores dict (old) and rich {session_name, date, scores} (new)
-        scores = item.get("scores", item)  # fall back to item itself if no "scores" key
+        scores = item.get("scores", item)
         name = item.get("session_name", "Unknown Interview")
         date = item.get("date", "")
 
@@ -252,8 +352,6 @@ async def generate_analytics_guidance(req: AnalyticsRequest):
         }
 
     averages = {k: round(key_totals[k] / key_counts[k], 2) for k in key_totals if key_counts[k] > 0}
-
-    # Sort to highlight weakest areas first
     sorted_scores = sorted(averages.items(), key=lambda x: x[1])
     weakest = sorted_scores[:2]
     strongest = sorted(averages.items(), key=lambda x: x[1], reverse=True)[:2]
@@ -292,7 +390,6 @@ Respond ONLY with this JSON structure:
             HumanMessage(content=user_msg)
         ])
         raw_content = response.content
-        # Try direct parse first, then regex extraction
         try:
             data = json.loads(raw_content)
         except json.JSONDecodeError:
@@ -302,7 +399,6 @@ Respond ONLY with this JSON structure:
             else:
                 raise ValueError("No JSON found in response")
 
-        # Validate required keys
         if "overview" not in data or "action_items" not in data:
             raise ValueError("Missing required keys in response")
 
@@ -312,14 +408,12 @@ Respond ONLY with this JSON structure:
         import traceback
         traceback.print_exc()
         print("Analytics Route Error:", str(e))
-        # Return meaningful fallback based on computed averages
         weak_names = [k for k, v in weakest]
         return {
-            "overview": f"Based on your {len(session_context)} completed interview(s), your average scores show strengths in {strongest[0][0]} ({strongest[0][1]}/5). Your primary area for growth is {weakest[0][0]} ({weakest[0][1]}/5) — a very common gap that can be closed with consistent, targeted practice.\n\nWe recommend using Jigyasa's complimentary Resume-to-Prep Matrix on the home page to generate a custom question bank focused specifically on {', '.join(weak_names)}. This tool analyses your resume and generates role-specific interview questions to help you practise the exact scenarios where you need improvement.",
+            "overview": f"Based on your {len(session_context)} completed interview(s), your average scores show strengths in {strongest[0][0]} ({strongest[0][1]}/5). Your primary area for growth is {weakest[0][0]} ({weakest[0][1]}/5) — a very common gap that can be closed with consistent, targeted practice.\n\nWe recommend using Jigyasa's complimentary Resume-to-Prep Matrix on the home page to generate a custom question bank focused specifically on {', '.join(weak_names)}.",
             "action_items": [
                 f"Use the Resume-to-Prep Matrix question generator on the Jigyasa home page to get practice questions targeting your weakest area: {weakest[0][0]}.",
-                f"For each upcoming interview, prepare 2-3 strong examples that demonstrate {weakest[0][0]} — structure them using the STAR method (Situation, Task, Action, Result).",
-                "Book a mock interview session every week and track your scores in this Analytics dashboard to monitor improvement over time."
+                f"For each upcoming interview, prepare 2-3 strong examples that demonstrate {weakest[0][0]} using the STAR method (Situation, Task, Action, Result).",
+                "Complete a mock interview session weekly and track your scores in this Analytics dashboard to measure improvement over time."
             ]
         }
-

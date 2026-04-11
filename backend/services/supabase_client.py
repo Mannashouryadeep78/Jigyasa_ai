@@ -8,7 +8,7 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
 def get_supabase_client():
-    # We will just return the base URL and Key to be used with httpx
+    # Returns config dict used to build request headers
     return {"url": SUPABASE_URL, "key": SUPABASE_KEY}
 
 def _get_headers():
@@ -19,7 +19,7 @@ def _get_headers():
         "Prefer": "return=representation"
     }
 
-def log_session(client, session_id: str, candidate_name: str, user_id: str):
+def log_session(session_id: str, candidate_name: str, user_id: str):
     try:
         url = f"{SUPABASE_URL}/rest/v1/sessions"
         data = {"id": session_id, "name": candidate_name, "user_id": user_id}
@@ -29,7 +29,7 @@ def log_session(client, session_id: str, candidate_name: str, user_id: str):
     except Exception as e:
         print(f"Failed to log session: {e}")
 
-def get_session(client, session_id: str):
+def get_session(session_id: str):
     try:
         url = f"{SUPABASE_URL}/rest/v1/sessions?id=eq.{session_id}"
         response = httpx.get(url, headers=_get_headers())
@@ -38,7 +38,7 @@ def get_session(client, session_id: str):
     except Exception as e:
         print(f"Failed to get session: {e}")
 
-def update_session_status(client, session_id: str, status: str):
+def update_session_status(session_id: str, status: str):
     try:
         url = f"{SUPABASE_URL}/rest/v1/sessions?id=eq.{session_id}"
         data = {"status": status}
@@ -47,7 +47,7 @@ def update_session_status(client, session_id: str, status: str):
     except Exception as e:
         print(f"Failed to update session status: {e}")
 
-def save_assessment(client, session_id: str, scores: dict, quotes: dict):
+def save_assessment(session_id: str, scores: dict, quotes: dict):
     try:
         url = f"{SUPABASE_URL}/rest/v1/assessments"
         data = {

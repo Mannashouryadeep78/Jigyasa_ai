@@ -14,6 +14,7 @@ def route_from_start(state: InterviewState):
     return "question_selector"
 
 def decide_followup(state: InterviewState):
+    from langchain_core.messages import HumanMessage
     messages = state["messages"]
     if not messages:
         return "question_selector"
@@ -23,9 +24,14 @@ def decide_followup(state: InterviewState):
     
     if turn >= 5:
         return "closer"
+
+    # Check if last user message is too short/vague — route to edge_case_handler
+    last_human = next((m for m in reversed(messages) if isinstance(m, HumanMessage)), None)
+    if last_human and len(last_human.content.strip()) < 12:
+        if followups == 0:  # Only prompt once, then move on
+            return "edge_case_handler"
         
     if followups >= 1:
         return "question_selector"
     else:
         return "responder"
-

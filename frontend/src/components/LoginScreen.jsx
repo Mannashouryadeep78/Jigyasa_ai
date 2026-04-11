@@ -78,7 +78,7 @@ export default function LoginScreen({ initialMode = 'login', onBack }) {
         )}
 
         <h1 className="text-3xl font-medium tracking-tighter text-white mb-2 text-center mt-4">
-            <span className="text-[#b45309]">{"}"}</span> Jigyasa Portal
+            <span className="text-[#b45309]">✦</span> Jigyasa Portal
         </h1>
         <p className="text-white/60 text-center mb-8 text-sm font-medium">
             {mode === 'otp' ? 'Check your email for the verification code' : 'Please authenticate to access your dashboard.'}

@@ -51,13 +51,13 @@ export default function Dashboard({ onStartNew, onViewReport, onContinue }) {
 
         <header className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6 mb-16 border-b border-white/10 pb-10">
             <div>
-                <h1 className="text-4xl font-medium tracking-tighter text-white"><span className="text-[#b45309]">{"}"}</span> Jigyasa Dashboard</h1>
+                <h1 className="text-4xl font-medium tracking-tighter text-white"><span className="text-[#b45309]">✦</span> Jigyasa Dashboard</h1>
                 <p className="text-white/50 font-medium mt-2">Welcome back, <span className="text-white tracking-wide">{user?.user_metadata?.full_name || user?.email}</span></p>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap justify-center items-center gap-4">
                 <button 
                   onClick={() => setView('analytics')}
-                  className="hidden md:flex px-6 py-3.5 bg-white/5 hover:bg-white/10 text-white/80 hover:text-white rounded-full transition font-bold tracking-widest uppercase text-xs items-center gap-2 border border-white/10"
+                  className="flex px-6 py-3.5 bg-white/5 hover:bg-white/10 text-white/80 hover:text-white rounded-full transition font-bold tracking-widest uppercase text-xs items-center gap-2 border border-white/10"
                 >
                   <BarChart2 className="w-4 h-4" /> View Analytics
                 </button>

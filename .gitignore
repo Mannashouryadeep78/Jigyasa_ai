@@ -11,3 +11,6 @@ __pycache__/
 .DS_Store
 .idea/
 .vscode/
+# SQLite checkpoint DB (contains interview transcripts - do not commit)
+*.db
+checkpoints.db
