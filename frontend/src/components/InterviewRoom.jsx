@@ -197,16 +197,3 @@ export default function InterviewRoom({ sessionId, candidateName, initialMessage
         </div>
     );
 }
-                >
-    { isListening?<Mic className = "w-10 h-10 animate-pulse" /> : <MicOff className="w-10 h-10 group-hover:scale-110 transition-transform" />}
-                </button >
-    {/* Fix #15: Timer label now matches the actual 3-second silence timer in the hook */ }
-    < p className = "mt-6 text-[10px] tracking-widest font-bold uppercase text-white/50 text-center max-w-sm" >
-        { isListening? 'Speak naturally. Pausing for 3 seconds will auto-submit (Max 2 mins).': 'Microphone is currently disabled' }
-                </p >
-            </div >
-         </div >
-      </main >
-    </div >
-  );
-}
