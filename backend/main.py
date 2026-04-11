@@ -211,12 +211,22 @@ async def generate_analytics_guidance(req: AnalyticsRequest):
     from langchain_core.messages import HumanMessage
     from services.groq_client import get_json_llm
 
-    history_str = json.dumps(req.history)
-    prompt = f"""You are a senior engineering manager and executive coach.
-The following is an array of interview assessment scores (0-10) across multiple dimensions for a single candidate over their recent sessions:
-{history_str}
+    key_totals = {}
+    key_counts = {}
+    for score_obj in req.history:
+        for k, v in score_obj.items():
+            key_totals[k] = key_totals.get(k, 0) + v
+            key_counts[k] = key_counts.get(k, 0) + 1
+            
+    averages = {k: round(key_totals[k] / key_counts[k], 2) for k in key_totals}
+    avg_str = json.dumps(averages)
 
-Analyze their trajectory and current skill gaps. Write a highly personalized, encouraging 2-paragraph development plan explaining what they excel at, where they are falling behind compared to industry peers, and 3 specific actionable steps they can take to improve.
+    prompt = f"""You are a senior engineering manager and executive coach.
+The candidate has taken multiple interview assessments. We have calculated their AVERAGE scores (out of 5) across multiple dimensions:
+{avg_str}
+
+Analyze their average metrics. Write a highly personalized, encouraging 2-paragraph development plan explaining what they excel at, where they are falling behind compared to industry peers, and 3 specific actionable steps they can take to improve.
+IMPORTANT: You MUST explicitly recommend that they use our complimentary 'Resume-to-Prep Matrix' question generator tool to practice and improve their weaknesses.
 
 Output strictly in JSON format. The root must be an object with:
 "overview" (string: 2 paragraphs),
