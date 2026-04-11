@@ -77,10 +77,10 @@ export default function LandingPage({ onGoToAuth }) {
                         transition={{ duration: 0.5, delay: 0.1 }}
                         className="text-[2.6rem] sm:text-5xl md:text-[5.5rem] font-medium tracking-tighter mb-8 leading-[1.05] md:leading-[0.95] text-white"
                     >
-                        <span className="text-white/60 font-light">{"}"}</span> Interview<br/>
-                        <span className="text-white">Is an Automated <br/>
-                        Infrastructure<br/>
-                        <span className="font-bold text-[#f5cca8]">Provider</span></span>
+                        <span className="text-white/60 font-light">{"}"}</span> Master<br/>
+                        <span className="text-white">Your Next Big <br/>
+                        Technical<br/>
+                        <span className="font-bold text-[#f5cca8]">Interview</span></span>
                     </motion.h1>
                     {/* Hacking the text gradient to map the reference properly */}
                     {/* The reference uses huge text overlaying the middle gradient. We'll simulate this. */}
@@ -94,7 +94,7 @@ export default function LandingPage({ onGoToAuth }) {
                         transition={{ duration: 0.5, delay: 0.2 }}
                         className="text-sm md:text-base text-white/80 font-medium mb-10 max-w-sm leading-relaxed"
                     >
-                        <span className="font-mono text-white/60">{"}"}</span> Renowned for powering the backbone of recruitment ecosystems with state-of-the-art voice validation services, AI endpoints & dynamic reporting.
+                        <span className="font-mono text-white/60">{"}"}</span> Your personalized AI coach. Upload your resume and experience ultra-realistic, voice-activated interviews with instant grading feedback.
                     </motion.p>
                     
                     <motion.div 
@@ -122,12 +122,16 @@ export default function LandingPage({ onGoToAuth }) {
                 id="features"
             >
                 <div className="grid md:grid-cols-3 gap-6 relative z-20">
-                    {features.map((f, i) => (
+                    {[
+                        {title: "Hyper Realistic", desc: "Speak naturally using voice-to-text. Our engine understands nuance and challenges you just like a real engineering manager."},
+                        {title: "Instant Analytics", desc: "No more waiting days for feedback. Get incredibly detailed, rubric-based evaluation scorecards the exact second your session ends."},
+                        {title: "Context Aware", desc: "Upload your CV and the system dynamically builds a custom interview strategy tailored uniquely to your past experience."}
+                    ].map((f, i) => (
                         <div key={i} className="flex flex-col p-6 sm:p-8 rounded-[2rem] bg-[#1a0f0a]/90 backdrop-blur-xl border border-white/5 hover:border-white/20 transition group shadow-2xl overflow-hidden">
                             <h3 className="text-3xl sm:text-4xl md:text-5xl font-medium tracking-tighter text-[#f5cca8] mb-4 break-words">{f.title.split(' ')[0]}</h3>
                             <div className="text-xs tracking-widest uppercase font-bold text-white/50 mb-4">{f.title.split(' ').slice(1).join(' ')}</div>
                             <p className="text-white/60 leading-relaxed text-sm">
-                                {f.description}
+                                {f.desc}
                             </p>
                         </div>
                     ))}
