@@ -102,15 +102,6 @@ export default function InterviewPrepTool({ onBack }) {
                         Jigyasa.ai
                     </div>
                 </div>
-                <style dangerouslySetInnerHTML={{__html: `
-                    @media print {
-                        body { background-color: white !important; }
-                        .print-hidden { display: none !important; }
-                        .print-visible-text { color: black !important; }
-                        .print-bg { background-color: #f8fafc !important; border-color: #e2e8f0 !important; }
-                        .page-break { page-break-inside: avoid; }
-                    }
-                `}} />
                 
                 <div className="max-w-4xl mx-auto space-y-6">
                     <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[#1a0f0a] text-white p-8 rounded-[2rem] shadow-2xl print:bg-white print:text-black print:shadow-none print:border-b print:rounded-none">

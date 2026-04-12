@@ -10,7 +10,17 @@ export default function AssessmentReport({ sessionId }) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        let pollCount = 0;
+        const MAX_POLLS = 60; // 60 × 2s = 2 minutes max
+
         let interval = setInterval(async () => {
+            pollCount++;
+            if (pollCount > MAX_POLLS) {
+                clearInterval(interval);
+                setReport({ error: "Report generation timed out. The AI may have encountered an error processing your session. Please go back to the dashboard and try viewing this report again.", scores: {}, quotes: {}, overall_score: 0 });
+                setLoading(false);
+                return;
+            }
             try {
                 // Query Supabase directly for the saved assessment row
                 const { data, error } = await supabase
@@ -110,13 +120,33 @@ export default function AssessmentReport({ sessionId }) {
         return 'text-red-400 bg-red-500/10 border-red-500/20';
     };
 
+    // Labels for all three interview modes (HR + Technical + GD)
     const labels = {
+        // HR
         communication_clarity: 'Communication Clarity',
+        cultural_fit_and_values: 'Cultural Fit & Values',
+        problem_solving_attitude: 'Problem-Solving Attitude',
+        confidence_and_presence: 'Confidence & Presence',
+        english_fluency: 'English Fluency',
         warmth_and_patience: 'Warmth & Patience',
         ability_to_simplify: 'Ability to Simplify',
-        technical_accuracy: 'Technical/Resume Accuracy',
-        english_fluency: 'English Fluency'
+        technical_accuracy: 'Technical / Resume Accuracy',
+        // Technical
+        depth_of_knowledge: 'Depth of Knowledge',
+        communication_of_concepts: 'Communication of Concepts',
+        resume_accuracy: 'Resume Accuracy',
+        problem_solving_approach: 'Problem-Solving Approach',
+        practical_experience: 'Practical Experience',
+        // GD
+        content_quality: 'Content Quality',
+        leadership_and_initiative: 'Leadership & Initiative',
+        listening_and_adaptability: 'Listening & Adaptability',
+        persuasiveness: 'Persuasiveness',
     };
+
+    // Fallback: convert snake_case to Title Case for any unexpected keys
+    const formatLabel = (key) =>
+        labels[key] || key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
     const handlePrint = () => {
         window.print();
@@ -130,15 +160,6 @@ export default function AssessmentReport({ sessionId }) {
                     Jigyasa.ai
                 </div>
             </div>
-            <style dangerouslySetInnerHTML={{
-                __html: `
-            @media print {
-                body { background-color: white !important; }
-                .print-hidden { display: none !important; }
-                .print-visible-text { color: black !important; }
-                .print-bg { background-color: #f1f5f9 !important; border-color: #cbd5e1 !important; color: black !important; }
-            }
-        `}} />
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -176,7 +197,7 @@ export default function AssessmentReport({ sessionId }) {
                             className="bg-white/5 border border-white/10 rounded-[2rem] p-8 print-bg print:break-inside-avoid print:mb-6 print:!opacity-100 print:!scale-100 print:!transform-none"
                         >
                             <div className="flex justify-between items-start mb-6">
-                                <h3 className="font-medium tracking-tighter text-xl text-white print-visible-text">{labels[key] || key}</h3>
+                                <h3 className="font-medium tracking-tighter text-xl text-white print-visible-text">{formatLabel(key)}</h3>
                                 <div className={`px-3 py-1.5 rounded-full border text-[10px] tracking-widest font-bold uppercase print-visible-text ${scoreColor(scores[key])}`}>
                                     {scores[key]} / 5
                                 </div>
@@ -184,7 +205,10 @@ export default function AssessmentReport({ sessionId }) {
                             <div className="bg-[#1a0f0a]/80 p-6 rounded-[1.5rem] mt-4 print-bg border border-white/5">
                                 <div className="text-[10px] text-white/40 mb-3 uppercase tracking-widest font-bold print:text-gray-700">Evidence Quote</div>
                                 <blockquote className="text-white/80 italic border-l-2 border-[#b45309] pl-4 pt-1 pb-1 print:text-gray-800">
-                                    "{quotes[key]}"
+                                    {quotes[key]
+                                        ? `"${quotes[key]}"`
+                                        : <span className="text-white/30 not-italic">No quote captured for this dimension.</span>
+                                    }
                                 </blockquote>
                             </div>
                         </motion.div>
@@ -236,3 +260,4 @@ export default function AssessmentReport({ sessionId }) {
         </div>
     );
 }
+

@@ -7,9 +7,6 @@ from graph.nodes import (
 from graph.edges import (
     route_from_start, decide_followup
 )
-
-from langgraph.checkpoint.postgres import PostgresSaver
-import psycopg
 import os
 
 DATABASE_URL = os.getenv("DATABASE_URL")
@@ -54,24 +51,28 @@ def build_graph():
     builder.add_edge("closer", "assessor")
     builder.add_edge("assessor", END)
     
-    # ── Checkpointer: Postgres in production, SQLite locally ─────────────────
-    # Uses PostgreSQL when DATABASE_URL is set to a real connection string.
-    # Falls back to SQLite so local development works without DB credentials.
+    # ── Checkpointer ─────────────────────────────────────────────────────────
+    # Production: PostgreSQL via DATABASE_URL env var
+    # Local dev: MemorySaver (in-process, zero config, always compatible schema)
+    #            SQLite is avoided because its on-disk schema can become stale
+    #            across LangGraph upgrades, causing KeyError: '__start__'.
     placeholder = "YOUR_DB_PASSWORD_HERE"
     if DATABASE_URL and placeholder not in DATABASE_URL:
         try:
+            import psycopg
+            from langgraph.checkpoint.postgres import PostgresSaver
             conn = psycopg.connect(DATABASE_URL, autocommit=True)
             memory = PostgresSaver(conn)
             memory.setup()
             print("[OK] Checkpointer: PostgreSQL (production mode)")
         except Exception as e:
-            print(f"[WARN] PostgreSQL connection failed ({e}), falling back to SQLite.")
-            from langgraph.checkpoint.sqlite import SqliteSaver
-            memory = SqliteSaver.from_conn_string("checkpoints.db")
+            print(f"[WARN] PostgreSQL connection failed ({e}), falling back to MemorySaver.")
+            from langgraph.checkpoint.memory import MemorySaver
+            memory = MemorySaver()
     else:
-        print("[INFO] DATABASE_URL not set -- using SQLite (local dev mode)")
-        from langgraph.checkpoint.sqlite import SqliteSaver
-        memory = SqliteSaver.from_conn_string("checkpoints.db")
+        print("[INFO] DATABASE_URL not set — using MemorySaver (local dev mode)")
+        from langgraph.checkpoint.memory import MemorySaver
+        memory = MemorySaver()
 
     graph = builder.compile(checkpointer=memory)
     return graph

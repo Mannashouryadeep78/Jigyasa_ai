@@ -32,7 +32,7 @@ def greeter(state: InterviewState):
 
 def question_selector(state: InterviewState):
     mode = state.get("interview_mode", "hr")
-    safe_resume = state.get("resume_text", "No resume provided.")[:3000].replace("{", "{{").replace("}", "}}")
+    safe_resume = state.get("resume_text", "No resume provided.")[:5000].replace("{", "{{").replace("}", "}}")
     
     system_prompt = get_system_prompt(mode)
     sys_msg = SystemMessage(content=system_prompt.format(
@@ -56,7 +56,7 @@ def question_selector(state: InterviewState):
 
 def responder(state: InterviewState):
     mode = state.get("interview_mode", "hr")
-    safe_resume = state.get("resume_text", "No resume provided.")[:3000].replace("{", "{{").replace("}", "}}")
+    safe_resume = state.get("resume_text", "No resume provided.")[:5000].replace("{", "{{").replace("}", "}}")
     
     system_prompt = get_system_prompt(mode)
     sys_msg = SystemMessage(content=system_prompt.format(

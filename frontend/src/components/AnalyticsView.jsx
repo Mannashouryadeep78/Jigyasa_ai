@@ -45,12 +45,12 @@ export default function AnalyticsView({ sessions, onBack }) {
 
         const cData = Object.keys(keyTotals).map(key => {
             const myAvg = parseFloat((keyTotals[key] / keyCounts[key]).toFixed(2));
-            // Industry benchmark: slightly above average performers (industry standard ~3.5/5)
-            const benchmark = parseFloat(Math.min(5, Math.max(1, 3.5 + (Math.random() * 0.6 - 0.3))).toFixed(1));
+            // Fixed curated benchmarks based on approximate industry averages (not random)
+            const benchmark = 3.5;
             return {
                 name: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
                 'Your Avg': myAvg,
-                'Industry Avg': benchmark,
+                'Benchmark (3.5/5)': benchmark,
             };
         });
         setChartData(cData);
@@ -135,7 +135,7 @@ export default function AnalyticsView({ sessions, onBack }) {
                                     />
                                     <Legend verticalAlign="top" wrapperStyle={{ paddingBottom: '20px', fontSize: '12px', color: '#ffffff80' }} />
                                     <Bar dataKey="Your Avg" fill="#f5cca8" radius={[4, 4, 0, 0]} />
-                                    <Bar dataKey="Industry Avg" fill="#b4530980" radius={[4, 4, 0, 0]} />
+                                    <Bar dataKey="Benchmark (3.5/5)" fill="#b4530980" radius={[4, 4, 0, 0]} />
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>

@@ -33,6 +33,67 @@ client.interceptors.request.use((config) => {
   return config;
 });
 
+// ─── 401 Response Interceptor ───────────────────────────────────────────────
+// If a request gets a 401 (token expired), refresh the Supabase session and retry once.
+let isRefreshing = false;
+let refreshQueue = [];
+
+client.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      if (!isRefreshing) {
+        isRefreshing = true;
+        try {
+          // Dynamically import supabase to avoid circular deps
+          const { supabase } = await import('../lib/supabase');
+          const { data, error: refreshError } = await supabase.auth.refreshSession();
+          if (refreshError || !data?.session) {
+            // Refresh failed — force sign out and clear local state
+            console.warn('Session refresh failed:', refreshError?.message);
+            await supabase.auth.signOut();
+            window.location.href = '/'; // Simple hard redirect to clear state
+            
+            refreshQueue.forEach(cb => cb(null));
+            refreshQueue = [];
+            isRefreshing = false;
+            return Promise.reject(error);
+          }
+          const newToken = data.session.access_token;
+          refreshQueue.forEach(cb => cb(newToken));
+          refreshQueue = [];
+          isRefreshing = false;
+
+          // Retry the original request with the new token
+          originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
+          return client(originalRequest);
+        } catch (e) {
+          refreshQueue.forEach(cb => cb(null));
+          refreshQueue = [];
+          isRefreshing = false;
+          return Promise.reject(error);
+        }
+      } else {
+        // Another refresh is in progress — queue this request
+        return new Promise((resolve, reject) => {
+          refreshQueue.push((token) => {
+            if (token) {
+              originalRequest.headers['Authorization'] = `Bearer ${token}`;
+              resolve(client(originalRequest));
+            } else {
+              reject(error);
+            }
+          });
+        });
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 export const api = {
   createSession: async (userId, candidateName, resumeFile = null, interviewMode = 'hr') => {
     const formData = new FormData();
@@ -75,10 +136,11 @@ export const api = {
       return res.data;
   },
   
+  // Public endpoint — no auth token needed
   generatePrepQuestions: async (resumeFile) => {
       const formData = new FormData();
       formData.append("file", resumeFile);
-      const res = await client.post('/prep/generate', formData, {
+      const res = await axios.post(`${baseURL}/prep/generate`, formData, {
           headers: {
               'Content-Type': 'multipart/form-data',
           }

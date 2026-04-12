@@ -31,12 +31,13 @@ def log_session(session_id: str, candidate_name: str, user_id: str):
 
 def get_session(session_id: str):
     try:
-        url = f"{SUPABASE_URL}/rest/v1/sessions?id=eq.{session_id}"
+        url = f"{SUPABASE_URL}/rest/v1/sessions?id=eq.{session_id}&select=id,name,user_id,status"
         response = httpx.get(url, headers=_get_headers())
         response.raise_for_status()
         return response.json()
     except Exception as e:
         print(f"Failed to get session: {e}")
+        return []
 
 def update_session_status(session_id: str, status: str):
     try:

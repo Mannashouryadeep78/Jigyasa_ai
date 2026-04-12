@@ -1,5 +1,19 @@
 @import "tailwindcss";
 
+:root {
+  --bg-dark: #0a0503;
+  --card-dark: #1a0f0a;
+  --accent-orange: #b45309;
+  --brand-light: #e0ccb8;
+  --brand-warm: #f5cca8;
+}
+
+body {
+  font-family: 'Outfit', sans-serif;
+  margin: 0;
+  overflow-x: hidden;
+}
+
 @layer utilities {
   .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
@@ -14,10 +28,42 @@
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: #64748b;
   }
+
+  .orbital-lines {
+    background-image: 
+      radial-gradient(ellipse at 80% 20%, transparent 60%, rgba(255,255,255,0.03) 61%, transparent 62%),
+      radial-gradient(ellipse at -10% 80%, transparent 50%, rgba(255,255,255,0.03) 51%, transparent 52%);
+    background-size: cover;
+  }
+
+  .text-glow-orange {
+    text-shadow: 0 0 15px rgba(180, 83, 9, 0.4);
+  }
+  
+  .glow-box-orange {
+    box-shadow: 0 0 30px rgba(180, 83, 9, 0.15);
+  }
 }
 
 @keyframes shimmer {
   100% {
     transform: translateX(100%);
   }
+}
+
+/* WelcomeScreen scan animation (moved from dangerouslySetInnerHTML) */
+@keyframes scan {
+  0% { top: 0; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+/* Print styles for AssessmentReport and InterviewPrepTool (moved from dangerouslySetInnerHTML) */
+@media print {
+  body { background-color: white !important; }
+  .print-hidden { display: none !important; }
+  .print-visible-text { color: black !important; }
+  .print-bg { background-color: #f1f5f9 !important; border-color: #cbd5e1 !important; color: black !important; }
+  .page-break { page-break-inside: avoid; }
 }

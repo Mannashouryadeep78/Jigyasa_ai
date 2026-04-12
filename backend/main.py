@@ -5,12 +5,13 @@ from pydantic import BaseModel
 import uuid
 import asyncio
 import time
+import re as _re
 from collections import defaultdict
 from langchain_core.messages import HumanMessage, AIMessage
 
 from models.schemas import SessionCreate, ChatTurn
 from graph.builder import interview_graph
-from services.supabase_client import get_supabase_client, log_session, save_assessment, update_session_status
+from services.supabase_client import get_supabase_client, log_session, save_assessment, update_session_status, get_session as db_get_session
 from services.pdf_parser import extract_text_from_pdf
 import httpx
 import os
@@ -18,13 +19,18 @@ import os
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
+# ─── Constants ────────────────────────────────────────────────────────────────
+MAX_PDF_SIZE = 10 * 1024 * 1024  # 10 MB
+_NAME_SANITIZE_RE = _re.compile(r'[^a-zA-Z0-9\s\-\'.]+')  # Allow letters, digits, spaces, hyphens, apostrophes
+
 app = FastAPI(title="AI Tutor Screener API")
 
-# ─── CORS (Fix #1) ────────────────────────────────────────────────────────────
-# Restrict to known origins — do NOT use wildcard with credentials
+# ─── CORS ─────────────────────────────────────────────────────────────────────
 ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://localhost:3000",
+    "http://localhost:5174",
+    "http://localhost:8080",
     "https://jigyasa-ai-wheat.vercel.app",
     "https://asa-ai-wheat.vercel.app",
 ]
@@ -38,31 +44,50 @@ app.add_middleware(
 
 supabase = get_supabase_client()
 
-# ─── Per-Session Locking (Fix #5) ─────────────────────────────────────────────
+# ─── Per-Session Locking ──────────────────────────────────────────────────────
 # Prevents concurrent /respond calls corrupting the same session's graph state
-_session_locks: dict[str, asyncio.Lock] = {}
+_session_locks: dict[str, tuple[asyncio.Lock, float]] = {}  # session_id -> (lock, last_used_timestamp)
 _session_locks_mutex = asyncio.Lock()
+_SESSION_LOCK_TTL = 3600  # purge locks unused for 1 hour
 
 async def get_session_lock(session_id: str) -> asyncio.Lock:
     async with _session_locks_mutex:
-        if session_id not in _session_locks:
-            _session_locks[session_id] = asyncio.Lock()
-        return _session_locks[session_id]
+        entry = _session_locks.get(session_id)
+        if entry:
+            lock, _ = entry
+            _session_locks[session_id] = (lock, time.time())
+            return lock
+        lock = asyncio.Lock()
+        _session_locks[session_id] = (lock, time.time())
+        # Opportunistic cleanup: purge stale locks periodically
+        if len(_session_locks) > 100:
+            cutoff = time.time() - _SESSION_LOCK_TTL
+            stale = [k for k, (lk, ts) in _session_locks.items() if ts < cutoff and not lk.locked()]
+            for k in stale:
+                del _session_locks[k]
+        return lock
 
-# ─── Rate Limiting (Fix #18) ──────────────────────────────────────────────────
-# Simple in-memory rate limiter: max 30 requests per IP per minute
+# ─── Rate Limiting ────────────────────────────────────────────────────────────
+# Async-safe in-memory rate limiter: max 30 requests per IP per minute
 _rate_limit_store: dict[str, list[float]] = defaultdict(list)
+_rate_limit_lock = asyncio.Lock()
 RATE_LIMIT = 30
 RATE_WINDOW = 60  # seconds
+_RATE_CLEANUP_THRESHOLD = 500  # purge dead IPs when store exceeds this size
 
-def check_rate_limit(ip: str):
-    now = time.time()
-    window_start = now - RATE_WINDOW
-    # Purge old timestamps
-    _rate_limit_store[ip] = [t for t in _rate_limit_store[ip] if t > window_start]
-    if len(_rate_limit_store[ip]) >= RATE_LIMIT:
-        raise HTTPException(status_code=429, detail="Too many requests. Please slow down.")
-    _rate_limit_store[ip].append(now)
+async def check_rate_limit(ip: str):
+    async with _rate_limit_lock:
+        now = time.time()
+        window_start = now - RATE_WINDOW
+        _rate_limit_store[ip] = [t for t in _rate_limit_store[ip] if t > window_start]
+        if len(_rate_limit_store[ip]) >= RATE_LIMIT:
+            raise HTTPException(status_code=429, detail="Too many requests. Please slow down.")
+        _rate_limit_store[ip].append(now)
+        # Periodic cleanup of dead IPs
+        if len(_rate_limit_store) > _RATE_CLEANUP_THRESHOLD:
+            dead = [k for k, v in _rate_limit_store.items() if not v]
+            for k in dead:
+                del _rate_limit_store[k]
 
 # ─── Auth Dependency (Fix #2) ─────────────────────────────────────────────────
 # Validates Supabase JWT bearer token and returns user data
@@ -86,6 +111,34 @@ async def get_current_user(authorization: str = Header(None)):
         raise HTTPException(status_code=503, detail="Auth service timeout. Please try again.")
 
 
+# ─── Helpers ──────────────────────────────────────────────────────────────────
+
+def _sanitize_name(name: str) -> str:
+    """Strip dangerous chars to prevent prompt injection via candidate_name."""
+    return _NAME_SANITIZE_RE.sub('', name).strip()[:60] or "Candidate"
+
+async def _validate_pdf(file: UploadFile) -> bytes:
+    """Read and validate an uploaded PDF. Returns bytes or raises HTTPException."""
+    file_bytes = await file.read()
+    if len(file_bytes) > MAX_PDF_SIZE:
+        raise HTTPException(status_code=413, detail=f"File too large. Max {MAX_PDF_SIZE // (1024*1024)}MB.")
+    return file_bytes
+
+def _verify_session_owner(session_id: str, user_id: str):
+    """Check if the authenticated user owns this session. Raises 403 if not."""
+    rows = db_get_session(session_id)
+    if not rows:
+        raise HTTPException(status_code=404, detail="Session not found in database.")
+    if rows[0].get("user_id") != user_id:
+        raise HTTPException(status_code=403, detail="You do not own this session.")
+
+def _run_graph_sync(input_state, config):
+    """Run the synchronous LangGraph stream in a blocking call (for use with to_thread)."""
+    for event in interview_graph.stream(input_state, config):
+        pass
+    return interview_graph.get_state(config)
+
+
 # ─── /session ────────────────────────────────────────────────────────────────
 VALID_MODES = {"hr", "technical", "gd"}
 
@@ -98,25 +151,28 @@ async def create_session(
     file: UploadFile = File(None),
     current_user: dict = Depends(get_current_user),
 ):
-    check_rate_limit(request.client.host)
+    await check_rate_limit(request.client.host)
     if current_user.get("id") != user_id:
         raise HTTPException(status_code=403, detail="user_id does not match authenticated user.")
     if interview_mode not in VALID_MODES:
         interview_mode = "hr"  # safe fallback
 
+    # Sanitize candidate name to prevent prompt injection
+    safe_name = _sanitize_name(candidate_name)
+
     session_id = str(uuid.uuid4())
-    log_session(session_id, candidate_name, user_id)
+    log_session(session_id, safe_name, user_id)
 
     resume_text = ""
     if file:
-        file_bytes = await file.read()
+        file_bytes = await _validate_pdf(file)
         if file.filename and file.filename.endswith(".pdf"):
             resume_text = extract_text_from_pdf(file_bytes)
 
     config = {"configurable": {"thread_id": session_id}}
     initial_state = {
         "session_id": session_id,
-        "candidate_name": candidate_name,
+        "candidate_name": safe_name,
         "resume_text": resume_text,
         "interview_mode": interview_mode,
         "messages": [],
@@ -127,10 +183,12 @@ async def create_session(
         "turn_count": 0
     }
 
-    for event in interview_graph.stream(initial_state, config):
-        pass
+    try:
+        state = await asyncio.to_thread(_run_graph_sync, initial_state, config)
+    except Exception as e:
+        print(f"[ERROR] Graph stream failed during session create: {e}")
+        raise HTTPException(status_code=500, detail="Failed to initialize interview session. Please try again.")
 
-    state = interview_graph.get_state(config)
     last_message = state.values.get("messages", [])[-1].content if state.values.get("messages") else ""
 
     return {"session_id": session_id, "message": last_message}
@@ -143,30 +201,37 @@ async def respond(
     turn: ChatTurn,
     current_user: dict = Depends(get_current_user),
 ):
-    check_rate_limit(request.client.host)
+    await check_rate_limit(request.client.host)
+
+    # Ownership check: verify the caller owns this session
+    _verify_session_owner(turn.session_id, current_user.get("id"))
 
     config = {"configurable": {"thread_id": turn.session_id}}
     state = interview_graph.get_state(config)
 
     if not state.values:
-        raise HTTPException(status_code=404, detail="Session not found")
+        raise HTTPException(status_code=404, detail="Session not found or expired. The server may have restarted. Please start a new session.")
 
-    # Acquire per-session lock to prevent concurrent state corruption (Fix #5)
+    # Atomic try-acquire: raise 409 immediately if already locked
     lock = await get_session_lock(turn.session_id)
     if lock.locked():
         raise HTTPException(status_code=409, detail="A response is already being processed for this session. Please wait.")
+    
+    await lock.acquire()
 
-    async with lock:
+    try:
         turn_count = state.values.get("turn_count", 0) + 1
         new_input = {
             "messages": [HumanMessage(content=turn.message)],
             "turn_count": turn_count
         }
 
-        for event in interview_graph.stream(new_input, config):
-            pass
+        try:
+            state = await asyncio.to_thread(_run_graph_sync, new_input, config)
+        except Exception as e:
+            print(f"[ERROR] Graph stream failed during respond: {e}")
+            raise HTTPException(status_code=500, detail="AI response generation failed. Please try again.")
 
-        state = interview_graph.get_state(config)
         last_message = state.values.get("messages", [])[-1].content
         status = state.values.get("current_phase")
 
@@ -174,6 +239,8 @@ async def respond(
             assessment = state.values.get("assessment", {})
             save_assessment(turn.session_id, assessment.get("scores", {}), assessment.get("quotes", {}))
             update_session_status(turn.session_id, "finished")
+    finally:
+        lock.release()
 
     return {"message": last_message, "status": status}
 
@@ -184,11 +251,14 @@ async def get_report(
     session_id: str,
     current_user: dict = Depends(get_current_user),
 ):
+    # Ownership check
+    _verify_session_owner(session_id, current_user.get("id"))
+
     config = {"configurable": {"thread_id": session_id}}
     state = interview_graph.get_state(config)
 
     if not state.values:
-        raise HTTPException(status_code=404, detail="Session not found")
+        raise HTTPException(status_code=404, detail="Session state not found. The server may have restarted.")
 
     if state.values.get("current_phase") != "finished":
         return {"status": "in_progress"}
@@ -202,11 +272,23 @@ async def get_session(
     session_id: str,
     current_user: dict = Depends(get_current_user),
 ):
+    # Ownership check
+    _verify_session_owner(session_id, current_user.get("id"))
+
     config = {"configurable": {"thread_id": session_id}}
     state = interview_graph.get_state(config)
 
     if not state.values:
-        raise HTTPException(status_code=404, detail="Session not found")
+        # Graph state wiped (server restart / MemorySaver). Fall back to DB metadata so
+        # the frontend can show a meaningful message instead of a blank 404 crash.
+        rows = db_get_session(session_id)
+        db_row = rows[0] if rows else {}
+        return {
+            "candidate_name": db_row.get("name", "Candidate"),
+            "history": [],
+            "status": db_row.get("status", "active"),
+            "restarted": True  # Frontend uses this to redirect to a fresh start
+        }
 
     messages = state.values.get("messages", [])
     history = []
@@ -229,25 +311,27 @@ async def discontinue_session(
     session_id: str,
     current_user: dict = Depends(get_current_user),
 ):
+    # Ownership check
+    _verify_session_owner(session_id, current_user.get("id"))
     update_session_status(session_id, "discontinued")
     return {"status": "success"}
 
 
 # ─── /prep/generate ─────────────────────────────────────────────────────────
+# PUBLIC endpoint — no auth required. Complimentary access for all users.
 @app.post("/prep/generate")
 async def generate_prep(
     request: Request,
     file: UploadFile = File(...),
-    current_user: dict = Depends(get_current_user),
 ):
-    check_rate_limit(request.client.host)
+    await check_rate_limit(request.client.host)
     import json
     from langchain_core.messages import HumanMessage
     from services.groq_client import get_json_llm
     from services.pdf_parser import extract_text_from_pdf
 
     try:
-        file_bytes = await file.read()
+        file_bytes = await _validate_pdf(file)
         resume_text = extract_text_from_pdf(file_bytes)
 
         safe_resume = resume_text[:6000].replace("{", "{{").replace("}", "}}")
@@ -289,14 +373,14 @@ async def ats_check(
     request: Request,
     file: UploadFile = File(...),
 ):
-    check_rate_limit(request.client.host)
+    await check_rate_limit(request.client.host)
     import json, re
     from langchain_core.messages import HumanMessage
     from services.groq_client import get_json_llm
     from services.pdf_parser import extract_text_from_pdf
 
     try:
-        file_bytes = await file.read()
+        file_bytes = await _validate_pdf(file)
         resume_text = extract_text_from_pdf(file_bytes)
         safe_resume = resume_text[:6000].replace("{", "{{").replace("}", "}}")
 
@@ -323,7 +407,7 @@ Output nothing but the JSON."""
         response = json_llm.invoke([HumanMessage(content=prompt)])
         raw = response.content
 
-        match = re.search(r'\{{.*\}}', raw, re.DOTALL)
+        match = re.search(r'\{.*\}', raw, re.DOTALL)
         if match:
             data = json.loads(match.group(0))
         else:
@@ -347,14 +431,30 @@ async def generate_tts(
     import edge_tts
     from fastapi.responses import StreamingResponse
 
+    # Reliable voices for edge-tts 7.2+
+    VOICES = ["en-US-JennyNeural", "en-US-GuyNeural"]
+
     async def audio_stream():
-        try:
-            communicate = edge_tts.Communicate(req.text, "en-US-BrianNeural")
-            async for chunk in communicate.stream():
-                if chunk["type"] == "audio":
-                    yield chunk["data"]
-        except Exception as e:
-            print(f"TTS Streaming Error: {e}")
+        for voice in VOICES:
+            try:
+                print(f"[TTS] Attempting voice: {voice}")
+                communicate = edge_tts.Communicate(req.text, voice)
+                audio_sent = False
+                async for chunk in communicate.stream():
+                    if chunk["type"] == "audio":
+                        audio_sent = True
+                        yield chunk["data"]
+                
+                if audio_sent:
+                    print(f"[TTS] Successfully streamed using {voice}")
+                    return  # success — stop after first working voice
+                else:
+                    print(f"[TTS] Voice {voice} returned no audio chunks.")
+            except Exception as e:
+                print(f"[TTS] Error with {voice}: {str(e)}")
+                continue  # try next voice
+        
+        print("[TTS] All voices failed. Falling back to native TTS.")
 
     return StreamingResponse(audio_stream(), media_type="audio/mpeg")
 

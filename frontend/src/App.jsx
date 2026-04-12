@@ -64,6 +64,22 @@ export default function App() {
   const handleContinue = async (sessionId) => {
       try {
           const res = await api.getSession(sessionId);
+
+          // Server was restarted — MemorySaver lost the graph state
+          if (res.restarted) {
+              alert(`Session "${res.candidate_name}" can no longer be continued — the server was restarted and the in-memory interview state was lost.\n\nPlease start a new interview from the dashboard.`);
+              return;
+          }
+
+          // Check if session is in a valid continuable state
+          if (res.status === 'finished' || res.status === 'closer') {
+              alert("This session has already been completed. You can view the report from the dashboard.");
+              return;
+          }
+          if (res.status === 'discontinued') {
+              alert("This session was discontinued and cannot be continued.");
+              return;
+          }
           setSession(sessionId);
           setCandidateName(res.candidate_name);
           setInitialHistory(res.history);
@@ -71,7 +87,11 @@ export default function App() {
           setPhase('interview');
       } catch (err) {
           console.error("Failed to load session", err);
-          alert("Couldn't continue the session.");
+          if (err.response?.status === 404) {
+              alert("This session was not found. Please start a new interview.");
+          } else {
+              alert("Couldn't continue the session. Please try again.");
+          }
       }
   };
 

@@ -7,9 +7,12 @@ import { api } from '../api/client';
 import WaveformVisualizer from './WaveformVisualizer';
 
 export default function InterviewRoom({ sessionId, candidateName, initialMessage, initialHistory = null, onFinish }) {
-    const [history, setHistory] = useState(
-        initialHistory || (initialMessage ? [{ id: 'init', role: 'ai', content: initialMessage }] : [])
-    );
+    const [history, setHistory] = useState(() => {
+        if (initialHistory) {
+            return initialHistory.map((m, i) => ({ ...m, id: m.id || `${m.role}-${i}-${Date.now()}` }));
+        }
+        return initialMessage ? [{ id: 'init', role: 'ai', content: initialMessage }] : [];
+    });
     const [isProcessing, setIsProcessing] = useState(false);
 
     const { speak, stop: stopTTS, isSpeaking } = useTTS();
@@ -134,7 +137,7 @@ export default function InterviewRoom({ sessionId, candidateName, initialMessage
                                 <motion.div
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    key={msg.id}  // Fix #19: stable unique ID instead of array index
+                                    key={`msg-${msg.id}`}
                                     className={`flex flex-col ${msg.role === 'ai' ? 'items-start' : 'items-end'}`}
                                 >
                                     <span className="text-[10px] text-white/40 mb-2 font-bold tracking-widest uppercase select-none">
@@ -150,13 +153,13 @@ export default function InterviewRoom({ sessionId, candidateName, initialMessage
                             ))}
 
                             {isSpeaking && (
-                                <div className="flex items-center justify-start mt-6 pl-4">
+                                <div key="state-speaking" className="flex items-center justify-start mt-6 pl-4">
                                     <WaveformVisualizer isActive={true} color="bg-[#f5cca8]" />
                                 </div>
                             )}
 
                             {(isListening || transcript) && !isProcessing && (
-                                <div className="flex flex-col items-end mt-4">
+                                <div key="state-listening" className="flex flex-col items-end mt-4">
                                     <div className="max-w-[85%] text-right text-[#f5cca8] px-6 py-5 bg-[#b45309]/10 border border-[#b45309]/20 rounded-[2rem] rounded-br-sm italic font-medium text-sm md:text-base">
                                         {transcript || 'Listening...'}
                                         <span className="animate-pulse">_</span>
@@ -168,7 +171,7 @@ export default function InterviewRoom({ sessionId, candidateName, initialMessage
                             )}
 
                             {isProcessing && (
-                                <div className="flex items-center justify-center py-8">
+                                <div key="state-processing" className="flex items-center justify-center py-8">
                                     <Loader2 className="w-8 h-8 text-[#b45309] animate-spin" />
                                 </div>
                             )}
@@ -197,3 +200,4 @@ export default function InterviewRoom({ sessionId, candidateName, initialMessage
         </div>
     );
 }
+

@@ -1,220 +1,233 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Mic, FileText, Zap, ChevronRight, ShieldCheck } from 'lucide-react';
+import { Zap } from 'lucide-react';
 import ATSChecker from './ATSChecker';
+
+const SparkleIcon = ({ className = "w-6 h-6" }) => (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
+        <path d="M12 2 L13.5 10.5 L22 12 L13.5 13.5 L12 22 L10.5 13.5 L2 12 L10.5 10.5 Z" />
+    </svg>
+);
 
 export default function LandingPage({ onGoToAuth }) {
 
-  const features = [
-      {
-          icon: <Mic className="w-8 h-8 text-[#f5cca8]" />,
-          title: "Conversational AI",
-          description: "Speak naturally. Our engine understands nuance and asks smart follow-up questions tailored to your exact responses."
-      },
-      {
-          icon: <Zap className="w-8 h-8 text-[#f5cca8]" />,
-          title: "Instant Analysis",
-          description: "No more waiting days for feedback. Get comprehensive evaluation matrices the exact second your session ends."
-      },
-      {
-          icon: <FileText className="w-8 h-8 text-[#f5cca8]" />,
-          title: "Resume Aware",
-          description: "Upload your CV and the system dynamically modifies its entire interview strategy based on your unique history."
-      }
-  ];
+    const features = [
+        {
+            title: "Hyper",
+            subtitle: "REALISTIC",
+            description: "Speak naturally using voice-to-text. Our engine understands nuance and challenges you just like a real engineering manager.",
+        },
+        {
+            title: "Instant",
+            subtitle: "ANALYTICS",
+            description: "No more waiting days for feedback. Get incredibly detailed, rubric-based evaluation scorecards the exact second your session ends.",
+        },
+        {
+            title: "Context",
+            subtitle: "AWARE",
+            description: "Upload your CV and the system dynamically builds a custom interview strategy tailored uniquely to your past experience.",
+        }
+    ];
 
-  return (
-    <div className="min-h-screen bg-[#e0ccb8] p-2 md:p-6 font-sans selection:bg-black selection:text-white">
+    return (
+        <div className="min-h-screen font-sans" style={{ fontFamily: "'Outfit', sans-serif" }}>
 
-        <div className="relative w-full rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-2xl bg-[#1a0f0a]">
-            
-            {/* Massive Custom Web3 Radial Gradient */}
-            <div 
-                className="absolute inset-0 pointer-events-none" 
-                style={{
-                     background: 'radial-gradient(120% 100% at 50% 100%, rgba(210,90,20,0.6) 0%, rgba(130,45,10,0.4) 40%, rgba(30,12,3,0.8) 85%)'
-                }} 
-            />
+            {/* ───── SECTION 1: AMBER-BROWN MAIN WITH ORBITAL BACKGROUND ───── */}
+            <div className="relative min-h-screen overflow-hidden" style={{
+                background: 'radial-gradient(ellipse 80% 90% at 35% 50%, #c45c00 0%, #8b3300 40%, #2a0e00 75%, #150800 100%)',
+            }}>
 
-            {/* Orbital Rings - Decorative SVGs mimicking the reference */}
-            <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-40 mix-blend-overlay" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-                <ellipse cx="50%" cy="120%" rx="80%" ry="100%" fill="none" stroke="#000" strokeWidth="1" />
-                <ellipse cx="80%" cy="30%" rx="50%" ry="120%" fill="none" stroke="#000" strokeWidth="1" />
-                <ellipse cx="-10%" cy="50%" rx="60%" ry="80%" fill="none" stroke="#000" strokeWidth="1" />
-            </svg>
-
-            <nav className="relative z-20 max-w-7xl mx-auto flex items-center justify-between p-4 sm:p-6 md:p-10">
-                <div className="flex items-center gap-2 md:gap-3 overflow-hidden">
-                    <img src="/logo.png" alt="Jigyasa Logo" className="h-8 sm:h-10 md:h-12 object-contain shrink-0" />
-                    <span className="font-bold text-lg sm:text-xl md:text-2xl tracking-tight text-white truncate max-w-[100px] sm:max-w-none">Jigyasa.Ai</span>
-                </div>
-                <div className="hidden md:flex items-center gap-12 text-xs font-bold tracking-widest text-white/70 uppercase">
-                    <a href="#ats-checker" className="hover:text-white transition">ATS Check <sup className="text-[9px]">Free</sup></a>
-                    <a href="#features" className="hover:text-white transition">Features <sup className="text-[9px]">3</sup></a>
-                    <a href="#how-it-works" className="hover:text-white transition">How it Works <sup className="text-[9px]">1</sup></a>
-                </div>
-                <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-                    <button 
-                      onClick={() => onGoToAuth('login')}
-                      className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-white/80 hover:text-white transition px-1 sm:px-2"
-                    >
-                        Sign In
-                    </button>
-                    <button 
-                      onClick={() => onGoToAuth('register')}
-                      className="text-[10px] sm:text-xs font-bold uppercase tracking-wider px-3 py-2 sm:px-6 sm:py-3 rounded-full bg-[#1e1d24]/50 backdrop-blur-md hover:bg-white hover:text-black border border-white/10 transition duration-300 whitespace-nowrap"
-                    >
-                        Register
-                    </button>
-                </div>
-            </nav>
-
-            <main className="relative z-20 max-w-7xl mx-auto px-6 pt-16 pb-20 md:pb-32 grid md:grid-cols-2 gap-12 items-center">
-                
-                {/* Hero Left Text */}
-                <div className="text-left">
-                    <motion.h1 
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.1 }}
-                        className="text-[2.6rem] sm:text-5xl md:text-[5.5rem] font-medium tracking-tighter mb-8 leading-[1.05] md:leading-[0.95] text-white"
-                    >
-                        <span className="text-white/60 font-light">✦</span> Ace<br/>
-                        <span className="text-white">Your Next<br/>
-                        HR, Technical<br/>
-                        <span className="font-bold text-[#f5cca8]">or GD Round</span></span>
-                    </motion.h1>
-                    {/* Hacking the text gradient to map the reference properly */}
-                    {/* The reference uses huge text overlaying the middle gradient. We'll simulate this. */}
-                </div>
-
-                {/* Hero Right Desc & CTA */}
-                <div className="flex flex-col items-start md:items-end md:text-right mt-auto md:pb-8">
-                    <motion.p 
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.2 }}
-                        className="text-sm md:text-base text-white/80 font-medium mb-10 max-w-sm leading-relaxed"
-                    >
-                        <span className="font-mono text-white/60">✦</span> AI mock interviews for every field — HR rounds, technical deep dives, and group discussions. Plus a free ATS resume score, no login needed.
-                    </motion.p>
-                    
-                    <motion.div 
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.3 }}
-                        className="flex flex-col sm:flex-row gap-4 w-full md:w-auto"
-                    >
-                        <button 
-                            onClick={() => onGoToAuth('register')}
-                            className="w-full sm:w-auto px-10 py-5 rounded-full bg-white hover:bg-white/90 text-[#1a0f0a] text-sm font-bold tracking-widest uppercase shadow-2xl shadow-white/10 transition group"
-                        >
-                            Get Started
-                        </button>
-                    </motion.div>
-                </div>
-            </main>
-
-            {/* Modular Features Grid (Bottom of Hero) */}
-            <motion.div 
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.5 }}
-                className="max-w-7xl mx-auto px-6 pb-12"
-                id="features"
-            >
-                <div className="grid md:grid-cols-3 gap-6 relative z-20">
-                    {[
-                        {title: "Hyper Realistic", desc: "Speak naturally using voice-to-text. Our engine understands nuance and challenges you just like a real engineering manager."},
-                        {title: "Instant Analytics", desc: "No more waiting days for feedback. Get incredibly detailed, rubric-based evaluation scorecards the exact second your session ends."},
-                        {title: "Context Aware", desc: "Upload your CV and the system dynamically builds a custom interview strategy tailored uniquely to your past experience."}
-                    ].map((f, i) => (
-                        <div key={i} className="flex flex-col p-6 sm:p-8 rounded-[2rem] bg-[#1a0f0a]/90 backdrop-blur-xl border border-white/5 hover:border-white/20 transition group shadow-2xl overflow-hidden">
-                            <h3 className="text-3xl sm:text-4xl md:text-5xl font-medium tracking-tighter text-[#f5cca8] mb-4 break-words">{f.title.split(' ')[0]}</h3>
-                            <div className="text-xs tracking-widest uppercase font-bold text-white/50 mb-4">{f.title.split(' ').slice(1).join(' ')}</div>
-                            <p className="text-white/60 leading-relaxed text-sm">
-                                {f.desc}
-                            </p>
-                        </div>
-                    ))}
-                </div>
-            </motion.div>
-
-            {/* AI Prep Tool Banner Block */}
-            <motion.div 
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className="max-w-7xl mx-auto px-6 pb-20 relative z-20"
-            >
-                <div 
-                    onClick={() => onGoToAuth('prep')}
-                    className="cursor-pointer group flex flex-col md:flex-row items-center justify-between p-6 sm:p-8 md:p-12 rounded-[2.5rem] bg-gradient-to-r from-[#b45309]/10 to-[#1a0f0a] border border-[#b45309]/20 hover:border-[#b45309]/50 transition-all shadow-2xl overflow-hidden relative"
+                {/* Orbital Arc Lines — SVG overlay matching the background image */}
+                <svg
+                    className="absolute inset-0 w-full h-full pointer-events-none"
+                    viewBox="0 0 1440 900"
+                    preserveAspectRatio="xMidYMid slice"
+                    xmlns="http://www.w3.org/2000/svg"
+                    style={{ opacity: 0.18 }}
                 >
-                    <div className="absolute right-0 top-0 w-64 h-64 bg-[#b45309]/10 blur-3xl rounded-full pointer-events-none"></div>
-                    
-                    <div className="text-left max-w-2xl relative z-10">
-                        <div className="text-xs tracking-widest uppercase font-bold text-[#f5cca8] mb-4 flex items-center gap-2">
-                           <Zap className="w-4 h-4" /> Complimentary Access
-                        </div>
-                        <h3 className="text-3xl sm:text-4xl md:text-5xl font-medium tracking-tighter text-white mb-4">
-                            Resume-to-Prep Matrix
-                        </h3>
-                        <p className="text-white/60 leading-relaxed font-medium">
-                            Upload your resume and instantly generate the top 15 highly-targeted behavioral and technical interview questions to practice with. Automatically formatted into a printable study guide.
-                        </p>
-                    </div>
-                    
-                    <div className="mt-8 md:mt-0 relative z-10 md:pl-8">
-                        <div className="w-16 h-16 rounded-full bg-white text-[#1a0f0a] flex items-center justify-center group-hover:scale-110 transition-transform shadow-[0_0_40px_rgba(255,255,255,0.2)]">
-                            <ChevronRight className="w-8 h-8 ml-1" />
-                        </div>
-                    </div>
+                    {/* Large left arc */}
+                    <ellipse cx="420" cy="450" rx="280" ry="500" fill="none" stroke="#d97706" strokeWidth="1" />
+                    {/* Center arc */}
+                    <ellipse cx="640" cy="450" rx="200" ry="520" fill="none" stroke="#d97706" strokeWidth="0.8" />
+                    {/* Right arc */}
+                    <ellipse cx="820" cy="450" rx="320" ry="480" fill="none" stroke="#d97706" strokeWidth="0.7" />
+                    {/* Sweeping right curve */}
+                    <ellipse cx="1100" cy="450" rx="400" ry="600" fill="none" stroke="#d97706" strokeWidth="0.5" />
+                </svg>
+
+                {/* Bottom-right sparkle */}
+                <div className="absolute bottom-8 right-8 text-white/20 pointer-events-none">
+                    <SparkleIcon className="w-10 h-10" />
                 </div>
-            </motion.div>
 
-        </div>
+                {/* ── NAVBAR ── */}
+                <nav className="relative z-20 w-full flex items-center justify-between px-8 md:px-14 py-6">
+                    {/* Logo */}
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-[#f97316] rounded-xl flex items-center justify-center shadow-lg">
+                            <SparkleIcon className="w-5 h-5 text-white" />
+                        </div>
+                        <span className="font-bold text-lg tracking-tight text-white">Jigyasa.Ai</span>
+                    </div>
 
-        {/* ATS Resume Checker Section */}
-        <ATSChecker onGoToAuth={onGoToAuth} />
+                    {/* Nav Links */}
+                    <div className="hidden lg:flex items-center gap-10 text-[10px] font-bold tracking-[0.18em] text-white/50 uppercase">
+                        <a href="#ats-checker" className="hover:text-white transition-colors flex items-baseline gap-1">
+                            ATS CHECK <sup className="text-[7px] text-[#f97316]">FREE</sup>
+                        </a>
+                        <a href="#features" className="hover:text-white transition-colors flex items-baseline gap-1">
+                            FEATURES <sup className="text-[7px] text-white/40">3</sup>
+                        </a>
+                        <a href="#how-it-works" className="hover:text-white transition-colors flex items-baseline gap-1">
+                            HOW IT WORKS <sup className="text-[7px] text-white/40">1</sup>
+                        </a>
+                    </div>
 
-        {/* How It Works Section */}
-        <section id="how-it-works" className="relative z-10 w-full py-24 my-8 rounded-[2rem] bg-white/40 shadow-sm border border-white/50">
-            <div className="max-w-6xl mx-auto px-6">
-                <div className="text-center mb-16">
-                    <h2 className="text-3xl md:text-5xl font-medium tracking-tighter text-[#1a0f0a] mb-4">✦ How it works</h2>
-                    <p className="text-[#1a0f0a]/60 font-medium">Three simple steps to automate your technical screening.</p>
-                </div>
-                
-                <div className="grid md:grid-cols-3 gap-6 relative">
-                    {[
-                        { step: "1", title: "Upload Resume", desc: "Start an interview session by passing the candidate's PDF. The AI reads it contextually." },
-                        { step: "2", title: "Talk Naturally", desc: "Using the browser's built-in microphone, the candidate answers dynamic technical questions." },
-                        { step: "3", title: "View Report", desc: "Once finished, a rubric-based scorecard is instantly appended to the user dashboard." }
-                    ].map((item, i) => (
-                        <motion.div 
+                    {/* Auth Buttons */}
+                    <div className="flex items-center gap-6">
+                        <button
+                            onClick={() => onGoToAuth('login')}
+                            className="text-[10px] font-bold uppercase tracking-widest text-white/60 hover:text-white transition-colors"
+                        >
+                            Sign In
+                        </button>
+                        <button
+                            onClick={() => onGoToAuth('register')}
+                            className="px-7 py-3 rounded-full border border-white/30 bg-white/10 hover:bg-white/20 text-white text-[10px] font-black uppercase tracking-widest transition-all backdrop-blur-sm"
+                        >
+                            Register
+                        </button>
+                    </div>
+                </nav>
+
+                {/* ── HERO ── */}
+                <div className="relative z-10 w-full max-w-7xl mx-auto px-8 md:px-14 pt-16 pb-0 flex flex-col lg:flex-row items-start gap-8 lg:gap-0 min-h-[520px]">
+                    {/* Left: Headline */}
+                    <div className="lg:w-3/5">
+                        <motion.div
+                            initial={{ opacity: 0, y: 24 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                        >
+                            <div className="flex items-start gap-4 mb-2">
+                                <SparkleIcon className="w-10 h-10 text-white mt-3 shrink-0" />
+                                <h1 className="text-[4.5rem] md:text-[6.5rem] font-bold leading-[0.9] tracking-tighter text-white">
+                                    Ace<br />
+                                    Your Next<br />
+                                    <span className="text-white">HR, Technical</span><br />
+                                    <span className="text-[#f5cca8]">or GD Round</span>
+                                </h1>
+                            </div>
+                        </motion.div>
+                    </div>
+
+                    {/* Right: Descriptor + CTA */}
+                    <div className="lg:w-2/5 lg:flex lg:flex-col lg:items-end lg:justify-center lg:pt-48">
+                        <motion.div
                             initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.25, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                            className="max-w-xs text-right"
+                        >
+                            <p className="text-white/60 text-sm font-medium leading-relaxed mb-8">
+                                ✦ AI mock interviews for every field — HR rounds, technical deep dives, and group discussions. Plus a free ATS resume score, no login needed.
+                            </p>
+                            <button
+                                onClick={() => onGoToAuth('register')}
+                                className="px-10 py-4 rounded-full bg-white text-[#1a0800] text-[11px] font-black uppercase tracking-[0.2em] hover:bg-[#f5cca8] transition-all shadow-xl"
+                            >
+                                Get Started
+                            </button>
+                        </motion.div>
+                    </div>
+                </div>
+
+                {/* ── FEATURE CARDS — sit on the amber bg, touching the bottom ── */}
+                <section id="features" className="relative z-10 w-full max-w-7xl mx-auto px-8 md:px-14 pt-20 pb-16 grid md:grid-cols-3 gap-5">
+                    {features.map((f, idx) => (
+                        <motion.div
+                            key={idx}
+                            initial={{ opacity: 0, y: 40 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
-                            transition={{ duration: 0.5, delay: i * 0.2 }}
-                            key={i} 
-                            className="relative flex flex-col items-center text-center p-8 bg-[#1a0f0a] rounded-[2rem] group hover:-translate-y-2 transition-transform"
+                            transition={{ delay: idx * 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                            className="bg-[#1a0800]/90 backdrop-blur-sm border border-white/8 rounded-[1.8rem] p-10 hover:border-[#b45309]/40 transition-all duration-500 shadow-2xl"
                         >
-                            <div className="mb-6 font-medium text-6xl text-[#f5cca8]">
-                                {item.step}
-                            </div>
-                            <h3 className="text-sm uppercase tracking-widest font-bold text-white mb-3">{item.title}</h3>
-                            <p className="text-white/50 leading-relaxed text-sm">{item.desc}</p>
+                            <h3 className="text-3xl font-bold text-[#f5cca8] tracking-tight mb-1">{f.title}</h3>
+                            <p className="text-[10px] font-black tracking-[0.2em] text-white/30 uppercase mb-5">{f.subtitle}</p>
+                            <p className="text-white/45 text-sm leading-relaxed">{f.description}</p>
                         </motion.div>
                     ))}
+                </section>
+
+                {/* ── RESUME-TO-PREP MATRIX BANNER ── */}
+                <div className="relative z-10 w-full max-w-7xl mx-auto px-8 md:px-14 pb-16">
+                    <div className="bg-[#1a0800]/90 backdrop-blur-sm border border-white/8 rounded-[1.8rem] px-12 py-10 flex items-center justify-between shadow-2xl">
+                        <div>
+                            <div className="text-[10px] font-black tracking-[0.2em] text-[#f5cca8]/60 uppercase flex items-center gap-2 mb-3">
+                                <Zap className="w-3 h-3" /> Complimentary Access
+                            </div>
+                            <h2 className="text-4xl font-bold text-white mb-3 tracking-tight">Resume-to-Prep Matrix</h2>
+                            <p className="text-white/40 text-sm max-w-lg leading-relaxed">
+                                Upload your resume and instantly generate the top 15 highly-targeted behavioral and
+                                technical interview questions to practice with. Automatically formatted into a printable study guide.
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => onGoToAuth('prep')}
+                            className="shrink-0 ml-8 w-14 h-14 rounded-full bg-white text-[#1a0800] flex items-center justify-center hover:bg-[#f5cca8] transition-all shadow-xl text-xl font-bold"
+                        >
+                            ›
+                        </button>
+                    </div>
+                </div>
+
+                {/* ── ATS CHECKER ── */}
+                <div id="ats-checker" className="relative z-10 w-full max-w-7xl mx-auto px-8 md:px-14 pb-20">
+                    <ATSChecker onGoToAuth={onGoToAuth} />
                 </div>
             </div>
-        </section>
 
-        <footer className="py-8 text-center text-[#1a0f0a]/50 font-bold text-xs uppercase tracking-widest">
-             © {new Date().getFullYear()} Jigyasa
-        </footer>
+            {/* ───── SECTION 2: BEIGE "HOW IT WORKS" FLOATING CARD ───── */}
+            <div className="bg-[#e8d5c0] py-6 px-4 md:px-8">
+                <section id="how-it-works" className="w-full max-w-5xl mx-auto bg-[#e8d5c0] rounded-[2.5rem] py-16 px-8">
+                    {/* Heading */}
+                    <div className="text-center mb-14">
+                        <div className="flex items-center justify-center gap-3 mb-3">
+                            <SparkleIcon className="w-6 h-6 text-[#1a0800]" />
+                            <h2 className="text-4xl md:text-5xl font-bold text-[#1a0800] tracking-tight">How it works</h2>
+                        </div>
+                        <p className="text-[#1a0800]/40 text-sm">Three simple steps to automate your technical screening.</p>
+                    </div>
 
-    </div>
-  );
+                    {/* Step Cards */}
+                    <div className="grid md:grid-cols-3 gap-6">
+                        {[
+                            { num: "1", title: "UPLOAD RESUME", desc: "Start an interview session by passing the candidate's PDF. The AI reads it contextually." },
+                            { num: "2", title: "TALK NATURALLY", desc: "Using the browser's built-in microphone, the candidate answers dynamic technical questions." },
+                            { num: "3", title: "VIEW REPORT", desc: "Once finished, a rubric-based scorecard is instantly appended to the user dashboard." }
+                        ].map((step, idx) => (
+                            <motion.div
+                                key={idx}
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: idx * 0.12, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                                className="bg-[#1a0800] rounded-[1.8rem] p-10 flex flex-col items-center text-center shadow-2xl hover:scale-[1.02] transition-transform duration-300"
+                            >
+                                <span className="text-7xl font-bold text-[#f5cca8] mb-4 leading-none">{step.num}</span>
+                                <p className="text-[10px] font-black tracking-[0.2em] text-white/35 uppercase mb-3">{step.title}</p>
+                                <p className="text-white/30 text-xs leading-relaxed">{step.desc}</p>
+                            </motion.div>
+                        ))}
+                    </div>
+                </section>
+
+                {/* Footer */}
+                <footer className="text-center py-8 text-[#1a0800]/25 text-[10px] font-black tracking-[0.3em] uppercase">
+                    © 2026 JIGYASA
+                </footer>
+            </div>
+        </div>
+    );
 }

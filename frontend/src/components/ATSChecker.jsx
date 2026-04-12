@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileUp, CheckCircle2, XCircle, AlertTriangle, Zap, ChevronRight } from 'lucide-react';
+import { FileUp, CheckCircle2, XCircle, AlertTriangle, Zap, ChevronRight, Sparkles } from 'lucide-react';
 import { api } from '../api/client';
 
 const GRADE_CONFIG = {
@@ -38,7 +38,7 @@ function ScoreDial({ score, grade }) {
           <span className="text-[10px] font-bold tracking-widest text-white/40 uppercase">/ 100</span>
         </div>
       </div>
-      <div className="px-4 py-1 rounded-full text-xs font-bold tracking-widest uppercase"
+      <div className="px-4 py-1 rounded-full text-[10px] font-black tracking-widest uppercase"
         style={{ background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.color}33` }}>
         {grade} — {cfg.label}
       </div>
@@ -50,7 +50,7 @@ function Pill({ text, type }) {
   const styles = {
     found: 'bg-green-500/10 text-green-400 border-green-500/20',
     missing: 'bg-red-500/10 text-red-400 border-red-500/20',
-    gap: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+    gap: 'bg-[#b45309]/10 text-[#f5cca8] border-[#b45309]/20',
     issue: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
   };
   const icons = {
@@ -60,7 +60,7 @@ function Pill({ text, type }) {
     issue: <AlertTriangle className="w-3 h-3 shrink-0" />,
   };
   return (
-    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${styles[type]}`}>
+    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase border ${styles[type]}`}>
       {icons[type]}
       {text}
     </span>
@@ -107,37 +107,39 @@ export default function ATSChecker({ onGoToAuth }) {
   };
 
   return (
-    <section id="ats-checker" className="max-w-7xl mx-auto px-6 pb-20 relative z-20">
+    <section id="ats-checker" className="w-full relative z-20">
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="rounded-[2.5rem] bg-[#1a0f0a]/95 border border-white/8 overflow-hidden shadow-2xl"
+        className="rounded-[1.8rem] bg-[#1a0800]/90 backdrop-blur-sm border border-white/8 overflow-hidden shadow-2xl relative"
       >
+        
         {/* Header */}
-        <div className="p-8 md:p-12 border-b border-white/5">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+        <div className="p-12 lg:p-16 border-b border-white/5">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-12">
             <div>
-              <div className="text-xs tracking-widest uppercase font-bold text-[#f5cca8] mb-3 flex items-center gap-2">
-                <Zap className="w-4 h-4" /> Free · No Login Required
+              <div className="text-[10px] tracking-[0.3em] uppercase font-black text-[#b45309] mb-4 flex items-center gap-2">
+                <Sparkles className="w-4 h-4" /> Free · No Login Required
               </div>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-medium tracking-tighter text-white mb-3">
+              <h2 className="text-4xl md:text-5xl font-medium tracking-tighter text-white mb-6 leading-[1.1]">
                 Instant ATS Resume<br />Checker
               </h2>
-              <p className="text-white/50 font-medium max-w-lg">
+              <p className="text-white/40 text-sm font-medium max-w-lg leading-relaxed">
                 Upload your resume and find out in seconds if an ATS will filter you out — before a human ever sees it.
               </p>
             </div>
+
             {/* Drop zone */}
-            <div className="md:w-80 shrink-0">
+            <div className="lg:w-96 shrink-0 relative z-10">
               <div
                 onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
                 onDragLeave={() => setDragging(false)}
                 onDrop={handleDrop}
-                className={`relative group cursor-pointer rounded-[1.5rem] border-2 border-dashed p-8 text-center transition-all duration-300 ${
+                className={`relative group cursor-pointer rounded-[2rem] border-2 border-dashed p-10 text-center transition-all duration-500 ${
                   dragging ? 'border-[#f5cca8] bg-[#f5cca8]/5' :
                   file ? 'border-[#b45309] bg-[#b45309]/10' :
-                  'border-white/15 hover:border-[#b45309]/50 hover:bg-white/3'
+                  'border-white/10 hover:border-[#b45309]/30 hover:bg-white/5'
                 }`}
               >
                 <input
@@ -146,152 +148,121 @@ export default function ATSChecker({ onGoToAuth }) {
                   onChange={(e) => handleFile(e.target.files[0])}
                 />
                 {file ? (
-                  <div className="flex flex-col items-center gap-2">
-                    <CheckCircle2 className="w-8 h-8 text-[#f5cca8]" />
-                    <p className="text-[#f5cca8] font-bold text-sm truncate max-w-full px-2">{file.name}</p>
-                    <p className="text-white/30 text-xs">Click to change file</p>
+                  <div className="flex flex-col items-center gap-3">
+                    <CheckCircle2 className="w-10 h-10 text-[#f5cca8] animate-bounce" />
+                    <p className="text-[#f5cca8] font-bold text-sm truncate max-w-full px-4">{file.name}</p>
+                    <p className="text-white/20 text-[10px] font-black tracking-widest uppercase">Click to change file</p>
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center gap-2">
-                    <FileUp className="w-8 h-8 text-white/30 group-hover:text-[#b45309] transition-colors" />
-                    <p className="text-white/50 text-xs font-bold tracking-widest uppercase">Drop PDF or click to upload</p>
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="p-4 rounded-2xl bg-white/5 group-hover:bg-[#b45309]/10 transition-all">
+                      <FileUp className="w-8 h-8 text-white/20 group-hover:text-[#b45309] transition-colors" />
+                    </div>
+                    <p className="text-white/30 text-[10px] font-black tracking-widest uppercase leading-relaxed">
+                        Drop PDF or<br />click to upload
+                    </p>
                   </div>
                 )}
               </div>
               <button
                 onClick={handleCheck}
                 disabled={!file || loading}
-                className="mt-4 w-full py-4 rounded-full bg-white hover:bg-white/90 text-[#1a0f0a] text-sm font-bold tracking-widest uppercase transition-all shadow-xl disabled:opacity-40 disabled:cursor-not-allowed"
+                className="mt-6 w-full py-5 rounded-full bg-white hover:bg-[#f5cca8] text-[#1a0f0a] text-xs font-black tracking-[0.2em] uppercase transition-all shadow-2xl disabled:opacity-20 disabled:cursor-not-allowed group"
               >
-                {loading ? 'Analysing...' : 'Check My Resume'}
+                {loading ? (
+                    <span className="flex items-center justify-center gap-2">
+                        Analysing <motion.span animate={{ opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 1 }}>...</motion.span>
+                    </span>
+                ) : 'Check My Resume'}
               </button>
-              {error && <p className="mt-3 text-red-400 text-xs text-center font-medium">{error}</p>}
+              {error && <p className="mt-4 text-red-400 text-[10px] font-black tracking-widest uppercase text-center">{error}</p>}
             </div>
           </div>
         </div>
 
-        {/* Loading State */}
-        <AnimatePresence>
-          {loading && (
-            <motion.div
-              key="loading"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="p-12 flex flex-col items-center gap-6"
-            >
-              <div className="relative w-20 h-28 bg-white/5 border border-white/10 rounded-xl overflow-hidden flex items-center justify-center p-2">
-                <div className="absolute top-0 left-0 w-full h-[2px] bg-[#f5cca8] shadow-[0_0_15px_3px_rgba(245,204,168,0.6)]"
-                  style={{ animation: 'scan 1.8s ease-in-out infinite' }} />
-                <div className="w-full h-full flex flex-col gap-2 p-2 opacity-20">
-                  {[...Array(6)].map((_, i) => (
-                    <div key={i} className={`h-1.5 bg-white rounded-full`}
-                      style={{ width: ['50%','100%','75%','100%','65%','100%'][i] }} />
-                  ))}
-                </div>
-              </div>
-              <div className="text-center">
-                <p className="text-white font-medium tracking-tighter text-xl mb-1">Scanning ATS Compatibility</p>
-                <p className="text-white/40 text-xs font-bold tracking-widest uppercase animate-pulse">Analysing sections, keywords, formatting...</p>
-              </div>
-              <style>{`@keyframes scan { 0%{top:0;opacity:0} 10%{opacity:1} 90%{opacity:1} 100%{top:100%;opacity:0} }`}</style>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Loading / Scan line effect */}
+        {loading && (
+            <div className="h-1 bg-white/5 relative overflow-hidden">
+                <motion.div 
+                    initial={{ x: '-100%' }}
+                    animate={{ x: '100%' }}
+                    transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-[#b45309] to-transparent w-1/3"
+                />
+            </div>
+        )}
 
         {/* Results */}
         <AnimatePresence>
           {result && !loading && (
             <motion.div
               key="results"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="p-8 md:p-12"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6 }}
+              className="p-12 lg:p-16 bg-gradient-to-b from-transparent to-black/20"
             >
-              {/* Score row */}
-              <div className="flex flex-col md:flex-row gap-8 md:gap-16 items-center md:items-start mb-10">
+              {/* Score card */}
+              <div className="grid lg:grid-cols-3 gap-12 items-center mb-16">
                 <ScoreDial score={result.ats_score ?? 0} grade={result.grade ?? 'C'} />
-                <div className="flex-1 text-center md:text-left">
-                  <p className="text-white/40 text-xs font-bold tracking-widest uppercase mb-3">ATS Verdict</p>
-                  <p className="text-white font-medium text-lg leading-relaxed">{result.ats_verdict}</p>
+                <div className="lg:col-span-2">
+                  <p className="text-[#b45309] text-[10px] font-black tracking-widest uppercase mb-4">ATS Verdict</p>
+                  <p className="text-white/80 font-medium text-xl leading-relaxed">"{result.ats_verdict}"</p>
                 </div>
               </div>
 
-              {/* Sections found / missing */}
-              <div className="grid md:grid-cols-2 gap-6 mb-8">
-                <div className="p-6 rounded-2xl bg-white/3 border border-white/5">
-                  <p className="text-xs font-bold tracking-widest uppercase text-green-400 mb-4 flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4" /> Sections Detected
+              {/* Detail Grids */}
+              <div className="grid md:grid-cols-2 gap-8 mb-8">
+                <div className="p-10 rounded-[2.5rem] bg-white/5 border border-white/5">
+                  <p className="text-[10px] font-black tracking-widest uppercase text-green-400 mb-6 flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4" /> Detected
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {(result.sections_found ?? []).map((s, i) => <Pill key={i} text={s} type="found" />)}
                   </div>
                 </div>
-                <div className="p-6 rounded-2xl bg-white/3 border border-white/5">
-                  <p className="text-xs font-bold tracking-widest uppercase text-red-400 mb-4 flex items-center gap-2">
-                    <XCircle className="w-4 h-4" /> Sections Missing
+                <div className="p-10 rounded-[2.5rem] bg-white/5 border border-white/5">
+                  <p className="text-[10px] font-black tracking-widest uppercase text-red-400 mb-6 flex items-center gap-2">
+                    <XCircle className="w-4 h-4" /> Missing
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {(result.sections_missing ?? []).map((s, i) => <Pill key={i} text={s} type="missing" />)}
-                    {(result.sections_missing ?? []).length === 0 && (
-                      <span className="text-white/30 text-sm">None detected 🎉</span>
-                    )}
                   </div>
                 </div>
               </div>
 
-              {/* Keyword gaps + formatting issues */}
-              <div className="grid md:grid-cols-2 gap-6 mb-8">
-                <div className="p-6 rounded-2xl bg-white/3 border border-white/5">
-                  <p className="text-xs font-bold tracking-widest uppercase text-amber-400 mb-4 flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4" /> Keyword Gaps
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {(result.keyword_gaps ?? []).map((s, i) => <Pill key={i} text={s} type="gap" />)}
-                  </div>
-                </div>
-                <div className="p-6 rounded-2xl bg-white/3 border border-white/5">
-                  <p className="text-xs font-bold tracking-widest uppercase text-orange-400 mb-4 flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4" /> Formatting Issues
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {(result.formatting_issues ?? []).map((s, i) => <Pill key={i} text={s} type="issue" />)}
-                    {(result.formatting_issues ?? []).length === 0 && (
-                      <span className="text-white/30 text-sm">No major issues 🎉</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Quick wins */}
-              <div className="p-6 rounded-2xl bg-[#b45309]/8 border border-[#b45309]/20 mb-8">
-                <p className="text-xs font-bold tracking-widest uppercase text-[#f5cca8] mb-5 flex items-center gap-2">
-                  <Zap className="w-4 h-4" /> 4 Quick Wins — Fix These Today
-                </p>
-                <div className="space-y-3">
-                  {(result.quick_wins ?? []).map((win, i) => (
-                    <div key={i} className="flex items-start gap-4">
-                      <div className="w-7 h-7 shrink-0 rounded-full bg-[#b45309]/20 border border-[#b45309]/30 flex items-center justify-center text-[#f5cca8] font-bold text-xs">
-                        {i + 1}
-                      </div>
-                      <p className="text-white/80 text-sm font-medium leading-relaxed pt-1">{win}</p>
+              {/* Optimizations */}
+              <div className="grid md:grid-cols-2 gap-8 mb-12">
+                <div className="p-10 rounded-[2.5rem] bg-white/5 border border-white/5">
+                    <p className="text-[10px] font-black tracking-widest uppercase text-[#f5cca8] mb-6 flex items-center gap-2">
+                        <AlertTriangle className="w-4 h-4" /> Keyword Gaps
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                        {(result.keyword_gaps ?? []).map((s, i) => <Pill key={i} text={s} type="gap" />)}
                     </div>
-                  ))}
+                </div>
+                <div className="p-10 rounded-[2.5rem] bg-white/5 border border-white/5">
+                  <p className="text-[10px] font-black tracking-widest uppercase text-orange-400 mb-6 flex items-center gap-2">
+                    <Zap className="w-4 h-4" /> Quick Wins
+                  </p>
+                  <div className="space-y-3">
+                    {(result.quick_wins ?? []).map((win, i) => (
+                        <div key={i} className="text-[11px] text-white/40 font-medium leading-relaxed">• {win}</div>
+                    ))}
+                  </div>
                 </div>
               </div>
 
-              {/* CTA */}
-              <div className="flex flex-col sm:flex-row gap-4 items-center justify-between p-6 rounded-2xl bg-white/3 border border-white/5">
-                <div>
-                  <p className="text-white font-bold tracking-tight text-lg mb-1">Ready for a mock interview?</p>
-                  <p className="text-white/40 text-sm">Practice HR, Technical, or GD rounds with AI feedback.</p>
+              <div className="p-10 rounded-[2.5rem] bg-[#b45309]/5 border border-[#b45309]/20 flex flex-col md:flex-row items-center justify-between gap-8">
+                <div className="text-center md:text-left">
+                  <p className="text-white font-medium text-lg mb-1 tracking-tight">Ready for a mock interview?</p>
+                  <p className="text-white/30 text-xs font-medium">Practice HR, Technical, or GD rounds with AI feedback.</p>
                 </div>
                 <button
                   onClick={() => onGoToAuth('register')}
-                  className="shrink-0 flex items-center gap-2 px-8 py-4 rounded-full bg-white hover:bg-white/90 text-[#1a0f0a] text-sm font-bold tracking-widest uppercase transition shadow-xl"
+                  className="px-10 py-5 rounded-full bg-white text-[#1a0f0a] text-[10px] font-black tracking-widest uppercase hover:bg-[#f5cca8] transition-all"
                 >
-                  Start Free <ChevronRight className="w-4 h-4" />
+                  Start Practice Session
                 </button>
               </div>
             </motion.div>
@@ -301,3 +272,4 @@ export default function ATSChecker({ onGoToAuth }) {
     </section>
   );
 }
+
