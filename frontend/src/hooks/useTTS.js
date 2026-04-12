@@ -119,7 +119,6 @@ export function useTTS() {
 
   const speak = useCallback(async (text, onFinish) => {
     // Interrupt current playback WITHOUT incrementing fetchIdRef
-    // (stop() would increment it, causing the new speak()'s fetch to appear "superseded")
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
@@ -137,13 +136,23 @@ export function useTTS() {
     const currentFetchId = ++fetchIdRef.current;
     if (isMountedRef.current) setIsSpeaking(true);
 
+    // On production (non-localhost), browser SpeechSynthesis is always reliable.
+    // Backend TTS (gTTS / edge-tts) only works predictably in local dev.
+    const isLocalhost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+
+    if (!isLocalhost) {
+      // Production: go straight to native — zero latency, zero cloud IP issues
+      _speakNative(text, onFinish, currentFetchId);
+      return;
+    }
+
+    // Localhost: try backend first for higher-quality audio
     try {
       const audioBlob = await api.generateTTS(text);
 
-      // Discard if superseded or unmounted
       if (currentFetchId !== fetchIdRef.current || !isMountedRef.current) return;
 
-      // null = backend returned 204 (all strategies failed) → use native silently
+      // null = backend returned 204 → fall back to native silently
       if (audioBlob === null) {
         _speakNative(text, onFinish, currentFetchId);
         return;
@@ -153,10 +162,7 @@ export function useTTS() {
         throw new Error('Empty audio blob from backend');
       }
 
-      // Revoke old blob URL
-      if (blobUrlRef.current) {
-        URL.revokeObjectURL(blobUrlRef.current);
-      }
+      if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
       const url = URL.createObjectURL(audioBlob);
       blobUrlRef.current = url;
 
@@ -167,21 +173,10 @@ export function useTTS() {
         if (currentFetchId === fetchIdRef.current && isMountedRef.current) setIsSpeaking(false);
         if (onFinish && isMountedRef.current) onFinish();
       };
+      audio.onerror = () => _speakNative(text, onFinish, currentFetchId);
+      audio.play().catch(() => _speakNative(text, onFinish, currentFetchId));
 
-      audio.onerror = (e) => {
-        console.error('TTS Audio Playback Error — falling back to native', e);
-        // Fall back to native instead of just stopping
-        _speakNative(text, onFinish, currentFetchId);
-      };
-
-      audio.play().catch((e) => {
-        console.warn('Audio.play() prevented (autoplay policy?) — falling back to native:', e);
-        // On autoplay block, fall back to native which IS allowed after user interaction
-        _speakNative(text, onFinish, currentFetchId);
-      });
-
-    } catch (e) {
-      console.warn('Backend TTS failed — using browser native TTS:', e.message);
+    } catch {
       if (currentFetchId !== fetchIdRef.current || !isMountedRef.current) return;
       _speakNative(text, onFinish, currentFetchId);
     }

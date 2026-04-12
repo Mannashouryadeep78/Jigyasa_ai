@@ -37,7 +37,7 @@ export default function LandingPage({ onGoToAuth }) {
                 background: 'radial-gradient(ellipse 80% 90% at 35% 50%, #c45c00 0%, #8b3300 40%, #2a0e00 75%, #150800 100%)',
             }}>
 
-                {/* Orbital Arc Lines — SVG overlay matching the background image */}
+                {/* Orbital Arc Lines */}
                 <svg
                     className="absolute inset-0 w-full h-full pointer-events-none"
                     viewBox="0 0 1440 900"
@@ -45,13 +45,9 @@ export default function LandingPage({ onGoToAuth }) {
                     xmlns="http://www.w3.org/2000/svg"
                     style={{ opacity: 0.18 }}
                 >
-                    {/* Large left arc */}
                     <ellipse cx="420" cy="450" rx="280" ry="500" fill="none" stroke="#d97706" strokeWidth="1" />
-                    {/* Center arc */}
                     <ellipse cx="640" cy="450" rx="200" ry="520" fill="none" stroke="#d97706" strokeWidth="0.8" />
-                    {/* Right arc */}
                     <ellipse cx="820" cy="450" rx="320" ry="480" fill="none" stroke="#d97706" strokeWidth="0.7" />
-                    {/* Sweeping right curve */}
                     <ellipse cx="1100" cy="450" rx="400" ry="600" fill="none" stroke="#d97706" strokeWidth="0.5" />
                 </svg>
 
@@ -61,16 +57,16 @@ export default function LandingPage({ onGoToAuth }) {
                 </div>
 
                 {/* ── NAVBAR ── */}
-                <nav className="relative z-20 w-full flex items-center justify-between px-8 md:px-14 py-6">
+                <nav className="relative z-20 w-full flex items-center justify-between px-4 sm:px-8 md:px-14 py-4 sm:py-6">
                     {/* Logo */}
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-[#f97316] rounded-xl flex items-center justify-center shadow-lg">
-                            <SparkleIcon className="w-5 h-5 text-white" />
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-[#f97316] rounded-xl flex items-center justify-center shadow-lg shrink-0">
+                            <SparkleIcon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                         </div>
-                        <span className="font-bold text-lg tracking-tight text-white">Jigyasa.Ai</span>
+                        <span className="font-bold text-base sm:text-lg tracking-tight text-white whitespace-nowrap">Jigyasa.Ai</span>
                     </div>
 
-                    {/* Nav Links */}
+                    {/* Nav Links — hidden on mobile/tablet */}
                     <div className="hidden lg:flex items-center gap-10 text-[10px] font-bold tracking-[0.18em] text-white/50 uppercase">
                         <a href="#ats-checker" className="hover:text-white transition-colors flex items-baseline gap-1">
                             ATS CHECK <sup className="text-[7px] text-[#f97316]">FREE</sup>
@@ -84,16 +80,16 @@ export default function LandingPage({ onGoToAuth }) {
                     </div>
 
                     {/* Auth Buttons */}
-                    <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-2 sm:gap-4 shrink-0">
                         <button
                             onClick={() => onGoToAuth('login')}
-                            className="text-[10px] font-bold uppercase tracking-widest text-white/60 hover:text-white transition-colors"
+                            className="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-white/70 hover:text-white transition-colors px-2 py-1"
                         >
                             Sign In
                         </button>
                         <button
                             onClick={() => onGoToAuth('register')}
-                            className="px-7 py-3 rounded-full border border-white/30 bg-white/10 hover:bg-white/20 text-white text-[10px] font-black uppercase tracking-widest transition-all backdrop-blur-sm"
+                            className="px-4 sm:px-7 py-2 sm:py-3 rounded-full border border-white/30 bg-white/10 hover:bg-white/20 text-white text-[10px] font-black uppercase tracking-widest transition-all backdrop-blur-sm whitespace-nowrap"
                         >
                             Register
                         </button>
@@ -101,17 +97,18 @@ export default function LandingPage({ onGoToAuth }) {
                 </nav>
 
                 {/* ── HERO ── */}
-                <div className="relative z-10 w-full max-w-7xl mx-auto px-8 md:px-14 pt-16 pb-0 flex flex-col lg:flex-row items-start gap-8 lg:gap-0 min-h-[520px]">
+                <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-8 md:px-14 pt-8 sm:pt-16 pb-0 flex flex-col lg:flex-row items-start gap-6 lg:gap-0 min-h-[400px] sm:min-h-[520px]">
                     {/* Left: Headline */}
-                    <div className="lg:w-3/5">
+                    <div className="lg:w-3/5 w-full">
                         <motion.div
                             initial={{ opacity: 0, y: 24 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
                         >
-                            <div className="flex items-start gap-4 mb-2">
-                                <SparkleIcon className="w-10 h-10 text-white mt-3 shrink-0" />
-                                <h1 className="text-[4.5rem] md:text-[6.5rem] font-bold leading-[0.9] tracking-tighter text-white">
+                            <div className="flex items-start gap-3 sm:gap-4 mb-2">
+                                <SparkleIcon className="w-6 h-6 sm:w-10 sm:h-10 text-white mt-2 sm:mt-3 shrink-0" />
+                                {/* Responsive hero text: fluid scaling from mobile to desktop */}
+                                <h1 className="text-[2.8rem] xs:text-[3.4rem] sm:text-[4.5rem] md:text-[5.5rem] lg:text-[6.5rem] font-bold leading-[0.88] tracking-tighter text-white">
                                     Ace<br />
                                     Your Next<br />
                                     <span className="text-white">HR, Technical</span><br />
@@ -122,19 +119,19 @@ export default function LandingPage({ onGoToAuth }) {
                     </div>
 
                     {/* Right: Descriptor + CTA */}
-                    <div className="lg:w-2/5 lg:flex lg:flex-col lg:items-end lg:justify-center lg:pt-48">
+                    <div className="lg:w-2/5 w-full lg:flex lg:flex-col lg:items-end lg:justify-center lg:pt-48">
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.25, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-                            className="max-w-xs text-right"
+                            className="lg:max-w-xs lg:text-right"
                         >
-                            <p className="text-white/60 text-sm font-medium leading-relaxed mb-8">
+                            <p className="text-white/60 text-sm font-medium leading-relaxed mb-6 sm:mb-8">
                                 ✦ AI mock interviews for every field — HR rounds, technical deep dives, and group discussions. Plus a free ATS resume score, no login needed.
                             </p>
                             <button
                                 onClick={() => onGoToAuth('register')}
-                                className="px-10 py-4 rounded-full bg-white text-[#1a0800] text-[11px] font-black uppercase tracking-[0.2em] hover:bg-[#f5cca8] transition-all shadow-xl"
+                                className="w-full sm:w-auto px-8 sm:px-10 py-4 rounded-full bg-white text-[#1a0800] text-[11px] font-black uppercase tracking-[0.2em] hover:bg-[#f5cca8] transition-all shadow-xl"
                             >
                                 Get Started
                             </button>
@@ -142,8 +139,8 @@ export default function LandingPage({ onGoToAuth }) {
                     </div>
                 </div>
 
-                {/* ── FEATURE CARDS — sit on the amber bg, touching the bottom ── */}
-                <section id="features" className="relative z-10 w-full max-w-7xl mx-auto px-8 md:px-14 pt-20 pb-16 grid md:grid-cols-3 gap-5">
+                {/* ── FEATURE CARDS ── */}
+                <section id="features" className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-8 md:px-14 pt-12 sm:pt-20 pb-10 sm:pb-16 grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
                     {features.map((f, idx) => (
                         <motion.div
                             key={idx}
@@ -151,31 +148,31 @@ export default function LandingPage({ onGoToAuth }) {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ delay: idx * 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                            className="bg-[#1a0800]/90 backdrop-blur-sm border border-white/8 rounded-[1.8rem] p-10 hover:border-[#b45309]/40 transition-all duration-500 shadow-2xl"
+                            className="bg-[#1a0800]/90 backdrop-blur-sm border border-white/8 rounded-[1.5rem] sm:rounded-[1.8rem] p-7 sm:p-10 hover:border-[#b45309]/40 transition-all duration-500 shadow-2xl"
                         >
-                            <h3 className="text-3xl font-bold text-[#f5cca8] tracking-tight mb-1">{f.title}</h3>
-                            <p className="text-[10px] font-black tracking-[0.2em] text-white/30 uppercase mb-5">{f.subtitle}</p>
+                            <h3 className="text-2xl sm:text-3xl font-bold text-[#f5cca8] tracking-tight mb-1">{f.title}</h3>
+                            <p className="text-[10px] font-black tracking-[0.2em] text-white/30 uppercase mb-4 sm:mb-5">{f.subtitle}</p>
                             <p className="text-white/45 text-sm leading-relaxed">{f.description}</p>
                         </motion.div>
                     ))}
                 </section>
 
                 {/* ── RESUME-TO-PREP MATRIX BANNER ── */}
-                <div className="relative z-10 w-full max-w-7xl mx-auto px-8 md:px-14 pb-16">
-                    <div className="bg-[#1a0800]/90 backdrop-blur-sm border border-white/8 rounded-[1.8rem] px-12 py-10 flex items-center justify-between shadow-2xl">
-                        <div>
+                <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-8 md:px-14 pb-10 sm:pb-16">
+                    <div className="bg-[#1a0800]/90 backdrop-blur-sm border border-white/8 rounded-[1.5rem] sm:rounded-[1.8rem] px-6 sm:px-12 py-8 sm:py-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-2xl">
+                        <div className="flex-1 min-w-0">
                             <div className="text-[10px] font-black tracking-[0.2em] text-[#f5cca8]/60 uppercase flex items-center gap-2 mb-3">
                                 <Zap className="w-3 h-3" /> Complimentary Access
                             </div>
-                            <h2 className="text-4xl font-bold text-white mb-3 tracking-tight">Resume-to-Prep Matrix</h2>
-                            <p className="text-white/40 text-sm max-w-lg leading-relaxed">
+                            <h2 className="text-2xl sm:text-4xl font-bold text-white mb-3 tracking-tight">Resume-to-Prep Matrix</h2>
+                            <p className="text-white/40 text-sm leading-relaxed">
                                 Upload your resume and instantly generate the top 15 highly-targeted behavioral and
                                 technical interview questions to practice with. Automatically formatted into a printable study guide.
                             </p>
                         </div>
                         <button
                             onClick={() => onGoToAuth('prep')}
-                            className="shrink-0 ml-8 w-14 h-14 rounded-full bg-white text-[#1a0800] flex items-center justify-center hover:bg-[#f5cca8] transition-all shadow-xl text-xl font-bold"
+                            className="shrink-0 sm:ml-8 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white text-[#1a0800] flex items-center justify-center hover:bg-[#f5cca8] transition-all shadow-xl text-xl font-bold self-end sm:self-auto"
                         >
                             ›
                         </button>
@@ -183,25 +180,25 @@ export default function LandingPage({ onGoToAuth }) {
                 </div>
 
                 {/* ── ATS CHECKER ── */}
-                <div id="ats-checker" className="relative z-10 w-full max-w-7xl mx-auto px-8 md:px-14 pb-20">
+                <div id="ats-checker" className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-8 md:px-14 pb-16 sm:pb-20">
                     <ATSChecker onGoToAuth={onGoToAuth} />
                 </div>
             </div>
 
-            {/* ───── SECTION 2: BEIGE "HOW IT WORKS" FLOATING CARD ───── */}
+            {/* ───── SECTION 2: BEIGE "HOW IT WORKS" ───── */}
             <div className="bg-[#e8d5c0] py-6 px-4 md:px-8">
-                <section id="how-it-works" className="w-full max-w-5xl mx-auto bg-[#e8d5c0] rounded-[2.5rem] py-16 px-8">
+                <section id="how-it-works" className="w-full max-w-5xl mx-auto bg-[#e8d5c0] rounded-[2.5rem] py-12 sm:py-16 px-4 sm:px-8">
                     {/* Heading */}
-                    <div className="text-center mb-14">
+                    <div className="text-center mb-10 sm:mb-14">
                         <div className="flex items-center justify-center gap-3 mb-3">
-                            <SparkleIcon className="w-6 h-6 text-[#1a0800]" />
-                            <h2 className="text-4xl md:text-5xl font-bold text-[#1a0800] tracking-tight">How it works</h2>
+                            <SparkleIcon className="w-5 h-5 sm:w-6 sm:h-6 text-[#1a0800]" />
+                            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#1a0800] tracking-tight">How it works</h2>
                         </div>
                         <p className="text-[#1a0800]/40 text-sm">Three simple steps to automate your technical screening.</p>
                     </div>
 
                     {/* Step Cards */}
-                    <div className="grid md:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
                         {[
                             { num: "1", title: "UPLOAD RESUME", desc: "Start an interview session by passing the candidate's PDF. The AI reads it contextually." },
                             { num: "2", title: "TALK NATURALLY", desc: "Using the browser's built-in microphone, the candidate answers dynamic technical questions." },
@@ -213,9 +210,9 @@ export default function LandingPage({ onGoToAuth }) {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ delay: idx * 0.12, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                                className="bg-[#1a0800] rounded-[1.8rem] p-10 flex flex-col items-center text-center shadow-2xl hover:scale-[1.02] transition-transform duration-300"
+                                className="bg-[#1a0800] rounded-[1.5rem] sm:rounded-[1.8rem] p-8 sm:p-10 flex flex-col items-center text-center shadow-2xl hover:scale-[1.02] transition-transform duration-300"
                             >
-                                <span className="text-7xl font-bold text-[#f5cca8] mb-4 leading-none">{step.num}</span>
+                                <span className="text-6xl sm:text-7xl font-bold text-[#f5cca8] mb-4 leading-none">{step.num}</span>
                                 <p className="text-[10px] font-black tracking-[0.2em] text-white/35 uppercase mb-3">{step.title}</p>
                                 <p className="text-white/30 text-xs leading-relaxed">{step.desc}</p>
                             </motion.div>
