@@ -55,11 +55,11 @@ export default function ResumeUpload({ onUpload }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#e0ccb8] p-4 md:p-8 flex flex-col items-center justify-center selection:bg-black selection:text-white">
+    <div className="min-h-screen bg-[#e0ccb8] p-2 sm:p-6 md:p-8 flex flex-col items-center justify-center selection:bg-black selection:text-white">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-3xl bg-[#1a0f0a] border border-white/5 rounded-[3rem] p-8 md:p-12 shadow-2xl relative overflow-hidden"
+        className="w-full max-w-3xl bg-[#1a0f0a] border border-white/5 rounded-3xl sm:rounded-[3rem] p-5 sm:p-10 md:p-12 shadow-2xl relative overflow-hidden"
       >
         {/* Orbital rings */}
         <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20 mix-blend-overlay" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
@@ -68,10 +68,10 @@ export default function ResumeUpload({ onUpload }) {
         </svg>
 
         <div className="relative z-10">
-          <h1 className="text-3xl md:text-4xl font-medium tracking-tighter mb-2 text-white text-center">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-medium tracking-tighter mb-2 text-white text-center">
             <span className="text-[#b45309]">{"{"}</span> Choose Your Round <span className="text-[#b45309]">{"}"}</span>
           </h1>
-          <p className="text-white/40 font-medium mb-8 text-center tracking-wide text-sm">
+          <p className="text-white/40 font-medium mb-6 sm:mb-8 text-center tracking-wide text-xs sm:text-sm px-4">
             Select an interview mode to tailor the AI to your goal.
           </p>
 
@@ -83,7 +83,7 @@ export default function ResumeUpload({ onUpload }) {
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
                 onClick={() => setSelectedMode(mode.id)}
-                className="w-full text-left p-5 rounded-2xl border-2 transition-all duration-200 flex items-start gap-5"
+                className="w-full text-left p-4 sm:p-5 rounded-2xl border-2 transition-all duration-200 flex items-start gap-3 sm:gap-5"
                 style={{
                   background: selectedMode === mode.id ? mode.bg : 'rgba(255,255,255,0.03)',
                   borderColor: selectedMode === mode.id ? mode.border : 'rgba(255,255,255,0.07)',
@@ -95,14 +95,14 @@ export default function ResumeUpload({ onUpload }) {
                   {mode.icon}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-3 mb-1">
-                    <span className="text-white font-bold tracking-tight">{mode.title}</span>
-                    <span className="text-[10px] font-bold tracking-widest uppercase px-2 py-0.5 rounded-full"
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mb-1">
+                    <span className="text-white font-bold tracking-tight text-sm sm:text-base leading-tight">{mode.title}</span>
+                    <span className="text-[9px] sm:text-[10px] font-bold tracking-widest uppercase px-2 py-0.5 rounded-full w-fit"
                       style={{ background: `${mode.accent}18`, color: mode.accent }}>
                       {mode.subtitle}
                     </span>
                   </div>
-                  <p className="text-white/45 text-sm leading-relaxed">{mode.description}</p>
+                  <p className="text-white/45 text-[12px] sm:text-sm leading-relaxed">{mode.description}</p>
                 </div>
                 <div className="shrink-0 w-5 h-5 rounded-full border-2 mt-1 flex items-center justify-center transition-colors"
                   style={{
@@ -136,14 +136,14 @@ export default function ResumeUpload({ onUpload }) {
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
               />
               {file ? (
-                <div className="flex items-center gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-[#f5cca8]" />
-                  <span className="text-[#f5cca8] font-bold text-sm">{file.name}</span>
+                <div className="flex items-center gap-3 px-4 text-center">
+                  <CheckCircle2 className="w-5 h-5 shrink-0 text-[#f5cca8]" />
+                  <span className="text-[#f5cca8] font-bold text-sm truncate">{file.name}</span>
                 </div>
               ) : (
-                <div className="flex items-center gap-3 text-white/30">
-                  <FileUp className="w-5 h-5 group-hover:text-[#b45309] transition-colors" />
-                  <span className="text-xs font-bold tracking-widest uppercase group-hover:text-white/60 transition-colors">Click or drag PDF here</span>
+                <div className="flex items-center gap-3 text-white/30 px-4 text-center">
+                  <FileUp className="w-5 h-5 shrink-0 group-hover:text-[#b45309] transition-colors" />
+                  <span className="text-[10px] sm:text-xs font-bold tracking-widest uppercase group-hover:text-white/60 transition-colors">Click or drag PDF here</span>
                 </div>
               )}
             </div>
@@ -154,7 +154,7 @@ export default function ResumeUpload({ onUpload }) {
             <button
               onClick={handleSubmit}
               disabled={!selectedMode || !file}
-              className="w-full py-4 bg-white hover:bg-white/90 text-[#1a0f0a] rounded-full transition-all font-bold tracking-widest uppercase text-xs shadow-xl disabled:opacity-40 disabled:grayscale disabled:cursor-not-allowed"
+              className="w-full py-4 bg-white hover:bg-white/90 text-[#1a0f0a] rounded-full transition-all font-bold tracking-widest uppercase text-[10px] sm:text-xs shadow-xl disabled:opacity-40 disabled:grayscale disabled:cursor-not-allowed"
             >
               {!selectedMode 
                 ? 'Select a Mode to Continue' 
