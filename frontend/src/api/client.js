@@ -132,7 +132,8 @@ export const api = {
   },
   
   generateTTS: async (text) => {
-      const res = await client.post('/tts', { text }, { responseType: 'blob' });
+      const res = await client.post('/tts', { text }, { responseType: 'blob', validateStatus: (s) => s === 200 || s === 204 });
+      if (res.status === 204) return null; // Backend signals: use native TTS
       return res.data;
   },
   

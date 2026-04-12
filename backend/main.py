@@ -428,35 +428,53 @@ async def generate_tts(
     req: TTSRequest,
     current_user: dict = Depends(get_current_user),
 ):
-    import edge_tts
-    from fastapi.responses import StreamingResponse
+    from fastapi.responses import Response
+    import io
 
-    # Reliable voices for edge-tts 7.2+
-    VOICES = ["en-US-JennyNeural", "en-US-GuyNeural"]
+    text = req.text.strip()
+    if not text:
+        return Response(status_code=204)
 
-    async def audio_stream():
+    # ── Strategy 1: gTTS (Google) — reliable on cloud IPs ─────────────────────
+    try:
+        from gtts import gTTS
+        print("[TTS] Trying gTTS (Google)...")
+        tts = gTTS(text=text, lang='en', tld='com', slow=False)
+        buf = io.BytesIO()
+        tts.write_to_fp(buf)
+        audio_bytes = buf.getvalue()
+        if audio_bytes and len(audio_bytes) > 100:
+            print(f"[TTS] gTTS success — {len(audio_bytes)} bytes")
+            return Response(content=audio_bytes, media_type="audio/mpeg")
+        print("[TTS] gTTS returned empty audio.")
+    except Exception as e:
+        print(f"[TTS] gTTS failed: {e}")
+
+    # ── Strategy 2: edge-tts fallback ─────────────────────────────────────────
+    try:
+        import edge_tts, io as _io, asyncio as _asyncio
+        print("[TTS] Falling back to edge-tts...")
+        VOICES = ["en-US-JennyNeural", "en-US-GuyNeural"]
         for voice in VOICES:
             try:
-                print(f"[TTS] Attempting voice: {voice}")
-                communicate = edge_tts.Communicate(req.text, voice)
-                audio_sent = False
+                communicate = edge_tts.Communicate(text, voice)
+                buf2 = _io.BytesIO()
                 async for chunk in communicate.stream():
                     if chunk["type"] == "audio":
-                        audio_sent = True
-                        yield chunk["data"]
-                
-                if audio_sent:
-                    print(f"[TTS] Successfully streamed using {voice}")
-                    return  # success — stop after first working voice
-                else:
-                    print(f"[TTS] Voice {voice} returned no audio chunks.")
-            except Exception as e:
-                print(f"[TTS] Error with {voice}: {str(e)}")
-                continue  # try next voice
-        
-        print("[TTS] All voices failed. Falling back to native TTS.")
+                        buf2.write(chunk["data"])
+                audio_bytes2 = buf2.getvalue()
+                if audio_bytes2 and len(audio_bytes2) > 100:
+                    print(f"[TTS] edge-tts success with {voice} — {len(audio_bytes2)} bytes")
+                    return Response(content=audio_bytes2, media_type="audio/mpeg")
+                print(f"[TTS] edge-tts {voice} returned no audio.")
+            except Exception as ve:
+                print(f"[TTS] edge-tts {voice} error: {ve}")
+    except Exception as e:
+        print(f"[TTS] edge-tts import/setup failed: {e}")
 
-    return StreamingResponse(audio_stream(), media_type="audio/mpeg")
+    # ── Strategy 3: 204 — tells the frontend to use native browser TTS ─────────
+    print("[TTS] All strategies failed. Returning 204 for native TTS fallback.")
+    return Response(status_code=204)
 
 
 # ─── /analytics/guidance ─────────────────────────────────────────────────────

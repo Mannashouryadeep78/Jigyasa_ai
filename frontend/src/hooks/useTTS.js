@@ -143,8 +143,14 @@ export function useTTS() {
       // Discard if superseded or unmounted
       if (currentFetchId !== fetchIdRef.current || !isMountedRef.current) return;
 
+      // null = backend returned 204 (all strategies failed) → use native silently
+      if (audioBlob === null) {
+        _speakNative(text, onFinish, currentFetchId);
+        return;
+      }
+
       if (!audioBlob || audioBlob.size < 100) {
-        throw new Error('Empty audio from backend — falling back to native TTS');
+        throw new Error('Empty audio blob from backend');
       }
 
       // Revoke old blob URL
