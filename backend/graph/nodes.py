@@ -23,9 +23,10 @@ def greeter(state: InterviewState):
     name = state.get("candidate_name", "there")
     
     greetings = {
-        "hr": f"Hi {name}, great to meet you! I'm Alex, your HR interviewer today. I'll be asking a few questions to get to know you better. How are you doing?",
-        "technical": f"Hey {name}, welcome! I'm Jordan and I'll be your technical interviewer today. I've had a chance to look over your background — excited to dive in. How are you?",
-        "gd": f"Hi {name}! I'm Morgan, your Group Discussion facilitator today. We're going to debate a topic together — I'll play an active participant so it feels as real as possible. Ready to jump in?",
+        "hr": f"Hi {name}, great to meet you! I'm Alex, your Tutor HR interviewer today. I'll be asking a few questions about your pedagogical alignment and school culture fit. How are you doing?",
+        "technical": f"Hey {name}, welcome! I'm Jordan and I'll be your Domain Specific interviewer today. I'm excited to dive into your subject expertise and classroom methods. How are you?",
+        "gd": f"Hi {name}! I'm Morgan, your Communication and Policy facilitator today. We're going to debate some educational trends and current affairs. Ready to jump in?",
+        "tutor": f"Hello {name}, I'm Professor Maria. It's a pleasure to meet you. Today we'll be discussing your pedagogical approach and how you handle various classroom scenarios. Ready to begin?",
     }
     greeting = greetings.get(mode, greetings["hr"])
     return {"messages": [AIMessage(content=greeting)], "current_phase": "greeting", "questions_asked": []}
@@ -45,6 +46,7 @@ def question_selector(state: InterviewState):
         "hr": "Please ask the next HR question from your question bank that hasn't been asked yet. Keep it brief and conversational.",
         "technical": "Ask the next technical question about a specific part of their resume that hasn't been explored yet. Be specific and targeted.",
         "gd": "Introduce the discussion topic if you haven't already, or introduce a new angle / counterpoint to keep the debate alive. Stay sharp and brief.",
+        "tutor": "Present the next pedagogical scenario or analytical teaching challenge. If no resume is present, focus on your core question bank. Keep it professional and concise.",
     }
     prompt = instructions.get(mode, instructions["hr"])
     
@@ -80,6 +82,7 @@ def edge_case_handler(state: InterviewState):
         "hr": "I'd love to hear a bit more about that. Could you walk me through a specific example?",
         "technical": "Interesting — could you give me more technical detail on how that actually worked?",
         "gd": "That's an interesting point — could you expand on your reasoning a bit more?",
+        "tutor": "I'd like to understand that deeper — how exactly does that approach benefit a struggling student?",
     }
     msg = prompts.get(mode, prompts["hr"])
     return {"messages": [AIMessage(content=msg)], "current_phase": "followup"}
@@ -87,9 +90,10 @@ def edge_case_handler(state: InterviewState):
 def closer(state: InterviewState):
     mode = state.get("interview_mode", "hr")
     closers = {
-        "hr": "That's all the questions I have for today! It was really lovely getting to know you. The team will review this and be in touch soon. Best of luck!",
-        "technical": "That wraps up our technical session! Really enjoyed exploring your background. The team will be in touch with feedback. Have a great day!",
-        "gd": "Great discussion today — you brought some really solid arguments to the table! That's a wrap on our GD session. The feedback will be shared with you soon.",
+        "hr": f"That concludes our Tutor HR session! It was really lovely getting to know you and your educational values. The school board will review this and be in touch soon. Best of luck!",
+        "technical": f"That wraps up our Domain Specific interview! Really enjoyed exploring your subject expertise. The team will be in touch with feedback for you. Have a great day!",
+        "gd": f"Great discussion today — you brought some really solid arguments regarding educational policy to the table! That's a wrap on our Communication round. Feedback will be shared with you soon.",
+        "tutor": "That concludes our pedagogical discussion. I truly appreciated your insights into student learning. We will review the session and get back to you with a detailed assessment. Thank you!",
     }
     msg = closers.get(mode, closers["hr"])
     return {"messages": [AIMessage(content=msg)], "current_phase": "closer"}

@@ -123,10 +123,10 @@ export default function ATSChecker({ onGoToAuth }) {
                 <Sparkles className="w-4 h-4" /> Free · No Login Required
               </div>
               <h2 className="text-4xl md:text-5xl font-medium tracking-tighter text-white mb-6 leading-[1.1]">
-                Instant ATS Resume<br />Checker
+                Tutor Resume<br />Compliance Checker
               </h2>
               <p className="text-white/40 text-sm font-medium max-w-lg leading-relaxed">
-                Upload your resume and find out in seconds if an ATS will filter you out — before a human ever sees it.
+                Upload your teaching CV and find out in seconds if school recruitment systems will filter you out — before a principal ever sees it.
               </p>
             </div>
 
@@ -206,7 +206,7 @@ export default function ATSChecker({ onGoToAuth }) {
               <div className="grid lg:grid-cols-3 gap-12 items-center mb-16">
                 <ScoreDial score={result.ats_score ?? 0} grade={result.grade ?? 'C'} />
                 <div className="lg:col-span-2">
-                  <p className="text-[#b45309] text-[10px] font-black tracking-widest uppercase mb-4">ATS Verdict</p>
+                  <p className="text-[#b45309] text-[10px] font-black tracking-widest uppercase mb-4">School System Verdict</p>
                   <p className="text-white/80 font-medium text-xl leading-relaxed">"{result.ats_verdict}"</p>
                 </div>
               </div>
@@ -255,8 +255,8 @@ export default function ATSChecker({ onGoToAuth }) {
 
               <div className="p-10 rounded-[2.5rem] bg-[#b45309]/5 border border-[#b45309]/20 flex flex-col md:flex-row items-center justify-between gap-8">
                 <div className="text-center md:text-left">
-                  <p className="text-white font-medium text-lg mb-1 tracking-tight">Ready for a mock interview?</p>
-                  <p className="text-white/30 text-xs font-medium">Practice HR, Technical, or GD rounds with AI feedback.</p>
+                  <p className="text-white font-medium text-lg mb-1 tracking-tight">Ready for a tutor mock interview?</p>
+                  <p className="text-white/30 text-xs font-medium">Practice Tutor HR, Domain, or Policy rounds with AI feedback.</p>
                 </div>
                 <button
                   onClick={() => onGoToAuth('register')}

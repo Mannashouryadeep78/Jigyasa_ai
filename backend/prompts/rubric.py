@@ -124,12 +124,55 @@ Here is the transcript:
 {transcript}
 """
 
+# ─── Tutor Rubric ─────────────────────────────────────────────────────────────
+TUTOR_RUBRIC = """You are an expert educator and pedagogical evaluator. Review the following interview transcript and evaluate the candidate across these 5 dimensions on a scale of 1-5:
+
+1. Pedagogy & Methodology: Do they demonstrate structured, evidence-based teaching strategies?
+2. Student Engagement: Can they motivate learners and manage classroom/tutoring dynamics effectively?
+3. Analytical Thinking: How well do they diagnose learning gaps and technical misunderstandings in students?
+4. Adaptability: Can they pivot their teaching style when a student is struggling or lost?
+5. Communication Clarity: Ability to explain complex, abstract, or technical concepts simply and accurately.
+
+For each dimension, provide one direct quote from the candidate as evidence.
+Flag any answers that showed a lack of empathy, rigid thinking, or factually poor pedagogical advice.
+
+Return valid JSON in exactly this structure:
+{{
+  "scores": {{
+    "pedagogy_and_methodology": 4,
+    "student_engagement": 5,
+    "analytical_thinking": 3,
+    "adaptability": 4,
+    "communication_clarity": 5
+  }},
+  "quotes": {{
+    "pedagogy_and_methodology": "I use the scaffolded learning approach by starting with...",
+    "student_engagement": "When I see a student drifting, I immediately ask a curiosity-based question...",
+    "analytical_thinking": "I look at precisely which step of the multi-part problem they failed to...",
+    "adaptability": "I realized they didn't have the prerequisite math, so I pivoted to...",
+    "communication_clarity": "Think of a variable as a labeled box that can hold exactly one..."
+  }},
+  "wrong_answers": [
+    {{
+      "question": "How do you handle a disinterested student?",
+      "candidate_answer": "I just tell them to pay attention and follow the rules.",
+      "reason": "Lack of empathy and modern engagement strategy. Fails to address the root of disinterest."
+    }}
+  ],
+  "overall_score": 4.2
+}}
+
+Here is the transcript:
+{transcript}
+"""
+
 # ─── Mode router ──────────────────────────────────────────────────────────────
 def get_rubric_prompt(mode: str) -> str:
     return {
         "hr": HR_RUBRIC,
         "technical": TECHNICAL_RUBRIC,
         "gd": GD_RUBRIC,
+        "tutor": TUTOR_RUBRIC,
     }.get(mode, HR_RUBRIC)
 
 # Legacy alias

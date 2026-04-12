@@ -6,9 +6,9 @@ const MODES = [
   {
     id: 'hr',
     icon: <Users className="w-7 h-7" />,
-    title: 'HR Round',
-    subtitle: 'Behavioural & Culture Fit',
-    description: 'Values, teamwork, conflict resolution, career goals, and communication. Suitable for any field or industry.',
+    title: 'Tutor HR Round',
+    subtitle: 'Behavioural & School Culture',
+    description: 'Values, teamwork, and pedagogical alignment. Suitable for tutors, administrators, and educational staff seeking roles.',
     accent: '#22c55e',
     bg: 'rgba(34,197,94,0.08)',
     border: 'rgba(34,197,94,0.25)',
@@ -16,9 +16,9 @@ const MODES = [
   {
     id: 'technical',
     icon: <Cpu className="w-7 h-7" />,
-    title: 'Technical Round',
-    subtitle: 'Resume-Specific Deep Dive',
-    description: 'Probes your actual projects, tools, and domain expertise — whether you are in engineering, data science, medicine, design, or finance.',
+    title: 'Tutor Domain Specific Interview Round',
+    subtitle: 'Subject Expertise & Methods',
+    description: 'Deep dive into your specific teaching domain (Math, Science, Humanities, etc.). Probes your core subject knowledge and classroom methods.',
     accent: '#3b82f6',
     bg: 'rgba(59,130,246,0.08)',
     border: 'rgba(59,130,246,0.25)',
@@ -26,9 +26,9 @@ const MODES = [
   {
     id: 'gd',
     icon: <MessageSquare className="w-7 h-7" />,
-    title: 'Group Discussion',
-    subtitle: 'Debate & Articulation',
-    description: 'The AI plays a live debate partner. Practice structuring arguments, handling counterpoints, and leading a discussion confidently.',
+    title: 'Communication and Current Affairs Round for Tutors',
+    subtitle: 'Policy & Articulation',
+    description: 'The AI debates educational policy and school current affairs. Practice articulating viewpoints on educational trends and social issues.',
     accent: '#a855f7',
     bg: 'rgba(168,85,247,0.08)',
     border: 'rgba(168,85,247,0.25)',
@@ -118,7 +118,7 @@ export default function ResumeUpload({ onUpload }) {
           {/* Resume Upload (optional) */}
           <div className="mb-6">
             <p className="text-white/40 text-xs font-bold tracking-widest uppercase mb-3 text-center">
-              Resume Upload <span className="text-white/20 normal-case font-normal tracking-normal">(optional — makes questions more specific)</span>
+              Resume Upload <span className="text-[#f5cca8] normal-case font-bold tracking-normal">(Mandatory — required to start session)</span>
             </p>
             <div
               onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
@@ -153,19 +153,14 @@ export default function ResumeUpload({ onUpload }) {
           <div className="flex flex-col gap-3">
             <button
               onClick={handleSubmit}
-              disabled={!selectedMode}
+              disabled={!selectedMode || !file}
               className="w-full py-4 bg-white hover:bg-white/90 text-[#1a0f0a] rounded-full transition-all font-bold tracking-widest uppercase text-xs shadow-xl disabled:opacity-40 disabled:grayscale disabled:cursor-not-allowed"
             >
-              {selectedMode
-                ? `Start ${MODES.find(m => m.id === selectedMode)?.title}`
-                : 'Select a Mode to Continue'}
-            </button>
-            <button
-              type="button"
-              onClick={() => onUpload(null, 'hr')}
-              className="w-full py-3 text-white/30 hover:text-white/60 font-bold text-[10px] tracking-widest uppercase transition-colors"
-            >
-              Skip — Quick Start (HR Mode)
+              {!selectedMode 
+                ? 'Select a Mode to Continue' 
+                : !file 
+                ? 'Upload Resume to Start' 
+                : `Start ${MODES.find(m => m.id === selectedMode)?.title}`}
             </button>
           </div>
         </div>

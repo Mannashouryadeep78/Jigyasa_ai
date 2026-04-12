@@ -14,18 +14,18 @@ export default function LandingPage({ onGoToAuth }) {
     const features = [
         {
             title: "Hyper",
-            subtitle: "REALISTIC",
-            description: "Speak naturally using voice-to-text. Our engine understands nuance and challenges you just like a real engineering manager.",
+            subtitle: "PEDAGOGICAL",
+            description: "Speak naturally using voice-to-text. Our engine understands nuance and challenges you just like a real school principal or academic director.",
         },
         {
             title: "Instant",
-            subtitle: "ANALYTICS",
-            description: "No more waiting days for feedback. Get incredibly detailed, rubric-based evaluation scorecards the exact second your session ends.",
+            subtitle: "ASSESSMENT",
+            description: "No more waiting days for feedback. Get incredibly detailed, rubric-based teaching scorecards the exact second your session ends.",
         },
         {
             title: "Context",
-            subtitle: "AWARE",
-            description: "Upload your CV and the system dynamically builds a custom interview strategy tailored uniquely to your past experience.",
+            subtitle: "DRIVEN",
+            description: "Upload your teaching portfolio/CV and the system dynamically builds a custom interview strategy tailored uniquely to your experience.",
         }
     ];
 
@@ -108,11 +108,11 @@ export default function LandingPage({ onGoToAuth }) {
                             <div className="flex items-start gap-3 sm:gap-4 mb-2">
                                 <SparkleIcon className="w-6 h-6 sm:w-10 sm:h-10 text-white mt-2 sm:mt-3 shrink-0" />
                                 {/* Responsive hero text: fluid scaling from mobile to desktop */}
-                                <h1 className="text-[2.8rem] xs:text-[3.4rem] sm:text-[4.5rem] md:text-[5.5rem] lg:text-[6.5rem] font-bold leading-[0.88] tracking-tighter text-white">
+                                <h1 className="text-[1.8rem] xs:text-[2.2rem] sm:text-[3.2rem] md:text-[4rem] lg:text-[5rem] font-bold leading-[0.95] tracking-tighter text-white">
                                     Ace<br />
                                     Your Next<br />
-                                    <span className="text-white">HR, Technical</span><br />
-                                    <span className="text-[#f5cca8]">or GD Round</span>
+                                    <span className="text-white">Tutor HR, Domain</span><br />
+                                    <span className="text-[#f5cca8]">or Policy Round</span>
                                 </h1>
                             </div>
                         </motion.div>
@@ -127,7 +127,7 @@ export default function LandingPage({ onGoToAuth }) {
                             className="lg:max-w-xs lg:text-right"
                         >
                             <p className="text-white/60 text-sm font-medium leading-relaxed mb-6 sm:mb-8">
-                                ✦ AI mock interviews for every field — HR rounds, technical deep dives, and group discussions. Plus a free ATS resume score, no login needed.
+                                ✦ AI mock interviews for educators — Tutor HR rounds, domain-specific deep dives, and school policy discussions. Plus a free tutor ATS score, no login needed.
                             </p>
                             <button
                                 onClick={() => onGoToAuth('register')}
@@ -166,8 +166,8 @@ export default function LandingPage({ onGoToAuth }) {
                             </div>
                             <h2 className="text-2xl sm:text-4xl font-bold text-white mb-3 tracking-tight">Resume-to-Prep Matrix</h2>
                             <p className="text-white/40 text-sm leading-relaxed">
-                                Upload your resume and instantly generate the top 15 highly-targeted behavioral and
-                                technical interview questions to practice with. Automatically formatted into a printable study guide.
+                                Upload your resume and instantly generate the top 15 highly-targeted pedagogical and
+                                subject-specific interview questions to practice with. Automatically formatted into a printable study guide.
                             </p>
                         </div>
                         <button
@@ -194,15 +194,15 @@ export default function LandingPage({ onGoToAuth }) {
                             <SparkleIcon className="w-5 h-5 sm:w-6 sm:h-6 text-[#1a0800]" />
                             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#1a0800] tracking-tight">How it works</h2>
                         </div>
-                        <p className="text-[#1a0800]/40 text-sm">Three simple steps to automate your technical screening.</p>
+                        <p className="text-[#1a0800]/40 text-sm">Three simple steps to automate your teaching assessment.</p>
                     </div>
 
                     {/* Step Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
                         {[
-                            { num: "1", title: "UPLOAD RESUME", desc: "Start an interview session by passing the candidate's PDF. The AI reads it contextually." },
-                            { num: "2", title: "TALK NATURALLY", desc: "Using the browser's built-in microphone, the candidate answers dynamic technical questions." },
-                            { num: "3", title: "VIEW REPORT", desc: "Once finished, a rubric-based scorecard is instantly appended to the user dashboard." }
+                            { num: "1", title: "UPLOAD RESUME", desc: "Start a tutor interview session by passing your teaching CV. The AI reads it contextually." },
+                            { num: "2", title: "TALK NATURALLY", desc: "Using the browser's built-in microphone, answer dynamic pedagogical and domain-specific questions." },
+                            { num: "3", title: "VIEW REPORT", desc: "Once finished, a rubric-based teaching scorecard is instantly appended to your user dashboard." }
                         ].map((step, idx) => (
                             <motion.div
                                 key={idx}
