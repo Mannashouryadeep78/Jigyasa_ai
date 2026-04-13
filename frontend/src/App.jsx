@@ -45,6 +45,7 @@ export default function App() {
       localStorage.setItem('jigyasa_phase', phase);
     } else {
       localStorage.removeItem('jigyasa_phase');
+      setPublicPhase('landing');
     }
   }, [phase, user]);
 
