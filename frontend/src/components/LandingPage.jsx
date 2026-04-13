@@ -151,7 +151,7 @@ export default function LandingPage({ onGoToAuth }) {
                 </nav>
 
                 {/* ── HERO ── */}
-                <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-8 md:px-14 pt-4 sm:pt-16 pb-0 flex flex-col lg:flex-row items-center lg:items-start gap-4 lg:gap-0 min-h-[360px] sm:min-h-[520px]">
+                <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-8 md:px-14 pt-8 sm:pt-20 pb-20 flex flex-col lg:flex-row items-center lg:items-start gap-4 lg:gap-0 min-h-[calc(100vh-120px)] sm:min-h-[calc(100vh-160px)]">
                     {/* Left: Headline */}
                     <div className="lg:w-3/5 w-full text-center lg:text-left">
                         <motion.div
@@ -194,19 +194,19 @@ export default function LandingPage({ onGoToAuth }) {
                 </div>
 
                 {/* ── FEATURE CARDS ── */}
-                <section id="features" className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-8 md:px-14 pt-12 sm:pt-20 pb-10 sm:pb-16 grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
+                <section id="features" className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-8 md:px-14 pt-24 sm:pt-32 pb-10 sm:pb-16 grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
                     {features.map((f, idx) => (
                         <motion.div
                             key={idx}
-                            initial={{ opacity: 0, y: 40 }}
+                            initial={{ opacity: 0, y: 80 }}
                             whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: idx * 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                            className="bg-[#1a0800]/90 backdrop-blur-sm border border-white/8 rounded-[1.5rem] sm:rounded-[1.8rem] p-7 sm:p-10 hover:border-[#b45309]/40 transition-all duration-500 shadow-2xl"
+                            viewport={{ once: true, amount: 0.3 }}
+                            transition={{ delay: idx * 0.15, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                            className="bg-[#1a0800]/90 backdrop-blur-sm border border-white/8 rounded-[1.8rem] sm:rounded-[2.2rem] p-8 sm:p-12 hover:border-[#b45309]/40 transition-all duration-500 shadow-2xl group"
                         >
-                            <h3 className="text-2xl sm:text-3xl font-bold text-[#f5cca8] tracking-tight mb-1">{f.title}</h3>
-                            <p className="text-[10px] font-black tracking-[0.2em] text-white/30 uppercase mb-4 sm:mb-5">{f.subtitle}</p>
-                            <p className="text-white/45 text-sm leading-relaxed">{f.description}</p>
+                            <h3 className="text-2xl sm:text-3xl font-bold text-[#f5cca8] tracking-tight mb-2 group-hover:translate-x-1 transition-transform">{f.title}</h3>
+                            <p className="text-[11px] font-black tracking-[0.25em] text-white/35 uppercase mb-5 sm:mb-6">{f.subtitle}</p>
+                            <p className="text-white/50 text-sm leading-relaxed">{f.description}</p>
                         </motion.div>
                     ))}
                 </section>
