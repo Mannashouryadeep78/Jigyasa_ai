@@ -4,7 +4,7 @@ import { Target, Play, LayoutGrid, ShieldCheck, Sparkles, CheckCircle2 } from 'l
 
 const FeatureCard = ({ icon: Icon, title, description, color }) => (
   <div className="bg-white/5 border border-white/10 rounded-3xl p-6 flex flex-col items-center text-center group hover:bg-white/10 transition-all">
-    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ${color}/20 text-${color}`}>
+    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 bg-${color}/20 text-${color}`}>
         <Icon className="w-6 h-6" />
     </div>
     <h3 className="text-sm font-bold uppercase tracking-widest text-white mb-2">{title}</h3>

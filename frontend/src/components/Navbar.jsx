@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Home, BarChart2, LogOut, Menu, X, Clock, LayoutGrid, ShieldCheck, LifeBuoy } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function Navbar({ activeView, onViewChange }) {
