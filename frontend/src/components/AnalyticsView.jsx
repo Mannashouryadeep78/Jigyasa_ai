@@ -11,6 +11,13 @@ export default function AnalyticsView({ sessions, onBack }) {
     const [chartData, setChartData] = useState([]);
     const [sessionSummaries, setSessionSummaries] = useState([]);
     const [isExpanded, setIsExpanded] = useState(false);
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        // Small delay to ensure the parent container has finished its layout/animation
+        const timer = setTimeout(() => setIsMounted(true), 200);
+        return () => clearTimeout(timer);
+    }, []);
 
     useEffect(() => {
         // Build rich session summaries: include name, date, and all score fields
@@ -81,13 +88,14 @@ export default function AnalyticsView({ sessions, onBack }) {
     const AnalyticsContent = () => (
         <div className={`grid ${isExpanded ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1 md:grid-cols-2'} gap-6`}>
             {/* Left: Chart */}
-            <div className="bg-[#1e1d24]/50 border border-white/5 rounded-3xl p-4 sm:p-5 backdrop-blur-sm flex flex-col min-h-[320px] sm:min-h-[360px]">
+            <div className="bg-[#1e1d24]/50 border border-white/5 rounded-3xl p-4 sm:p-5 backdrop-blur-sm flex flex-col min-h-[320px] sm:min-h-[360px] min-w-0">
                 <h3 className="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-white/70 mb-4 sm:mb-6 flex items-center gap-2">
                     <TrendingUp className="w-3.5 h-3.5" /> Global Comparison
                 </h3>
-                <div className="h-[280px] sm:h-[320px] w-full relative -ml-4 min-w-0">
-                    <ResponsiveContainer width="99%" height="99%" minWidth={0} minHeight={0}>
-                        <BarChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 60 }}>
+                <div className="h-[280px] sm:h-[320px] w-full relative min-w-0">
+                    {isMounted && (
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={chartData} margin={{ top: 10, right: 30, left: -20, bottom: 60 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#ffffff1a" vertical={false} />
                             <XAxis
                                 dataKey="name"
@@ -107,6 +115,7 @@ export default function AnalyticsView({ sessions, onBack }) {
                             <Bar dataKey="Benchmark (3.5/5)" fill="#b4530980" radius={[4, 4, 0, 0]} />
                         </BarChart>
                     </ResponsiveContainer>
+                    )}
                 </div>
             </div>
 
