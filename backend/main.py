@@ -140,7 +140,7 @@ def _run_graph_sync(input_state, config):
 
 
 # ─── /session ────────────────────────────────────────────────────────────────
-VALID_MODES = {"hr", "technical", "gd"}
+VALID_MODES = {"hr", "technical", "gd", "tutor"}
 
 @app.post("/session")
 async def create_session(
@@ -475,6 +475,33 @@ async def generate_tts(
     # ── Strategy 3: 204 — tells the frontend to use native browser TTS ─────────
     print("[TTS] All strategies failed. Returning 204 for native TTS fallback.")
     return Response(status_code=204)
+
+
+# ─── /transcribe ─────────────────────────────────────────────────────────────
+@app.post("/transcribe")
+async def transcribe(
+    file: UploadFile = File(...),
+    current_user: dict = Depends(get_current_user),
+):
+    from services.groq_client import transcribe_audio
+    import tempfile
+    
+    # Save uploaded file to a temporary location
+    with tempfile.NamedTemporaryFile(delete=False, suffix=f"_{file.filename}") as tmp:
+        content = await file.read()
+        tmp.write(content)
+        tmp_path = tmp.name
+
+    try:
+        text = transcribe_audio(tmp_path)
+        return {"transcript": text}
+    except Exception as e:
+        print(f"[TRANSCRIBE ERROR] {e}")
+        raise HTTPException(status_code=500, detail="Transcription failed. Please try again.")
+    finally:
+        # Cleanup
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
 
 
 # ─── /analytics/guidance ─────────────────────────────────────────────────────

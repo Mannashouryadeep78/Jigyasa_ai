@@ -125,38 +125,38 @@ Here is the transcript:
 """
 
 # ─── Tutor Rubric ─────────────────────────────────────────────────────────────
-TUTOR_RUBRIC = """You are an expert educator and pedagogical evaluator. Review the following interview transcript and evaluate the candidate across these 5 dimensions on a scale of 1-5:
+TUTOR_RUBRIC = """You are an expert educator and pedagogical evaluator. Review the following interview transcript and evaluate the candidate across these 5 dimensions on a scale of 1-5, focusing heavily on soft skills and tutoring temperament:
 
-1. Pedagogy & Methodology: Do they demonstrate structured, evidence-based teaching strategies?
-2. Student Engagement: Can they motivate learners and manage classroom/tutoring dynamics effectively?
-3. Analytical Thinking: How well do they diagnose learning gaps and technical misunderstandings in students?
-4. Adaptability: Can they pivot their teaching style when a student is struggling or lost?
-5. Communication Clarity: Ability to explain complex, abstract, or technical concepts simply and accurately.
+1. Communication Clarity: Is their language clear, structured, and easy for a child or beginner to follow?
+2. Warmth & Patience: Do they demonstrate genuine empathy, encouragement, and a welcoming, non-judgmental tone?
+3. Ability to Simplify: Can they explain complex, abstract concepts (e.g., fractions, variables) simply without losing technical accuracy?
+4. Pedagogical Adaptability: Can they pivot their teaching style when a student is stuck, disinterested, or "staring at the problem"?
+5. English Fluency: Accuracy of grammar, richness of vocabulary, and natural conversational flow.
 
 For each dimension, provide one direct quote from the candidate as evidence.
-Flag any answers that showed a lack of empathy, rigid thinking, or factually poor pedagogical advice.
+Flag any answers that showed a lack of empathy, rigid thinking, or an inability to simplify concepts.
 
 Return valid JSON in exactly this structure:
 {{
   "scores": {{
-    "pedagogy_and_methodology": 4,
-    "student_engagement": 5,
-    "analytical_thinking": 3,
-    "adaptability": 4,
-    "communication_clarity": 5
+    "communication_clarity": 4,
+    "warmth_and_patience": 5,
+    "ability_to_simplify": 3,
+    "pedagogical_adaptability": 4,
+    "english_fluency": 5
   }},
   "quotes": {{
-    "pedagogy_and_methodology": "I use the scaffolded learning approach by starting with...",
-    "student_engagement": "When I see a student drifting, I immediately ask a curiosity-based question...",
-    "analytical_thinking": "I look at precisely which step of the multi-part problem they failed to...",
-    "adaptability": "I realized they didn't have the prerequisite math, so I pivoted to...",
-    "communication_clarity": "Think of a variable as a labeled box that can hold exactly one..."
+    "communication_clarity": "I structure the lesson by first defining the 'what' then the 'why'...",
+    "warmth_and_patience": "That's a great question! Don't worry, many students find this tricky at first...",
+    "ability_to_simplify": "Think of a fraction like a pizza slice—the bottom number is how many slices total...",
+    "pedagogical_adaptability": "I noticed they were staring, so I asked them to draw a picture of the problem...",
+    "english_fluency": "I have been tutoring students in international curricula for five years."
   }},
   "wrong_answers": [
     {{
-      "question": "How do you handle a disinterested student?",
-      "candidate_answer": "I just tell them to pay attention and follow the rules.",
-      "reason": "Lack of empathy and modern engagement strategy. Fails to address the root of disinterest."
+      "question": "How do you handle a student who's been staring at a problem for 5 minutes?",
+      "candidate_answer": "I just tell them to keep trying harder.",
+      "reason": "Shows a lack of patience and active pedagogical intervention. Fails to diagnose the block."
     }}
   ],
   "overall_score": 4.2

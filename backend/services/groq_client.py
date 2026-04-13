@@ -33,3 +33,15 @@ def get_json_llm():
         request_timeout=25,
         model_kwargs={"response_format": {"type": "json_object"}}
     )
+
+def transcribe_audio(file_path: str):
+    """
+    Transcribes audio using Groq's Whisper model.
+    """
+    with open(file_path, "rb") as file:
+        transcription = _groq_client.audio.transcriptions.create(
+            file=(file_path, file.read()),
+            model="whisper-large-v3",
+            response_format="verbose_json",
+        )
+    return transcription.text

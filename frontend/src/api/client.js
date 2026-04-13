@@ -163,4 +163,13 @@ export const api = {
       });
       return res.data;
   },
+
+  transcribeAudio: async (audioBlob) => {
+      const formData = new FormData();
+      formData.append("file", audioBlob, "recording.webm");
+      const res = await client.post('/transcribe', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      return res.data; // { transcript: "..." }
+  },
 };
