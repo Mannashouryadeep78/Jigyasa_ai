@@ -15,9 +15,10 @@ export default function AnalyticsView({ sessions, onBack }) {
 
     useEffect(() => {
         // Small delay to ensure the parent container has finished its layout/animation
-        const timer = setTimeout(() => setIsMounted(true), 200);
+        setIsMounted(false);
+        const timer = setTimeout(() => setIsMounted(true), 300);
         return () => clearTimeout(timer);
-    }, []);
+    }, [isExpanded]);
 
     useEffect(() => {
         // Build rich session summaries: include name, date, and all score fields
@@ -92,9 +93,9 @@ export default function AnalyticsView({ sessions, onBack }) {
                 <h3 className="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-white/70 mb-4 sm:mb-6 flex items-center gap-2">
                     <TrendingUp className="w-3.5 h-3.5" /> Global Comparison
                 </h3>
-                <div className="h-[280px] sm:h-[320px] w-full relative min-w-0">
+                <div className="flex-1 w-full relative min-w-0 min-h-[250px]">
                     {isMounted && (
-                        <ResponsiveContainer width="100%" height="100%">
+                        <ResponsiveContainer width="99%" height="99%" minWidth={0} minHeight={0}>
                             <BarChart data={chartData} margin={{ top: 10, right: 30, left: -20, bottom: 60 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#ffffff1a" vertical={false} />
                             <XAxis
