@@ -152,7 +152,7 @@ export default function App() {
       )}
       {phase === 'upload' && <ResumeUpload onUpload={handleUpload} onBack={() => setPhase('dashboard')} />}
       {phase === 'welcome' && (
-         <WelcomeScreen onStart={handleStartInterview} candidateName={candidateName} isInitializing={isInitializing} />
+         <WelcomeScreen onStart={handleStartInterview} onBack={() => setPhase('upload')} candidateName={candidateName} isInitializing={isInitializing} />
       )}
       {phase === 'interview' && (
         <InterviewRoom 

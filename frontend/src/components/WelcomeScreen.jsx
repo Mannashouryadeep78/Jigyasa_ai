@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileSearch, CheckCircle2, Mic } from 'lucide-react';
 
-export default function WelcomeScreen({ onStart, candidateName, isInitializing }) {
+export default function WelcomeScreen({ onStart, onBack, candidateName, isInitializing }) {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-[#e0ccb8] text-white p-4 md:p-8 selection:bg-black selection:text-white">
@@ -16,6 +16,16 @@ export default function WelcomeScreen({ onStart, candidateName, isInitializing }
             <ellipse cx="80%" cy="20%" rx="50%" ry="100%" fill="none" stroke="#fff" strokeWidth="1" />
             <ellipse cx="-10%" cy="80%" rx="60%" ry="80%" fill="none" stroke="#fff" strokeWidth="1" />
         </svg>
+
+        {/* Back Button */}
+        {!isInitializing && (
+          <button 
+            onClick={onBack}
+            className="absolute top-4 left-4 sm:top-6 sm:left-6 z-20 flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white rounded-full border border-white/10 transition-all text-[9px] sm:text-[10px] font-bold uppercase tracking-widest"
+          >
+            <span>←</span> Back
+          </button>
+        )}
 
         <AnimatePresence mode="wait">
           {isInitializing ? (
