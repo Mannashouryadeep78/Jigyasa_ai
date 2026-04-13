@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, BarChart2, LogOut, Menu, X, Clock, LayoutGrid, ShieldCheck } from 'lucide-react';
+import { Home, BarChart2, LogOut, Menu, X, Clock, LayoutGrid, ShieldCheck, LifeBuoy } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function Navbar({ activeView, onViewChange }) {
@@ -11,6 +11,7 @@ export default function Navbar({ activeView, onViewChange }) {
     { id: 'analytics', label: 'Analytics', icon: <BarChart2 className="w-4 h-4" /> },
     { id: 'prep', label: 'Prep Matrix', icon: <LayoutGrid className="w-4 h-4" /> },
     { id: 'checker', label: 'ATS Checker', icon: <ShieldCheck className="w-4 h-4" /> },
+    { id: 'help', label: 'Help', icon: <LifeBuoy className="w-4 h-4" /> },
   ];
 
   return (

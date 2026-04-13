@@ -8,6 +8,8 @@ import Navbar from './Navbar';
 import { motion, AnimatePresence } from 'framer-motion';
 import InterviewPrepTool from './InterviewPrepTool';
 import ATSChecker from './ATSChecker';
+import FeatureDiscoveryModal from './FeatureDiscoveryModal';
+import HelpView from './HelpView';
 
 export default function Dashboard({ onStartNew, onViewReport, onContinue }) {
   const { user } = useAuth();
@@ -16,6 +18,19 @@ export default function Dashboard({ onStartNew, onViewReport, onContinue }) {
   const [view, setView] = useState('list');
   const [activeTab, setActiveTab] = useState('finished');
   const [showModeChoice, setShowModeChoice] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  useEffect(() => {
+    const hasSeenOnboarding = localStorage.getItem('jigyasa_onboarded');
+    if (!hasSeenOnboarding) {
+      setShowOnboarding(true);
+    }
+  }, []);
+
+  const completeOnboarding = () => {
+    localStorage.setItem('jigyasa_onboarded', 'true');
+    setShowOnboarding(false);
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -262,8 +277,15 @@ export default function Dashboard({ onStartNew, onViewReport, onContinue }) {
             <div className="w-full h-full pb-20 overflow-y-auto custom-scrollbar">
                 <ATSChecker onGoToAuth={() => {}} /> 
             </div>
+        ) : view === 'help' ? (
+            <HelpView onBack={() => setView('list')} />
         ) : null}
       </div>
+
+      <FeatureDiscoveryModal 
+        isOpen={showOnboarding} 
+        onConfirm={completeOnboarding} 
+      />
 
       {/* Mode Choice Overlay */}
       <AnimatePresence>
