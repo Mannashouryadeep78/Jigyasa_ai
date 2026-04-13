@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Home, BarChart2, LogOut, Menu, X, Clock } from 'lucide-react';
+import { Home, BarChart2, LogOut, Menu, X, Clock, LayoutGrid, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function Navbar({ activeView, onViewChange, onBackToLanding }) {
@@ -9,6 +9,8 @@ export default function Navbar({ activeView, onViewChange, onBackToLanding }) {
   const navItems = [
     { id: 'list', label: 'History', icon: <Clock className="w-4 h-4" /> },
     { id: 'analytics', label: 'Analytics', icon: <BarChart2 className="w-4 h-4" /> },
+    { id: 'prep', label: 'Prep Matrix', icon: <LayoutGrid className="w-4 h-4" /> },
+    { id: 'checker', label: 'ATS Checker', icon: <ShieldCheck className="w-4 h-4" /> },
   ];
 
   return (
@@ -27,7 +29,7 @@ export default function Navbar({ activeView, onViewChange, onBackToLanding }) {
               <button
                 key={item.id}
                 onClick={() => onViewChange(item.id)}
-                className={`flex items-center gap-2 px-6 py-2 rounded-full transition-all text-xs font-bold uppercase tracking-widest ${
+                className={`flex items-center gap-2 px-6 py-2 rounded-full transition-all text-[10px] font-bold uppercase tracking-widest ${
                   activeView === item.id 
                     ? 'bg-[#b45309] text-[#1a0f0a]' 
                     : 'text-white/60 hover:text-white'

@@ -6,6 +6,8 @@ import { api } from '../api/client';
 import AnalyticsView from './AnalyticsView';
 import Navbar from './Navbar';
 import { motion, AnimatePresence } from 'framer-motion';
+import InterviewPrepTool from './InterviewPrepTool';
+import ATSChecker from './ATSChecker';
 
 export default function Dashboard({ onStartNew, onViewReport, onContinue, onBackToLanding }) {
   const { user } = useAuth();
@@ -248,11 +250,19 @@ export default function Dashboard({ onStartNew, onViewReport, onContinue, onBack
                     )}
                 </div>
             </main>
-        ) : (
+        ) : view === 'analytics' ? (
             <div className="w-full h-full pb-20 overflow-y-auto custom-scrollbar">
                 <AnalyticsView sessions={sessions} onBack={() => setView('list')} />
             </div>
-        )}
+        ) : view === 'prep' ? (
+            <div className="w-full h-full pb-20 overflow-y-auto custom-scrollbar">
+                <InterviewPrepTool onBack={() => setView('list')} />
+            </div>
+        ) : view === 'checker' ? (
+            <div className="w-full h-full pb-20 overflow-y-auto custom-scrollbar">
+                <ATSChecker onGoToAuth={() => {}} /> 
+            </div>
+        ) : null}
       </div>
 
       {/* Mode Choice Overlay */}

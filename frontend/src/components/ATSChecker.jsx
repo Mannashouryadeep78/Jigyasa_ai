@@ -107,7 +107,7 @@ export default function ATSChecker({ onGoToAuth }) {
   };
 
   return (
-    <section id="ats-checker" className="w-full relative z-20">
+    <section id="ats-checker" className="w-full relative z-20 pt-8 pb-12">
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -253,13 +253,13 @@ export default function ATSChecker({ onGoToAuth }) {
                 </div>
               </div>
 
-              <div className="p-10 rounded-[2.5rem] bg-[#b45309]/5 border border-[#b45309]/20 flex flex-col md:flex-row items-center justify-between gap-8">
+              <div className="p-10 rounded-[2.5rem] bg-[#b45309]/10 border border-[#b45309]/30 flex flex-col md:flex-row items-center justify-between gap-8 backdrop-blur-md">
                 <div className="text-center md:text-left">
-                  <p className="text-white font-medium text-lg mb-1 tracking-tight">Ready for a tutor mock interview?</p>
-                  <p className="text-white/30 text-xs font-medium">Practice Tutor HR, Domain, or Policy rounds with AI feedback.</p>
+                  <p className="text-[#f5cca8] font-medium text-lg mb-1 tracking-tight">Ready for a tutor mock interview?</p>
+                  <p className="text-white/40 text-xs font-medium">Practice Tutor HR, Domain, or Policy rounds with AI feedback.</p>
                 </div>
                 <button
-                  onClick={() => onGoToAuth('register')}
+                  onClick={() => window.location.reload()}
                   className="px-10 py-5 rounded-full bg-white text-[#1a0f0a] text-[10px] font-black tracking-widest uppercase hover:bg-[#f5cca8] transition-all"
                 >
                   Start Practice Session

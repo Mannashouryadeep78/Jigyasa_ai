@@ -57,9 +57,8 @@ export default function InterviewPrepTool({ onBack }) {
         }, 100);
     };
 
-    if (status === 'processing') {
         return (
-            <div className="min-h-screen bg-[#e0ccb8] flex flex-col items-center justify-center text-white selection:bg-black selection:text-white p-4 font-sans print:hidden">
+            <div className="flex flex-col items-center justify-center text-white selection:bg-black selection:text-white p-4 font-sans print:hidden py-24">
               <motion.div 
                  initial={{ opacity: 0, scale: 0.95 }}
                  animate={{ opacity: 1, scale: 1 }}
@@ -93,9 +92,8 @@ export default function InterviewPrepTool({ onBack }) {
         );
     }
 
-    if (status === 'complete') {
         return (
-            <div className="min-h-screen bg-[#e0ccb8] text-[#1a0f0a] p-4 md:p-8 font-sans selection:bg-black selection:text-white print:bg-white print:p-0">
+            <div className="text-[#1a0f0a] p-4 md:p-8 font-sans selection:bg-black selection:text-white print:bg-white print:p-0 pb-20">
                 {/* Watermark for Print */}
                 <div className="hidden print:flex fixed inset-0 items-center justify-center pointer-events-none z-0 overflow-hidden">
                     <div className="text-[10rem] font-black text-black opacity-[0.03] transform -rotate-45 whitespace-nowrap select-none">
@@ -162,9 +160,9 @@ export default function InterviewPrepTool({ onBack }) {
     }
 
     return (
-        <div className="min-h-screen bg-[#e0ccb8] text-[#1a0f0a] p-4 font-sans selection:bg-black selection:text-white flex flex-col items-center justify-center">
-            <button onClick={onBack} className="absolute top-6 left-6 text-[#1a0f0a]/60 hover:text-[#1a0f0a] transition text-sm font-bold flex items-center gap-1 uppercase tracking-widest">
-                ← Back
+        <div className="text-[#1a0f0a] p-4 font-sans selection:bg-black selection:text-white flex flex-col items-center justify-center py-12">
+            <button onClick={onBack} className="absolute top-0 left-0 text-white/50 hover:text-white transition text-[10px] font-bold flex items-center gap-1 uppercase tracking-widest">
+                ← Return to History
             </button>
             
             <div className="w-full max-w-xl bg-[#1a0f0a] rounded-[3rem] p-8 md:p-12 shadow-2xl relative border border-white/5">
