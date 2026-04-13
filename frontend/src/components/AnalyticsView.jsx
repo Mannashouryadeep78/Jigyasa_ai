@@ -179,14 +179,14 @@ export default function AnalyticsView({ sessions, onBack }) {
                     <div>
                         <button
                             onClick={onBack}
-                            className="mb-4 flex items-center gap-2 text-white/60 hover:text-white transition font-bold tracking-widest text-[10px] uppercase"
+                            className="mb-4 flex items-center gap-2 text-white/60 hover:text-white transition font-bold tracking-widest text-[9px] uppercase"
                         >
-                            <ArrowLeft className="w-3 h-3" /> Back to Dashboard
+                            <ArrowLeft className="w-2.5 h-2.5" /> Back
                         </button>
 
-                        <div className="flex items-center gap-3 mb-6">
-                            <Brain className="w-6 h-6 text-[#b45309]" />
-                            <h2 className="text-2xl md:text-3xl font-medium tracking-tighter text-white">
+                        <div className="flex items-center gap-3 mb-4">
+                            <Brain className="w-5 h-5 text-[#b45309]" />
+                            <h2 className="text-xl md:text-2xl font-medium tracking-tighter text-white">
                                 Performance <span className="text-[#f5cca8]">Analytics</span>
                             </h2>
                         </div>
@@ -194,25 +194,25 @@ export default function AnalyticsView({ sessions, onBack }) {
 
                     <button 
                         onClick={() => setIsExpanded(true)}
-                        className="p-2 bg-white/5 hover:bg-[#b45309] text-white/70 hover:text-white rounded-full border border-white/10 transition-all shadow-lg group"
-                        title="Expand View"
+                        className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-[#b45309] text-white/70 hover:text-white rounded-full border border-white/10 transition-all shadow-md group font-bold tracking-widest uppercase text-[9px]"
+                        title="Expand to Full Screen"
                     >
-                        <Maximize2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                        Full Screen <Maximize2 className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
                     </button>
                 </div>
 
-                <div className="flex-grow overflow-y-auto px-4 md:px-8 pb-8 scrollbar-thin scrollbar-thumb-[#b45309]/30 scrollbar-track-transparent pr-2 -mr-2">
+                <div className="flex-grow overflow-y-auto px-4 md:px-8 pb-4 scrollbar-thin scrollbar-thumb-[#b45309]/30 scrollbar-track-transparent pr-2 -mr-2">
                     {/* Session count badge */}
                     {sessionSummaries.length > 0 && (
-                        <div className="mb-4 flex items-center gap-2 text-[10px] text-white/50 font-bold uppercase tracking-widest">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#b45309] inline-block"></span>
-                            Analysing {sessionSummaries.length} completed interview{sessionSummaries.length > 1 ? 's' : ''}
+                        <div className="mb-3 flex items-center gap-1.5 text-[9px] text-white/50 font-bold uppercase tracking-widest">
+                            <span className="w-1 h-1 rounded-full bg-[#b45309] inline-block"></span>
+                            {sessionSummaries.length} sessions
                         </div>
                     )}
 
                     {chartData.length === 0 ? (
-                        <div className="p-10 text-center text-white/50 border border-white/10 rounded-3xl bg-black/20 text-sm">
-                            Complete your first session to unlock performance analytics!
+                        <div className="p-8 text-center text-white/50 border border-white/10 rounded-2xl bg-black/20 text-xs text-sm">
+                            Complete a session to unlock analytics!
                         </div>
                     ) : (
                         <AnalyticsContent />
@@ -224,28 +224,28 @@ export default function AnalyticsView({ sessions, onBack }) {
             <AnimatePresence>
                 {isExpanded && (
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        className="fixed inset-0 z-[1000] bg-[#1a0f0a] overflow-y-auto p-6 md:p-12 lg:p-16 flex flex-col items-center"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[2000] bg-[#1a0f0a] overflow-y-auto p-4 md:p-8 lg:p-12 flex flex-col items-center"
                     >
-                        <div className="max-w-7xl w-full">
-                            <div className="flex justify-between items-center mb-12">
+                        <div className="max-w-7xl w-full flex flex-col h-full">
+                            <div className="flex justify-between items-center mb-10 shrink-0">
                                 <div className="flex items-center gap-4">
-                                    <Brain className="w-10 h-10 text-[#f5cca8]" />
-                                    <h2 className="text-4xl md:text-6xl font-medium tracking-tighter text-white">
-                                        Performance <span className="text-[#f5cca8]">Analytics</span>
+                                    <Brain className="w-8 h-8 text-[#f5cca8]" />
+                                    <h2 className="text-3xl md:text-5xl font-medium tracking-tighter text-white uppercase italic">
+                                        Executive <span className="text-[#f5cca8]">Report</span>
                                     </h2>
                                 </div>
                                 <button 
                                     onClick={() => setIsExpanded(false)}
-                                    className="flex items-center gap-2 px-6 py-3 bg-white/5 hover:bg-white/10 text-white rounded-full border border-white/10 transition-all font-bold tracking-widest uppercase text-xs"
+                                    className="flex items-center gap-2 px-6 py-3 bg-red-500/10 hover:bg-red-500 text-white rounded-full border border-red-500/20 transition-all font-bold tracking-widest uppercase text-xs"
                                 >
                                     <Minimize2 className="w-4 h-4" /> Minimize
                                 </button>
                             </div>
 
-                            <div className="bg-white/5 border border-white/10 rounded-[3rem] p-8 md:p-12 shadow-2xl relative overflow-hidden mb-12">
+                            <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-6 md:p-10 shadow-2xl relative overflow-hidden backdrop-blur-xl mb-12 flex-grow">
                                 <AnalyticsContent />
                             </div>
                         </div>
@@ -255,5 +255,5 @@ export default function AnalyticsView({ sessions, onBack }) {
         </>
     );
 }
-    );
-}
+    
+

@@ -137,45 +137,45 @@ export default function Dashboard({ onStartNew, onViewReport, onContinue, onBack
                 {/* Scrollable Area */}
                 <div className="flex-grow overflow-y-auto pr-2 -mr-2 mb-4 scrollbar-thin scrollbar-thumb-[#b45309]/30 scrollbar-track-transparent">
                     {loading ? (
-                        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                            {[1, 2, 3].map((i) => (
-                                <div key={i} className="bg-white/5 border border-white/10 rounded-[2rem] p-6 h-[280px] flex flex-col justify-between overflow-hidden relative">
+                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                            {[1, 2, 3, 4].map((i) => (
+                                <div key={i} className="bg-white/5 border border-white/10 rounded-[1.5rem] p-4 h-[240px] flex flex-col justify-between overflow-hidden relative">
                                     <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent"></div>
                                     <div>
-                                        <div className="flex justify-between items-start mb-4 w-full">
-                                            <div className="h-5 w-16 bg-white/10 rounded-full"></div>
-                                            <div className="h-3 w-12 bg-white/5 rounded-full"></div>
+                                        <div className="flex justify-between items-start mb-3 w-full">
+                                            <div className="h-4 w-14 bg-white/10 rounded-full"></div>
+                                            <div className="h-2.5 w-10 bg-white/5 rounded-full"></div>
                                         </div>
-                                        <div className="h-6 w-40 bg-white/10 rounded-lg mb-3"></div>
-                                        <div className="h-3 w-24 bg-white/5 rounded-md mb-6"></div>
-                                        <div className="p-4 bg-[#1a0f0a]/80 rounded-[1.2rem] border border-white/5 flex justify-between items-center">
-                                            <div className="h-3 w-20 bg-white/5 rounded-md"></div>
-                                            <div className="h-6 w-12 bg-white/10 rounded-md"></div>
+                                        <div className="h-5 w-32 bg-white/10 rounded-lg mb-2"></div>
+                                        <div className="h-2.5 w-20 bg-white/5 rounded-md mb-4"></div>
+                                        <div className="p-3 bg-[#1a0f0a]/80 rounded-[1.2rem] border border-white/5 flex justify-between items-center">
+                                            <div className="h-2.5 w-16 bg-white/5 rounded-md"></div>
+                                            <div className="h-5 w-10 bg-white/10 rounded-md"></div>
                                         </div>
                                     </div>
-                                    <div className="w-full h-10 bg-white/5 rounded-full mt-auto"></div>
+                                    <div className="w-full h-8 bg-white/5 rounded-full mt-auto"></div>
                                 </div>
                             ))}
                         </div>
                     ) : filteredSessions.length === 0 ? (
                         <div className="flex flex-col items-center justify-center p-20 bg-white/2 border border-white/5 rounded-[2rem] text-center">
-                            <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-8 border border-white/5 text-[#f5cca8]/20">
-                                <FileText className="w-8 h-8" />
+                            <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-6 border border-white/5 text-[#f5cca8]/20">
+                                <FileText className="w-6 h-6" />
                             </div>
-                            <h3 className="text-2xl font-medium tracking-tighter text-white mb-3">No sessions here</h3>
-                            <p className="text-white/30 font-medium max-w-xs mx-auto mb-8 text-sm">
+                            <h3 className="text-xl font-medium tracking-tighter text-white mb-2">No sessions here</h3>
+                            <p className="text-white/30 font-medium max-w-xs mx-auto mb-6 text-xs">
                                 {activeTab === 'finished' ? "Finish an interview to see your scorecard here." :
                                  activeTab === 'discontinued' ? "Any discontinued sessions will appear in this list." :
                                  "Start a new session to begin your practice."}
                             </p>
                         </div>
                     ) : (
-                        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 pb-8">
+                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 pb-8">
                             {filteredSessions.map((session) => (
-                                <div key={session.id} className="bg-white/5 border border-white/10 hover:border-[#b45309]/50 hover:bg-white/10 rounded-[2rem] p-6 transition-all group flex flex-col justify-between h-full shadow-lg">
+                                <div key={session.id} className="bg-white/5 border border-white/10 hover:border-[#b45309]/50 hover:bg-white/10 rounded-[1.5rem] p-4 transition-all group flex flex-col justify-between h-full shadow-lg">
                                     <div>
-                                        <div className="flex justify-between items-start mb-4">
-                                            <div className={`px-2.5 py-1 text-[9px] font-bold uppercase rounded-full tracking-widest ${
+                                        <div className="flex justify-between items-start mb-3">
+                                            <div className={`px-2 py-0.5 text-[8px] font-bold uppercase rounded-full tracking-widest ${
                                                 (session.status === 'finished' || (session.assessments && session.assessments.length > 0)) 
                                                     ? 'bg-[#b45309]/20 text-[#f5cca8] border border-[#b45309]/30' 
                                                     : session.status === 'discontinued'
@@ -184,47 +184,47 @@ export default function Dashboard({ onStartNew, onViewReport, onContinue, onBack
                                             }`}>
                                                 {(session.status === 'finished' || (session.assessments && session.assessments.length > 0)) ? 'FINISHED' : session.status}
                                             </div>
-                                            <span className="text-[10px] text-white/40 flex items-center gap-1.5 font-bold tracking-widest">
-                                                <Calendar className="w-3 h-3" />
+                                            <span className="text-[9px] text-white/40 flex items-center gap-1 font-bold tracking-widest">
+                                                <Calendar className="w-2.5 h-2.5" />
                                                 {new Date(session.created_at).toLocaleDateString()}
                                             </span>
                                         </div>
-                                        <h3 className="text-xl font-medium tracking-tighter text-white mb-1.5">{session.name} Review</h3>
-                                        <p className="text-[10px] tracking-widest text-[#b45309]/60 font-mono mb-6">ID: {session.id.substring(0,8)}...</p>
+                                        <h3 className="text-lg font-medium tracking-tighter text-white mb-1 leading-tight">{session.name} Review</h3>
+                                        <p className="text-[9px] tracking-widest text-[#b45309]/60 font-mono mb-4">ID: {session.id.substring(0,6)}...</p>
                                         
                                         {session.assessments && session.assessments.length > 0 && session.assessments[0].scores_json && (
-                                            <div className="mb-6 p-4 bg-[#1a0f0a]/80 rounded-[1.2rem] border border-white/5 flex justify-between items-center">
-                                                <span className="text-[10px] font-bold tracking-widest uppercase text-white/50">Final Score</span>
-                                                <span className="text-2xl font-medium text-[#f5cca8]">
-                                                    {(Object.values(session.assessments[0].scores_json).reduce((a, b) => a + b, 0) / Object.values(session.assessments[0].scores_json).length || 0).toFixed(1)} <span className="text-sm text-white/20 font-bold tracking-widest">/ 5</span>
+                                            <div className="mb-4 p-3 bg-[#1a0f0a]/80 rounded-[1rem] border border-white/5 flex justify-between items-center">
+                                                <span className="text-[9px] font-bold tracking-widest uppercase text-white/50">Score</span>
+                                                <span className="text-xl font-medium text-[#f5cca8]">
+                                                    {(Object.values(session.assessments[0].scores_json).reduce((a, b) => a + b, 0) / Object.values(session.assessments[0].scores_json).length || 0).toFixed(1)} <span className="text-[10px] text-white/20 font-bold tracking-widest">/ 5</span>
                                                 </span>
                                             </div>
                                         )}
                                         {(session.status === 'active' || session.status === 'start' || session.status === 'in_progress') ? (
-                                            <div className="flex flex-col gap-2">
+                                            <div className="flex flex-col gap-1.5">
                                                 <button 
                                                     onClick={() => onContinue(session.id)}
-                                                    className="w-full py-2.5 bg-[#b45309] hover:bg-white text-[#1a0f0a] text-[10px] font-bold uppercase tracking-widest rounded-full transition flex justify-center shadow-lg shadow-[#b45309]/20"
+                                                    className="w-full py-2 bg-[#b45309] hover:bg-white text-[#1a0f0a] text-[9px] font-bold uppercase tracking-widest rounded-full transition flex justify-center shadow-md shadow-[#b45309]/10"
                                                 >
-                                                    Continue Interview
+                                                    Continue
                                                 </button>
                                                 <button 
                                                     onClick={async () => {
                                                         await api.discontinueSession(session.id);
                                                         window.location.reload();
                                                     }}
-                                                    className="w-full py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-[9px] font-bold uppercase tracking-widest rounded-full transition flex justify-center border border-red-500/20"
+                                                    className="w-full py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-[8px] font-bold uppercase tracking-widest rounded-full transition flex justify-center border border-red-500/20"
                                                 >
-                                                    Discontinue
+                                                    Quit
                                                 </button>
                                             </div>
                                         ) : (
                                             <button 
                                                 onClick={() => onViewReport(session.id)}
                                                 disabled={session.status === 'discontinued' || (session.status !== 'finished' && (!session.assessments || session.assessments.length === 0))}
-                                                className="w-full py-3 bg-white/5 hover:bg-[#b45309] text-white hover:text-[#1a0f0a] text-[10px] font-bold uppercase tracking-widest rounded-full transition flex justify-center disabled:opacity-50 disabled:hover:bg-white/5 disabled:hover:text-white disabled:cursor-not-allowed group-hover:bg-white group-hover:text-[#1a0f0a]"
+                                                className="w-full py-2.5 bg-white/5 hover:bg-[#b45309] text-white hover:text-[#1a0f0a] text-[9px] font-bold uppercase tracking-widest rounded-full transition flex justify-center disabled:opacity-50 disabled:hover:bg-white/5 disabled:hover:text-white disabled:cursor-not-allowed group-hover:bg-white group-hover:text-[#1a0f0a]"
                                             >
-                                                {session.status === 'discontinued' ? 'Discontinued' : 'View Detailed Report'}
+                                                {session.status === 'discontinued' ? 'Discontinued' : 'View Report'}
                                             </button>
                                         )}
                                     </div>
