@@ -163,19 +163,19 @@ export default function AssessmentReport({ sessionId }) {
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="max-w-5xl mx-auto space-y-8 bg-[#1a0f0a] rounded-[3rem] p-8 md:p-12 shadow-2xl relative"
+                className="max-w-5xl mx-auto space-y-6 sm:space-y-8 bg-[#1a0f0a] rounded-[1.5rem] md:rounded-[3rem] p-6 sm:p-8 md:p-12 shadow-2xl relative"
             >
-                <header className="text-center space-y-4 mb-8">
-                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-white/5 border border-white/10 mb-4 print:border-green-500">
-                        <CheckCircle2 className="w-10 h-10 text-[#f5cca8] print:text-green-600" />
+                <header className="text-center space-y-3 sm:space-y-4 mb-6 sm:mb-8">
+                    <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white/5 border border-white/10 mb-2 sm:mb-4 print:border-green-500">
+                        <CheckCircle2 className="w-8 h-8 sm:w-10 sm:h-10 text-[#f5cca8] print:text-green-600" />
                     </div>
-                    <h1 className="text-4xl md:text-5xl font-medium tracking-tighter print-visible-text text-white"><span className="text-[#b45309]">{"}"}</span> Assessment Complete</h1>
-                    <p className="text-white/50 font-medium tracking-wide print:text-gray-600">Here is the detailed breakdown of your interview.</p>
+                    <h1 className="text-2xl sm:text-4xl md:text-5xl font-medium tracking-tighter print-visible-text text-white"><span className="text-[#b45309]">{"}"}</span> Assessment Complete</h1>
+                    <p className="text-[11px] sm:text-base text-white/50 font-medium tracking-wide print:text-gray-600">Detailed breakdown of your interview metrics.</p>
 
-                    <div className="mt-8 p-8 bg-[#1a0f0a] rounded-[2rem] border border-white/10 shadow-[0_0_40px_-10px_rgba(180,83,9,0.15)] inline-block min-w-[300px] print-bg">
-                        <div className="text-xs text-white/50 mb-2 uppercase tracking-widest font-bold print:text-gray-700">Overall Score</div>
-                        <div className="text-6xl font-medium text-[#f5cca8] print:text-indigo-700">
-                            {overall_score || 0} <span className="text-2xl text-white/20 tracking-widest font-bold">/ 5</span>
+                    <div className="mt-4 sm:mt-8 p-6 sm:p-8 bg-[#1a0f0a] rounded-[1.5rem] sm:rounded-[2rem] border border-white/10 shadow-[0_0_40px_-10px_rgba(180,83,9,0.15)] inline-block min-w-[240px] sm:min-w-[300px] print-bg">
+                        <div className="text-[9px] sm:text-xs text-white/50 mb-1 sm:mb-2 uppercase tracking-widest font-bold print:text-gray-700">Overall Score</div>
+                        <div className="text-4xl sm:text-6xl font-medium text-[#f5cca8] print:text-indigo-700">
+                            {overall_score || 0} <span className="text-lg sm:text-2xl text-white/20 tracking-widest font-bold">/ 5</span>
                         </div>
                     </div>
 

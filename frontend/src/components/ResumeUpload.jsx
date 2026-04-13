@@ -55,16 +55,16 @@ export default function ResumeUpload({ onUpload, onBack }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#e0ccb8] p-2 sm:p-6 md:p-8 flex flex-col items-center justify-center selection:bg-black selection:text-white">
+    <div className="min-h-screen bg-[#e0ccb8] p-2 sm:p-6 md:p-8 flex items-center justify-center selection:bg-black selection:text-white">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-3xl bg-[#1a0f0a] border border-white/5 rounded-3xl sm:rounded-[3rem] p-5 sm:p-10 md:p-12 shadow-2xl relative overflow-hidden"
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="w-full max-w-2xl bg-[#1a0f0a] border border-white/5 rounded-[1.5rem] sm:rounded-[3rem] p-4 sm:p-10 md:p-12 shadow-2xl relative overflow-hidden"
       >
         {/* Back Button */}
         <button 
           onClick={onBack}
-          className="absolute top-6 left-6 z-20 flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white rounded-full border border-white/10 transition-all text-[10px] font-bold uppercase tracking-widest"
+          className="absolute top-4 left-4 sm:top-6 sm:left-6 z-20 flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white rounded-full border border-white/10 transition-all text-[9px] sm:text-[10px] font-bold uppercase tracking-widest"
         >
           <span>←</span> Back
         </button>
@@ -76,11 +76,11 @@ export default function ResumeUpload({ onUpload, onBack }) {
         </svg>
 
         <div className="relative z-10">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-medium tracking-tighter mb-2 text-white text-center mt-4 sm:mt-0">
-            <span className="text-[#b45309]">{"{"}</span> Choose Your Round <span className="text-[#b45309]">{"}"}</span>
+          <h1 className="text-xl sm:text-3xl md:text-4xl font-medium tracking-tighter mb-2 text-white text-center mt-10 sm:mt-0">
+            <span className="text-[#b45309]">{"{"}</span> Selection <span className="text-[#b45309]">{"}"}</span>
           </h1>
-          <p className="text-white/40 font-medium mb-6 sm:mb-8 text-center tracking-wide text-xs sm:text-sm px-4">
-            Select an interview mode to tailor the AI to your goal.
+          <p className="text-white/40 font-medium mb-6 sm:mb-8 text-center tracking-wide text-[10px] sm:text-sm px-4">
+            Pick your optimized interview round.
           </p>
 
           {/* Mode Cards */}

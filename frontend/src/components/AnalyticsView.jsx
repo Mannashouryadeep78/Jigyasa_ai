@@ -79,11 +79,11 @@ export default function AnalyticsView({ sessions, onBack }) {
     };
 
     const AnalyticsContent = () => (
-        <div className={`grid ${isExpanded ? 'grid-cols-1 lg:grid-cols-2' : 'md:grid-cols-2'} gap-6`}>
+        <div className={`grid ${isExpanded ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1 md:grid-cols-2'} gap-6`}>
             {/* Left: Chart */}
-            <div className="bg-[#1e1d24]/50 border border-white/5 rounded-3xl p-5 backdrop-blur-sm flex flex-col min-h-[360px]">
-                <h3 className="text-[11px] font-bold uppercase tracking-widest text-white/70 mb-6 flex items-center gap-2">
-                    <TrendingUp className="w-3.5 h-3.5" /> Global Benchmark Comparison
+            <div className="bg-[#1e1d24]/50 border border-white/5 rounded-3xl p-4 sm:p-5 backdrop-blur-sm flex flex-col min-h-[320px] sm:min-h-[360px]">
+                <h3 className="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-white/70 mb-4 sm:mb-6 flex items-center gap-2">
+                    <TrendingUp className="w-3.5 h-3.5" /> Global Comparison
                 </h3>
                 <div className="flex-1 w-full relative -ml-4">
                     <ResponsiveContainer width="100%" height="100%">
@@ -111,20 +111,20 @@ export default function AnalyticsView({ sessions, onBack }) {
             </div>
 
             {/* Right: AI Guidance */}
-            <div className="bg-[#1e1d24]/50 border border-white/5 rounded-3xl p-5 backdrop-blur-sm flex flex-col">
-                <h3 className="text-[11px] font-bold uppercase tracking-widest text-[#b45309] mb-4 flex items-center gap-2">
-                    <Brain className="w-3.5 h-3.5" /> AI Executive Coach Report
+            <div className="bg-[#1e1d24]/50 border border-white/5 rounded-3xl p-4 sm:p-5 backdrop-blur-sm flex flex-col">
+                <h3 className="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-[#b45309] mb-4 flex items-center gap-2">
+                    <Brain className="w-3.5 h-3.5" /> Executive Coach Report
                 </h3>
 
                 {loadingGuidance ? (
                     <div className="flex-1 flex flex-col items-center justify-center text-white/50 space-y-4 py-8">
                         <Loader2 className="w-6 h-6 animate-spin text-[#b45309]" />
-                        <div className="text-[10px] uppercase tracking-widest font-bold animate-pulse">Analysing your interviews...</div>
+                        <div className="text-[10px] uppercase tracking-widest font-bold animate-pulse">Analysing...</div>
                     </div>
                 ) : guidanceError ? (
                     <div className="flex-1 flex flex-col items-center justify-center text-white/50 space-y-4 py-4 text-center">
                         <AlertCircle className="w-6 h-6 text-red-400/70" />
-                        <p className="text-xs">Could not generate your report right now.</p>
+                        <p className="text-xs">Processing error.</p>
                         <button
                             onClick={() => { setLoadingGuidance(true); fetchGuidance(sessionSummaries.slice(0, 8)); }}
                             className="mt-2 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest bg-[#b45309]/20 hover:bg-[#b45309]/40 text-[#f5cca8] rounded-full border border-[#b45309]/30 transition"
@@ -133,18 +133,18 @@ export default function AnalyticsView({ sessions, onBack }) {
                         </button>
                     </div>
                 ) : guidance && (
-                    <div className="flex-1 space-y-5">
-                        <div className="text-white/80 leading-relaxed text-xs">
+                    <div className="flex-1 space-y-4 sm:space-y-5">
+                        <div className="text-white/80 leading-relaxed text-[11px] sm:text-xs">
                             {guidance.overview.split('\n').filter(p => p.trim()).map((para, i) => (
                                 <p key={i} className="mb-3">{para}</p>
                             ))}
                         </div>
 
-                        <div className="bg-black/30 rounded-2xl p-5 border border-[#b45309]/20">
-                            <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#f5cca8] mb-3">Your Action Plan</h4>
-                            <ul className="space-y-2.5">
+                        <div className="bg-black/30 rounded-2xl p-4 sm:p-5 border border-[#b45309]/20">
+                            <h4 className="text-[10px] font-bold uppercase tracking-widest text-[#f5cca8] mb-3">Action Plan</h4>
+                            <ul className="space-y-2 sm:space-y-2.5">
                                 {guidance.action_items.map((item, i) => (
-                                    <li key={i} className="flex gap-2.5 text-xs text-white/70">
+                                    <li key={i} className="flex gap-2.5 text-[11px] sm:text-xs text-white/70">
                                         <span className="text-[#b45309] font-bold mt-0.5">{i + 1}.</span>
                                         <span className="leading-relaxed">{item}</span>
                                     </li>
@@ -156,9 +156,9 @@ export default function AnalyticsView({ sessions, onBack }) {
                         <div className="bg-gradient-to-br from-[#b45309]/20 to-transparent border border-[#b45309]/30 rounded-2xl p-4 flex items-start gap-4">
                             <Zap className="w-4 h-4 text-[#f5cca8] shrink-0 mt-0.5" />
                             <div>
-                                <p className="text-[10px] font-bold uppercase tracking-widest text-[#f5cca8] mb-1">Resume-to-Prep Matrix</p>
-                                <p className="text-[11px] text-white/60 leading-relaxed">
-                                    Use our complimentary question generator on the home page.
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-[#f5cca8] mb-1">Coach Prep Matrix</p>
+                                <p className="text-[10px] sm:text-[11px] text-white/60 leading-relaxed">
+                                    Try our free tool on the landing page.
                                 </p>
                             </div>
                         </div>
@@ -175,16 +175,16 @@ export default function AnalyticsView({ sessions, onBack }) {
                 animate={{ opacity: 1, y: 0 }}
                 className="relative z-10 w-full h-full flex flex-col min-h-0"
             >
-                <div className="flex-shrink-0 px-4 md:px-8 pt-4 md:pt-0 flex justify-between items-start">
+                <div className="flex-shrink-0 px-4 md:px-8 pt-4 md:pt-0 flex flex-wrap justify-between items-start gap-4">
                     <div>
                         <button
                             onClick={onBack}
-                            className="mb-4 flex items-center gap-2 text-white/60 hover:text-white transition font-bold tracking-widest text-[9px] uppercase"
+                            className="mb-2 flex items-center gap-2 text-white/60 hover:text-white transition font-bold tracking-widest text-[9px] uppercase"
                         >
                             <ArrowLeft className="w-2.5 h-2.5" /> Back
                         </button>
 
-                        <div className="flex items-center gap-3 mb-4">
+                        <div className="flex items-center gap-3 mb-2 sm:mb-4">
                             <Brain className="w-5 h-5 text-[#b45309]" />
                             <h2 className="text-xl md:text-2xl font-medium tracking-tighter text-white">
                                 Performance <span className="text-[#f5cca8]">Analytics</span>
@@ -202,7 +202,6 @@ export default function AnalyticsView({ sessions, onBack }) {
                 </div>
 
                 <div className="flex-grow overflow-y-auto px-4 md:px-8 pb-4 scrollbar-thin scrollbar-thumb-[#b45309]/30 scrollbar-track-transparent pr-2 -mr-2">
-                    {/* Session count badge */}
                     {sessionSummaries.length > 0 && (
                         <div className="mb-3 flex items-center gap-1.5 text-[9px] text-white/50 font-bold uppercase tracking-widest">
                             <span className="w-1 h-1 rounded-full bg-[#b45309] inline-block"></span>
@@ -211,7 +210,7 @@ export default function AnalyticsView({ sessions, onBack }) {
                     )}
 
                     {chartData.length === 0 ? (
-                        <div className="p-8 text-center text-white/50 border border-white/10 rounded-2xl bg-black/20 text-xs text-sm">
+                        <div className="p-8 text-center text-white/50 border border-white/10 rounded-2xl bg-black/20 text-xs">
                             Complete a session to unlock analytics!
                         </div>
                     ) : (
@@ -220,7 +219,6 @@ export default function AnalyticsView({ sessions, onBack }) {
                 </div>
             </motion.div>
 
-            {/* Expanded Overlay */}
             <AnimatePresence>
                 {isExpanded && (
                     <motion.div
@@ -230,22 +228,22 @@ export default function AnalyticsView({ sessions, onBack }) {
                         className="fixed inset-0 z-[2000] bg-[#1a0f0a] overflow-y-auto p-4 md:p-8 lg:p-12 flex flex-col items-center"
                     >
                         <div className="max-w-7xl w-full flex flex-col h-full">
-                            <div className="flex justify-between items-center mb-10 shrink-0">
-                                <div className="flex items-center gap-4">
-                                    <Brain className="w-8 h-8 text-[#f5cca8]" />
-                                    <h2 className="text-3xl md:text-5xl font-medium tracking-tighter text-white uppercase italic">
+                            <div className="flex justify-between items-center mb-6 sm:mb-10 shrink-0 gap-4">
+                                <div className="flex items-center gap-3 sm:gap-4">
+                                    <Brain className="w-6 h-6 sm:w-8 sm:h-8 text-[#f5cca8]" />
+                                    <h2 className="text-2xl sm:text-3xl md:text-5xl font-medium tracking-tighter text-white uppercase italic">
                                         Executive <span className="text-[#f5cca8]">Report</span>
                                     </h2>
                                 </div>
                                 <button 
                                     onClick={() => setIsExpanded(false)}
-                                    className="flex items-center gap-2 px-6 py-3 bg-red-500/10 hover:bg-red-500 text-white rounded-full border border-red-500/20 transition-all font-bold tracking-widest uppercase text-xs"
+                                    className="flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-red-500/10 hover:bg-red-500 text-white rounded-full border border-red-500/20 transition-all font-bold tracking-widest uppercase text-[10px] sm:text-xs"
                                 >
-                                    <Minimize2 className="w-4 h-4" /> Minimize
+                                    <Minimize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> Minimize
                                 </button>
                             </div>
 
-                            <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-6 md:p-10 shadow-2xl relative overflow-hidden backdrop-blur-xl mb-12 flex-grow">
+                            <div className="bg-white/5 border border-white/10 rounded-[1.5rem] sm:rounded-[2.5rem] p-4 sm:p-6 md:p-10 shadow-2xl relative overflow-y-auto backdrop-blur-xl mb-4 sm:mb-12 flex-grow scrollbar-thin scrollbar-thumb-[#b45309]/30 scrollbar-track-transparent">
                                 <AnalyticsContent />
                             </div>
                         </div>

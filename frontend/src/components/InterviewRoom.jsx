@@ -110,20 +110,20 @@ export default function InterviewRoom({ sessionId, candidateName, initialMessage
     }, []);
 
     return (
-        <div className="flex flex-col min-h-screen bg-[#e0ccb8] text-white font-sans selection:bg-black selection:text-white pb-4 md:pb-8">
+        <div className="flex flex-col h-screen sm:min-h-screen bg-[#e0ccb8] text-white font-sans selection:bg-black selection:text-white pb-2 md:pb-8">
 
-            <header className="p-6 md:px-12 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <div className="w-2.5 h-2.5 rounded-full bg-red-400 animate-pulse shadow-[0_0_10px_2px_rgba(248,113,113,0.5)]"></div>
-                    <span className="font-bold tracking-widest text-[#1a0f0a] uppercase text-xs">Live Interview • {candidateName}</span>
+            <header className="p-4 sm:p-6 md:px-12 flex items-center justify-between shrink-0">
+                <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-red-400 animate-pulse shadow-[0_0_10px_2px_rgba(248,113,113,0.5)]"></div>
+                    <span className="font-bold tracking-widest text-[#1a0f0a] uppercase text-[9px] sm:text-xs">Live • {candidateName}</span>
                 </div>
-                <div className="text-xs text-[#1a0f0a]/50 font-bold tracking-widest uppercase">
-                    ID: {sessionId?.substring(0, 8) || 'TEST'}...
+                <div className="text-[9px] sm:text-xs text-[#1a0f0a]/50 font-bold tracking-widest uppercase">
+                    ID: {sessionId?.split('-')[0] || 'TEST'}
                 </div>
             </header>
 
-            <main className="flex-1 flex flex-col items-center justify-center px-4 md:px-8 w-full max-w-7xl mx-auto h-[calc(100vh-100px)]">
-                <div className="w-full h-full bg-[#1a0f0a] rounded-[3rem] border border-white/5 shadow-2xl relative overflow-hidden flex flex-col items-center">
+            <main className="flex-1 flex flex-col items-center justify-center px-2 sm:px-4 md:px-8 w-full max-w-7xl mx-auto overflow-hidden">
+                <div className="w-full h-full bg-[#1a0f0a] rounded-[1.5rem] sm:rounded-[3rem] border border-white/5 shadow-2xl relative overflow-hidden flex flex-col items-center">
 
                     {/* Orbital decorative rings */}
                     <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20 mix-blend-overlay" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
@@ -131,8 +131,8 @@ export default function InterviewRoom({ sessionId, candidateName, initialMessage
                         <ellipse cx="-10%" cy="80%" rx="60%" ry="80%" fill="none" stroke="#fff" strokeWidth="1" />
                     </svg>
 
-                    <div className="w-full max-w-4xl flex-1 flex flex-col justify-end mb-8 relative z-10 px-8">
-                        <div className="space-y-6 max-h-[60vh] overflow-y-auto pb-4 custom-scrollbar pr-4">
+                    <div className="w-full max-w-4xl flex-1 flex flex-col justify-end mb-4 sm:mb-8 relative z-10 px-4 sm:px-8 overflow-hidden">
+                        <div className="space-y-4 sm:space-y-6 max-h-full overflow-y-auto pb-4 custom-scrollbar pr-2 sm:pr-4">
                             {history.map((msg) => (
                                 <motion.div
                                     initial={{ opacity: 0, y: 10 }}
@@ -140,10 +140,10 @@ export default function InterviewRoom({ sessionId, candidateName, initialMessage
                                     key={`msg-${msg.id}`}
                                     className={`flex flex-col ${msg.role === 'ai' ? 'items-start' : 'items-end'}`}
                                 >
-                                    <span className="text-[10px] text-white/40 mb-2 font-bold tracking-widest uppercase select-none">
-                                        {msg.role === 'ai' ? 'Screener' : candidateName}
+                                    <span className="text-[9px] text-white/40 mb-1.5 font-bold tracking-widest uppercase select-none">
+                                        {msg.role === 'ai' ? 'Screener' : 'You'}
                                     </span>
-                                    <div className={`px-6 py-5 rounded-[2rem] max-w-[85%] text-sm md:text-base font-medium shadow-xl ${msg.role === 'ai'
+                                    <div className={`px-4 sm:px-6 py-3 sm:py-5 rounded-[1.2rem] sm:rounded-[2rem] max-w-[90%] sm:max-w-[85%] text-xs sm:text-sm md:text-base font-medium shadow-xl ${msg.role === 'ai'
                                             ? 'bg-white/5 text-white rounded-bl-sm border border-white/10'
                                             : 'bg-[#b45309] text-[#1a0f0a] rounded-br-sm'
                                         }`}>
@@ -153,46 +153,45 @@ export default function InterviewRoom({ sessionId, candidateName, initialMessage
                             ))}
 
                             {isSpeaking && (
-                                <div key="state-speaking" className="flex items-center justify-start mt-6 pl-4">
+                                <div key="state-speaking" className="flex items-center justify-start mt-4 sm:mt-6 pl-2 sm:pl-4">
                                     <WaveformVisualizer isActive={true} color="bg-[#f5cca8]" />
                                 </div>
                             )}
 
                             {(isListening || transcript) && !isProcessing && (
                                 <div key="state-listening" className="flex flex-col items-end mt-4">
-                                    <div className="max-w-[85%] text-right text-[#f5cca8] px-6 py-5 bg-[#b45309]/10 border border-[#b45309]/20 rounded-[2rem] rounded-br-sm italic font-medium text-sm md:text-base">
+                                    <div className="max-w-[90%] sm:max-w-[85%] text-right text-[#f5cca8] px-4 sm:px-6 py-3 sm:py-5 bg-[#b45309]/10 border border-[#b45309]/20 rounded-[1.2rem] sm:rounded-[2rem] rounded-br-sm italic font-medium text-xs sm:text-sm md:text-base">
                                         {transcript || 'Listening...'}
                                         <span className="animate-pulse">_</span>
                                     </div>
-                                    <div className="pr-4 pt-4">
+                                    <div className="pr-2 sm:pr-4 pt-3 sm:pt-4">
                                         <WaveformVisualizer isActive={isListening && transcript.length > 0} color="bg-[#b45309]" />
                                     </div>
                                 </div>
                             )}
 
                             {isProcessing && (
-                                <div key="state-processing" className="flex items-center justify-center py-8">
-                                    <Loader2 className="w-8 h-8 text-[#b45309] animate-spin" />
+                                <div key="state-processing" className="flex items-center justify-center py-4 sm:py-8">
+                                    <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 text-[#b45309] animate-spin" />
                                 </div>
                             )}
                         </div>
                     </div>
 
                     {/* Controls */}
-                    <div className="w-full bg-[#1a0f0a]/90 backdrop-blur-sm flex flex-col items-center justify-center pb-12 pt-6 border-t border-white/5 relative z-10">
+                    <div className="w-full bg-[#1a0f0a]/90 backdrop-blur-sm flex flex-col items-center justify-center pb-6 sm:pb-12 pt-4 sm:pt-6 border-t border-white/5 relative z-10 shrink-0">
                         <button
                             onClick={toggleListening}
                             disabled={isSpeaking || isProcessing}
-                            className={`w-24 h-24 rounded-full transition-all flex items-center justify-center border-4 ${isListening
+                            className={`w-16 h-16 sm:w-24 sm:h-24 rounded-full transition-all flex items-center justify-center border-2 sm:border-4 ${isListening
                                     ? 'bg-red-500 hover:bg-red-600 text-white border-red-400 shadow-[0_0_40px_rgba(239,68,68,0.4)]'
                                     : 'bg-white hover:bg-white/90 text-[#1a0f0a] grayscale hover:grayscale-0 border-white/10 shadow-[0_0_40px_rgba(255,255,255,0.05)]'
                                 } disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed group`}
                         >
-                            {isListening ? <Mic className="w-10 h-10 animate-pulse" /> : <MicOff className="w-10 h-10 group-hover:scale-110 transition-transform" />}
+                            {isListening ? <Mic className="w-6 h-6 sm:w-10 sm:h-10 animate-pulse" /> : <MicOff className="w-6 h-6 sm:w-10 sm:h-10 group-hover:scale-110 transition-transform" />}
                         </button>
-                        {/* Fix #15: Timer label now matches the actual 3-second silence timer in the hook */}
-                        <p className="mt-6 text-[10px] tracking-widest font-bold uppercase text-white/50 text-center max-w-sm">
-                            {isListening ? 'Speak naturally. Pausing for 3 seconds will auto-submit (Max 2 mins).' : 'Microphone is currently disabled'}
+                        <p className="mt-4 sm:mt-6 text-[8px] sm:text-[10px] tracking-widest font-bold uppercase text-white/50 text-center max-w-[200px] sm:max-w-sm px-4">
+                            {isListening ? 'Speak naturally. Pausing for 3 seconds will auto-submit.' : 'Microphone disabled'}
                         </p>
                     </div>
                 </div>

@@ -58,8 +58,8 @@ export default function Dashboard({ onStartNew, onViewReport, onContinue, onBack
   };
 
   return (
-    <div className="min-h-screen bg-[#e0ccb8] text-white font-sans p-4 md:p-8 selection:bg-black selection:text-white">
-      <div className="max-w-7xl mx-auto bg-[#1a0f0a] rounded-[3rem] p-8 md:p-14 shadow-2xl relative overflow-hidden h-[calc(100vh-4rem)] flex flex-col">
+    <div className="min-h-screen bg-[#e0ccb8] text-white font-sans p-2 sm:p-4 md:p-8 selection:bg-black selection:text-white">
+      <div className="max-w-7xl mx-auto bg-[#1a0f0a] rounded-[1.5rem] md:rounded-[3rem] p-4 sm:p-8 md:p-14 shadow-2xl relative overflow-hidden h-[calc(100vh-1rem)] sm:h-[calc(100vh-4rem)] flex flex-col">
         
         {/* Orbital decorative rings */}
         <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20 mix-blend-overlay" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
@@ -67,48 +67,48 @@ export default function Dashboard({ onStartNew, onViewReport, onContinue, onBack
             <ellipse cx="-10%" cy="80%" rx="60%" ry="80%" fill="none" stroke="#fff" strokeWidth="1" />
         </svg>
 
-        <header className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6 mb-12 border-b border-white/10 pb-10 flex-shrink-0">
-            <div>
-                <h1 className="text-4xl font-medium tracking-tighter text-white"><span className="text-[#b45309]">✦</span> Jigyasa Dashboard</h1>
-                <p className="text-white/50 font-medium mt-2">Welcome back, <span className="text-white tracking-wide">{user?.user_metadata?.full_name || user?.email}</span></p>
+        <header className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-6 mb-6 sm:mb-12 border-b border-white/10 pb-6 sm:pb-10 flex-shrink-0">
+            <div className="text-center md:text-left">
+                <h1 className="text-2xl sm:text-4xl font-medium tracking-tighter text-white"><span className="text-[#b45309]">✦</span> Jigyasa Dashboard</h1>
+                <p className="text-white/50 font-medium mt-1 sm:mt-2 text-xs sm:text-base">Welcome, <span className="text-white tracking-wide">{user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0]}</span></p>
             </div>
             <div className="flex flex-wrap justify-center items-center gap-2 sm:gap-4">
                 <button 
                   onClick={onBackToLanding}
-                  className="px-6 py-3.5 bg-white/5 hover:bg-white/10 text-white/80 hover:text-white rounded-full transition font-bold tracking-widest uppercase text-[10px] flex items-center gap-2 border border-white/10"
+                  className="px-4 md:px-6 py-2.5 sm:py-3.5 bg-white/5 hover:bg-white/10 text-white/80 hover:text-white rounded-full transition font-bold tracking-widest uppercase text-[8px] sm:text-[10px] flex items-center gap-1.5 sm:gap-2 border border-white/10"
                 >
-                  <Home className="w-3.5 h-3.5 text-[#b45309]" /> Back to Landing Page
+                  <Home className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#b45309]" /> <span className="hidden xs:inline">Landing</span><span className="xs:hidden">Home</span>
                 </button>
                 <button 
                   onClick={() => setView('analytics')}
-                  className="flex px-6 py-3.5 bg-white/5 hover:bg-white/10 text-white/80 hover:text-white rounded-full transition font-bold tracking-widest uppercase text-[10px] items-center gap-2 border border-white/10"
+                  className="flex px-4 md:px-6 py-2.5 sm:py-3.5 bg-white/5 hover:bg-white/10 text-white/80 hover:text-white rounded-full transition font-bold tracking-widest uppercase text-[8px] sm:text-[10px] items-center gap-1.5 sm:gap-2 border border-white/10"
                 >
-                  <BarChart2 className="w-4 h-4 text-[#b45309]" /> View Analytics
+                  <BarChart2 className="w-3 h-3 sm:w-4 sm:h-4 text-[#b45309]" /> Analytics
                 </button>
                 <button 
                   onClick={onStartNew}
-                  className="px-8 py-3.5 bg-white hover:bg-white/90 text-[#1a0f0a] rounded-full transition font-bold tracking-widest uppercase text-[10px] flex items-center gap-2 shadow-xl shadow-white/5"
+                  className="px-6 md:px-8 py-2.5 sm:py-3.5 bg-white hover:bg-white/90 text-[#1a0f0a] rounded-full transition font-bold tracking-widest uppercase text-[8px] sm:text-[10px] flex items-center gap-1.5 sm:gap-2 shadow-xl shadow-white/5"
                 >
-                  <Plus className="w-4 h-4" /> Start Interview
+                  <Plus className="w-3 h-3 sm:w-4 sm:h-4" /> Start
                 </button>
                 <button 
                   onClick={() => signOut()}
-                  className="px-6 py-3.5 bg-white/5 hover:bg-white/10 text-white/80 hover:text-white rounded-full transition font-bold tracking-widest uppercase text-[10px] flex items-center gap-2 border border-white/10"
+                  className="px-4 md:px-6 py-2.5 sm:py-3.5 bg-white/5 hover:bg-white/10 text-white/80 hover:text-white rounded-full transition font-bold tracking-widest uppercase text-[8px] sm:text-[10px] flex items-center gap-1.5 sm:gap-2 border border-white/10"
                 >
-                  <LogOut className="w-3 h-3" /> Sign Out
+                  <LogOut className="w-3 h-3" /> <span className="xs:hidden">Out</span><span className="hidden xs:inline">Sign Out</span>
                 </button>
             </div>
         </header>
 
         {view === 'list' ? (
             <main className="relative z-10 w-full flex-grow flex flex-col min-h-0">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 flex-shrink-0">
-                    <h2 className="text-xl font-medium tracking-tighter text-white flex items-center gap-2 border-l-4 border-[#b45309] pl-4">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6 mb-6 sm:mb-8 flex-shrink-0">
+                    <h2 className="text-lg sm:text-xl font-medium tracking-tighter text-white flex items-center gap-2 border-l-4 border-[#b45309] pl-4">
                         Interview History
                     </h2>
                     
                     {/* Tabs */}
-                    <div className="flex p-1 bg-white/5 rounded-2xl border border-white/5 w-fit">
+                    <div className="flex p-1 bg-white/5 rounded-2xl border border-white/5 w-fit overflow-x-auto">
                         {[
                             { id: 'finished', label: 'Finished', count: counts.finished },
                             { id: 'discontinued', label: 'Discontinued', count: counts.discontinued },
@@ -117,7 +117,7 @@ export default function Dashboard({ onStartNew, onViewReport, onContinue, onBack
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`px-4 sm:px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all flex items-center gap-2 ${
+                                className={`px-4 sm:px-6 py-2 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-[0.15em] transition-all flex items-center gap-2 whitespace-nowrap ${
                                     activeTab === tab.id 
                                         ? 'bg-[#b45309] text-white shadow-lg' 
                                         : 'text-white/40 hover:text-white/70'
@@ -137,7 +137,7 @@ export default function Dashboard({ onStartNew, onViewReport, onContinue, onBack
                 {/* Scrollable Area */}
                 <div className="flex-grow overflow-y-auto pr-2 -mr-2 mb-4 scrollbar-thin scrollbar-thumb-[#b45309]/30 scrollbar-track-transparent">
                     {loading ? (
-                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                        <div className="grid gap-3 md:gap-4 md:grid-cols-2 lg:grid-cols-4">
                             {[1, 2, 3, 4].map((i) => (
                                 <div key={i} className="bg-white/5 border border-white/10 rounded-[1.5rem] p-4 h-[240px] flex flex-col justify-between overflow-hidden relative">
                                     <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent"></div>

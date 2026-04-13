@@ -145,37 +145,37 @@ export default function LandingPage({ onGoToAuth }) {
                 </nav>
 
                 {/* ── HERO ── */}
-                <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-8 md:px-14 pt-8 sm:pt-16 pb-0 flex flex-col lg:flex-row items-start gap-6 lg:gap-0 min-h-[400px] sm:min-h-[520px]">
+                <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-8 md:px-14 pt-4 sm:pt-16 pb-0 flex flex-col lg:flex-row items-center lg:items-start gap-4 lg:gap-0 min-h-[360px] sm:min-h-[520px]">
                     {/* Left: Headline */}
-                    <div className="lg:w-3/5 w-full">
+                    <div className="lg:w-3/5 w-full text-center lg:text-left">
                         <motion.div
                             initial={{ opacity: 0, y: 24 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
                         >
-                            <div className="flex items-start gap-3 sm:gap-4 mb-2">
-                                <SparkleIcon className="w-6 h-6 sm:w-10 sm:h-10 text-white mt-2 sm:mt-3 shrink-0" />
+                            <div className="flex flex-col lg:flex-row items-center lg:items-start gap-2 sm:gap-4 mb-2">
+                                <SparkleIcon className="w-6 h-6 sm:w-10 sm:h-10 text-white mt-1 sm:mt-3 shrink-0" />
                                 {/* Responsive hero text: fluid scaling from mobile to desktop */}
-                                <h1 className="text-[1.8rem] xs:text-[2.2rem] sm:text-[3.2rem] md:text-[4rem] lg:text-[5rem] font-bold leading-[0.95] tracking-tighter text-white">
+                                <h1 className="text-[1.6rem] xs:text-[2.2rem] sm:text-[3.2rem] md:text-[4rem] lg:text-[5rem] font-bold leading-[0.95] tracking-tighter text-white">
                                     Ace<br />
                                     Your Next<br />
-                                    <span className="text-white">Tutor HR, Domain</span><br />
-                                    <span className="text-[#f5cca8]">or Policy Round</span>
+                                    <span className="text-white">Professional</span><br />
+                                    <span className="text-[#f5cca8]">Tutor Interview</span>
                                 </h1>
                             </div>
                         </motion.div>
                     </div>
 
                     {/* Right: Descriptor + CTA */}
-                    <div className="lg:w-2/5 w-full lg:flex lg:flex-col lg:items-end lg:justify-center lg:pt-48">
+                    <div className="lg:w-2/5 w-full flex flex-col items-center lg:items-end lg:justify-center lg:pt-48">
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.25, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-                            className="lg:max-w-xs lg:text-right"
+                            className="max-w-xs text-center lg:text-right"
                         >
-                            <p className="text-white/60 text-sm font-medium leading-relaxed mb-6 sm:mb-8">
-                                ✦ AI mock interviews for educators — Tutor HR rounds, domain-specific deep dives, and school policy discussions. Plus a free tutor ATS score, no login needed.
+                            <p className="text-white/60 text-xs sm:text-sm font-medium leading-relaxed mb-6 sm:mb-8">
+                                ✦ Specialized AI mock interviews for educators. Domain deep dives, HR rounds, and policy assessments with a free tutor ATS checker.
                             </p>
                             <button
                                 onClick={() => onGoToAuth('register')}
