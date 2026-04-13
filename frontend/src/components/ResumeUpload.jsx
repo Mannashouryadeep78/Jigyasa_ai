@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FileUp, CheckCircle2, Users, Cpu, MessageSquare } from 'lucide-react';
+import { FileUp, CheckCircle2, Users, Cpu, MessageSquare, ListChecks } from 'lucide-react';
 
 const MODES = [
   {
@@ -35,10 +35,14 @@ const MODES = [
   },
 ];
 
-export default function ResumeUpload({ onUpload, onBack }) {
+export default function ResumeUpload({ type = 'practice', onUpload, onBack }) {
   const [file, setFile] = useState(null);
-  const [selectedMode, setSelectedMode] = useState(null);
+  const [selectedMode, setSelectedMode] = useState(type === 'exam' ? 'hr' : null);
   const [dragging, setDragging] = useState(false);
+
+  useEffect(() => {
+    if (type === 'exam') setSelectedMode('hr');
+  }, [type]);
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) setFile(e.target.files[0]);
@@ -55,87 +59,102 @@ export default function ResumeUpload({ onUpload, onBack }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#e0ccb8] p-2 sm:p-6 md:p-8 flex items-center justify-center selection:bg-black selection:text-white">
+    <div className="min-h-screen bg-[#1a0f0a] p-4 sm:p-8 flex items-center justify-center selection:bg-[#b45309] selection:text-white relative overflow-hidden">
+      
+      {/* Background decoration */}
+      <div className="absolute inset-0 pointer-events-none opacity-20">
+        <div className="absolute top-[20%] left-[10%] w-[50%] h-[50%] bg-[#b45309] rounded-full blur-[120px]" />
+      </div>
+
       <motion.div
-        initial={{ opacity: 0, scale: 0.98 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-2xl bg-[#1a0f0a] border border-white/5 rounded-[1.5rem] sm:rounded-[3rem] p-4 sm:p-10 md:p-12 shadow-2xl relative overflow-hidden"
+        initial={{ opacity: 0, scale: 0.98, y: 10 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        className="w-full max-w-2xl bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] sm:rounded-[4rem] p-6 sm:p-12 shadow-2xl relative overflow-hidden"
       >
         {/* Back Button */}
         <button 
           onClick={onBack}
-          className="absolute top-4 left-4 sm:top-6 sm:left-6 z-20 flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white rounded-full border border-white/10 transition-all text-[9px] sm:text-[10px] font-bold uppercase tracking-widest"
+          className="absolute top-6 left-6 z-20 flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-white/50 hover:text-white rounded-full border border-white/10 transition-all text-[10px] font-bold uppercase tracking-widest"
         >
           <span>←</span> Back
         </button>
 
-        {/* Orbital rings */}
-        <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20 mix-blend-overlay" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-          <ellipse cx="80%" cy="20%" rx="50%" ry="100%" fill="none" stroke="#fff" strokeWidth="1" />
-          <ellipse cx="-10%" cy="80%" rx="60%" ry="80%" fill="none" stroke="#fff" strokeWidth="1" />
-        </svg>
-
         <div className="relative z-10">
-          <h1 className="text-xl sm:text-3xl md:text-4xl font-medium tracking-tighter mb-2 text-white text-center mt-10 sm:mt-0">
-            <span className="text-[#b45309]">{"{"}</span> Selection <span className="text-[#b45309]">{"}"}</span>
+          <h1 className="text-3xl sm:text-5xl font-medium tracking-tighter mb-4 text-white text-center mt-12 sm:mt-0 uppercase italic">
+            Session <span className="text-[#f5cca8]">Setup</span>
           </h1>
-          <p className="text-white/40 font-medium mb-6 sm:mb-8 text-center tracking-wide text-[10px] sm:text-sm px-4">
-            Pick your optimized interview round.
+          <p className="text-white/40 font-medium mb-10 text-center tracking-widest uppercase text-[10px] sm:text-xs">
+            {type === 'exam' ? '3-Round Sequential Evaluation' : 'Select your interview parameter'}
           </p>
 
-          {/* Mode Cards */}
-          <div className="grid gap-4 mb-8">
-            {MODES.map((mode) => (
-              <motion.button
-                key={mode.id}
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.99 }}
-                onClick={() => setSelectedMode(mode.id)}
-                className="w-full text-left p-4 sm:p-5 rounded-2xl border-2 transition-all duration-200 flex items-start gap-3 sm:gap-5"
-                style={{
-                  background: selectedMode === mode.id ? mode.bg : 'rgba(255,255,255,0.03)',
-                  borderColor: selectedMode === mode.id ? mode.border : 'rgba(255,255,255,0.07)',
-                  boxShadow: selectedMode === mode.id ? `0 0 20px ${mode.accent}22` : 'none',
-                }}
-              >
-                <div className="shrink-0 w-12 h-12 rounded-xl flex items-center justify-center"
-                  style={{ background: `${mode.accent}18`, color: mode.accent }}>
-                  {mode.icon}
+          {type === 'practice' ? (
+            <div className="grid gap-4 mb-10">
+                {MODES.map((mode) => (
+                <button
+                    key={mode.id}
+                    onClick={() => setSelectedMode(mode.id)}
+                    className="w-full text-left p-5 rounded-3xl border-2 transition-all duration-300 flex items-start gap-5 relative overflow-hidden group"
+                    style={{
+                    background: selectedMode === mode.id ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.02)',
+                    borderColor: selectedMode === mode.id ? mode.accent : 'rgba(255,255,255,0.05)',
+                    boxShadow: selectedMode === mode.id ? `0 0 30px ${mode.accent}20` : 'none',
+                    }}
+                >
+                    <div className="shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110"
+                    style={{ background: `${mode.accent}18`, color: mode.accent }}>
+                    {mode.icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mb-1">
+                        <span className="text-white font-bold tracking-tight text-sm sm:text-base leading-tight uppercase">{mode.title}</span>
+                    </div>
+                    <p className="text-white/40 text-[11px] sm:text-xs leading-relaxed tracking-wide">{mode.description}</p>
+                    </div>
+                    <div className="shrink-0 w-6 h-6 rounded-full border-2 mt-1 flex items-center justify-center transition-all"
+                    style={{
+                        borderColor: selectedMode === mode.id ? mode.accent : 'rgba(255,255,255,0.1)',
+                        background: selectedMode === mode.id ? mode.accent : 'transparent',
+                    }}>
+                    {selectedMode === mode.id && <CheckCircle2 className="w-4 h-4 text-[#1a0f0a]" />}
+                    </div>
+                </button>
+                ))}
+            </div>
+          ) : (
+            <div className="mb-10 p-8 bg-white/5 border border-white/5 rounded-3xl">
+                <div className="flex items-center gap-4 mb-8">
+                    <div className="w-12 h-12 bg-[#b45309]/20 rounded-xl flex items-center justify-center text-[#f5cca8]">
+                        <ListChecks className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <h3 className="text-white font-bold tracking-widest uppercase text-xs">Exam Protocol</h3>
+                        <p className="text-white/20 text-[10px] uppercase font-bold">Standardized Rubric</p>
+                    </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mb-1">
-                    <span className="text-white font-bold tracking-tight text-sm sm:text-base leading-tight">{mode.title}</span>
-                    <span className="text-[9px] sm:text-[10px] font-bold tracking-widest uppercase px-2 py-0.5 rounded-full w-fit"
-                      style={{ background: `${mode.accent}18`, color: mode.accent }}>
-                      {mode.subtitle}
-                    </span>
-                  </div>
-                  <p className="text-white/45 text-[12px] sm:text-sm leading-relaxed">{mode.description}</p>
+                <div className="space-y-4">
+                    {['HR Round', 'Domain Specific', 'Communication (GD)'].map((round, idx) => (
+                        <div key={idx} className="flex items-center gap-4 text-white/60">
+                            <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-bold">{idx + 1}</div>
+                            <span className="text-xs font-medium uppercase tracking-widest">{round}</span>
+                        </div>
+                    ))}
                 </div>
-                <div className="shrink-0 w-5 h-5 rounded-full border-2 mt-1 flex items-center justify-center transition-colors"
-                  style={{
-                    borderColor: selectedMode === mode.id ? mode.accent : 'rgba(255,255,255,0.2)',
-                    background: selectedMode === mode.id ? mode.accent : 'transparent',
-                  }}>
-                  {selectedMode === mode.id && <CheckCircle2 className="w-3 h-3 text-white" />}
-                </div>
-              </motion.button>
-            ))}
-          </div>
+            </div>
+          )}
 
-          {/* Resume Upload (optional) */}
-          <div className="mb-6">
-            <p className="text-white/40 text-xs font-bold tracking-widest uppercase mb-3 text-center">
-              Resume Upload <span className="text-[#f5cca8] normal-case font-bold tracking-normal">(Mandatory — required to start session)</span>
+          {/* Resume Upload */}
+          <div className="mb-8">
+            <p className="text-white/40 text-[10px] font-bold tracking-[0.2em] uppercase mb-4 text-center">
+              Candidate Resume <span className="text-[#f5cca8] font-black">(PDF ONLY)</span>
             </p>
             <div
               onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
               onDragLeave={() => setDragging(false)}
               onDrop={handleDrop}
-              className={`relative group cursor-pointer rounded-2xl border border-dashed transition-all duration-300 flex flex-col items-center justify-center py-6 ${
+              className={`relative group cursor-pointer rounded-[2rem] border-2 border-dashed transition-all duration-500 flex flex-col items-center justify-center py-10 ${
                 dragging ? 'border-[#f5cca8] bg-[#f5cca8]/5' :
                 file ? 'border-[#b45309] bg-[#b45309]/10' :
-                'border-white/15 hover:border-[#b45309]/40 bg-white/2'
+                'border-white/10 hover:border-white/20 bg-white/2'
               }`}
             >
               <input
@@ -144,33 +163,30 @@ export default function ResumeUpload({ onUpload, onBack }) {
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
               />
               {file ? (
-                <div className="flex items-center gap-3 px-4 text-center">
-                  <CheckCircle2 className="w-5 h-5 shrink-0 text-[#f5cca8]" />
-                  <span className="text-[#f5cca8] font-bold text-sm truncate">{file.name}</span>
+                <div className="flex flex-col items-center gap-3 px-4 text-center animate-in fade-in zoom-in duration-300">
+                  <div className="w-12 h-12 bg-[#b45309] rounded-2xl flex items-center justify-center text-[#1a0f0a] mb-2 shadow-lg shadow-[#b45309]/20">
+                    <CheckCircle2 className="w-6 h-6" />
+                  </div>
+                  <span className="text-[#f5cca8] font-bold text-sm tracking-tight truncate max-w-[200px]">{file.name}</span>
                 </div>
               ) : (
-                <div className="flex items-center gap-3 text-white/30 px-4 text-center">
-                  <FileUp className="w-5 h-5 shrink-0 group-hover:text-[#b45309] transition-colors" />
-                  <span className="text-[10px] sm:text-xs font-bold tracking-widest uppercase group-hover:text-white/60 transition-colors">Click or drag PDF here</span>
+                <div className="flex flex-col items-center gap-4 text-white/30 px-4 text-center">
+                  <div className="w-16 h-16 rounded-full bg-white/2 border border-white/5 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <FileUp className="w-8 h-8 group-hover:text-white transition-colors" />
+                  </div>
+                  <span className="text-[10px] font-bold tracking-[0.3em] uppercase group-hover:text-white transition-colors">Select PDF Document</span>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Action buttons */}
-          <div className="flex flex-col gap-3">
-            <button
-              onClick={handleSubmit}
-              disabled={!selectedMode || !file}
-              className="w-full py-4 bg-white hover:bg-white/90 text-[#1a0f0a] rounded-full transition-all font-bold tracking-widest uppercase text-[10px] sm:text-xs shadow-xl disabled:opacity-40 disabled:grayscale disabled:cursor-not-allowed"
-            >
-              {!selectedMode 
-                ? 'Select a Mode to Continue' 
-                : !file 
-                ? 'Upload Resume to Start' 
-                : `Start ${MODES.find(m => m.id === selectedMode)?.title}`}
-            </button>
-          </div>
+          <button
+            onClick={handleSubmit}
+            disabled={!selectedMode || !file}
+            className="w-full py-5 bg-white hover:bg-[#b45309] text-[#1a0f0a] hover:text-white rounded-full transition-all duration-500 font-bold tracking-[0.2em] uppercase text-xs shadow-2xl disabled:opacity-20 disabled:grayscale disabled:cursor-not-allowed"
+          >
+            {type === 'exam' ? 'Start 3-Round Assessment' : (selectedMode ? `Initialize ${selectedMode.toUpperCase()} Round` : 'Configure Selection')}
+          </button>
         </div>
       </motion.div>
     </div>

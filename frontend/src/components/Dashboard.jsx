@@ -1,21 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
-import { LogOut, Plus, FileText, Loader2, Calendar, BarChart2, Home } from 'lucide-react';
+import { Plus, FileText, Calendar, Play, Target, ChevronRight } from 'lucide-react';
 import { api } from '../api/client';
 import AnalyticsView from './AnalyticsView';
+import Navbar from './Navbar';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Dashboard({ onStartNew, onViewReport, onContinue, onBackToLanding }) {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState('list');
   const [activeTab, setActiveTab] = useState('finished');
+  const [showModeChoice, setShowModeChoice] = useState(false);
 
   useEffect(() => {
     if (!user) return;
     
-    // Fetch user sessions from Supabase
     const fetchHistory = async () => {
       const { data, error } = await supabase
         .from('sessions')
@@ -57,166 +59,172 @@ export default function Dashboard({ onStartNew, onViewReport, onContinue, onBack
     active: sessions.filter(s => s.status === 'active' || s.status === 'start' || s.status === 'in_progress').length
   };
 
+  const handleStartChoice = (type) => {
+    setShowModeChoice(false);
+    onStartNew(type);
+  };
+
   return (
-    <div className="min-h-screen bg-[#e0ccb8] text-white font-sans p-2 sm:p-4 md:p-8 selection:bg-black selection:text-white">
-      <div className="max-w-7xl mx-auto bg-[#1a0f0a] rounded-[1.5rem] md:rounded-[3rem] p-4 sm:p-8 md:p-14 shadow-2xl relative overflow-hidden h-[calc(100vh-1rem)] sm:h-[calc(100vh-4rem)] flex flex-col">
+    <div className="min-h-screen bg-[#1a0f0a] text-white font-sans selection:bg-[#b45309] selection:text-white flex flex-col relative overflow-hidden">
+      
+      {/* Immersive Background Gradient (matching 1st pic) */}
+      <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-[#b45309]/20 rounded-full blur-[120px]" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#b45309]/10 rounded-full blur-[100px]" />
+          
+          {/* Subtle curved lines (matching 1st pic abstract lines) */}
+          <svg className="absolute inset-0 w-full h-full opacity-[0.15]" preserveAspectRatio="none" viewBox="0 0 100 100">
+            <path d="M0,20 Q50,50 100,20" fill="none" stroke="white" strokeWidth="0.1" />
+            <path d="M0,80 Q50,50 100,80" fill="none" stroke="white" strokeWidth="0.1" />
+            <path d="M20,0 Q50,50 20,100" fill="none" stroke="white" strokeWidth="0.1" />
+            <path d="M80,0 Q50,50 80,100" fill="none" stroke="white" strokeWidth="0.1" />
+          </svg>
+      </div>
+
+      <Navbar activeView={view} onViewChange={setView} onBackToLanding={onBackToLanding} />
+
+      <div className="relative z-10 flex-grow flex flex-col px-4 sm:px-8 md:px-12 py-8 max-w-7xl mx-auto w-full overflow-hidden">
         
-        {/* Orbital decorative rings */}
-        <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20 mix-blend-overlay" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-            <ellipse cx="80%" cy="20%" rx="50%" ry="100%" fill="none" stroke="#fff" strokeWidth="1" />
-            <ellipse cx="-10%" cy="80%" rx="60%" ry="80%" fill="none" stroke="#fff" strokeWidth="1" />
-        </svg>
-
-        <header className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-6 mb-6 sm:mb-12 border-b border-white/10 pb-6 sm:pb-10 flex-shrink-0">
-            <div className="text-center md:text-left">
-                <h1 className="text-2xl sm:text-4xl font-medium tracking-tighter text-white"><span className="text-[#b45309]">✦</span> Jigyasa Dashboard</h1>
-                <p className="text-white/50 font-medium mt-1 sm:mt-2 text-xs sm:text-base">Welcome, <span className="text-white tracking-wide">{user?.user_metadata?.full_name?.split(' ')[0] || user?.email?.split('@')[0]}</span></p>
-            </div>
-            <div className="flex flex-wrap justify-center items-center gap-2 sm:gap-4">
-                <button 
-                  onClick={onBackToLanding}
-                  className="px-4 md:px-6 py-2.5 sm:py-3.5 bg-white/5 hover:bg-white/10 text-white/80 hover:text-white rounded-full transition font-bold tracking-widest uppercase text-[8px] sm:text-[10px] flex items-center gap-1.5 sm:gap-2 border border-white/10"
-                >
-                  <Home className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#b45309]" /> <span className="hidden xs:inline">Landing</span><span className="xs:hidden">Home</span>
-                </button>
-                <button 
-                  onClick={() => setView('analytics')}
-                  className="flex px-4 md:px-6 py-2.5 sm:py-3.5 bg-white/5 hover:bg-white/10 text-white/80 hover:text-white rounded-full transition font-bold tracking-widest uppercase text-[8px] sm:text-[10px] items-center gap-1.5 sm:gap-2 border border-white/10"
-                >
-                  <BarChart2 className="w-3 h-3 sm:w-4 sm:h-4 text-[#b45309]" /> Analytics
-                </button>
-                <button 
-                  onClick={onStartNew}
-                  className="px-6 md:px-8 py-2.5 sm:py-3.5 bg-white hover:bg-white/90 text-[#1a0f0a] rounded-full transition font-bold tracking-widest uppercase text-[8px] sm:text-[10px] flex items-center gap-1.5 sm:gap-2 shadow-xl shadow-white/5"
-                >
-                  <Plus className="w-3 h-3 sm:w-4 sm:h-4" /> Start
-                </button>
-                <button 
-                  onClick={() => signOut()}
-                  className="px-4 md:px-6 py-2.5 sm:py-3.5 bg-white/5 hover:bg-white/10 text-white/80 hover:text-white rounded-full transition font-bold tracking-widest uppercase text-[8px] sm:text-[10px] flex items-center gap-1.5 sm:gap-2 border border-white/10"
-                >
-                  <LogOut className="w-3 h-3" /> <span className="xs:hidden">Out</span><span className="hidden xs:inline">Sign Out</span>
-                </button>
-            </div>
-        </header>
-
         {view === 'list' ? (
-            <main className="relative z-10 w-full flex-grow flex flex-col min-h-0">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6 mb-6 sm:mb-8 flex-shrink-0">
-                    <h2 className="text-lg sm:text-xl font-medium tracking-tighter text-white flex items-center gap-2 border-l-4 border-[#b45309] pl-4">
-                        Interview History
-                    </h2>
+            <main className="w-full h-full flex flex-col min-h-0">
+                <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 shrink-0">
+                    <div>
+                        <h2 className="text-3xl sm:text-5xl font-medium tracking-tighter text-white mb-2 uppercase italic">
+                            Member <span className="text-[#f5cca8]">Portal</span>
+                        </h2>
+                        <p className="text-white/40 font-medium tracking-widest uppercase text-[10px] sm:text-xs">
+                           Tracking your progress with Jigyasa AI
+                        </p>
+                    </div>
+
+                    <button 
+                        onClick={() => setShowModeChoice(true)}
+                        className="group flex items-center gap-3 px-8 py-4 bg-white hover:bg-[#b45309] text-[#1a0f0a] hover:text-white rounded-full transition-all duration-500 font-bold tracking-widest uppercase text-xs shadow-2xl hover:shadow-[#b45309]/40"
+                    >
+                        <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform duration-500" /> Start New Session
+                    </button>
+                </header>
+
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 shrink-0">
+                    <div className="flex items-center gap-4 text-[#b45309]">
+                        <div className="w-1.5 h-6 bg-[#b45309] rounded-full" />
+                        <h3 className="text-lg font-bold uppercase tracking-widest text-white/90">Interview History</h3>
+                    </div>
                     
                     {/* Tabs */}
-                    {/* Tabs */}
-                    <div className="flex-shrink-0 flex items-center overflow-x-auto pb-4 custom-scrollbar lg:no-scrollbar">
-                        <div className="flex items-center gap-3 sm:gap-6 px-1 pr-16 md:pr-0 min-w-max">
-                            {[
-                                { id: 'finished', label: 'Finished', count: counts.finished },
-                                { id: 'discontinued', label: 'Discontinued', count: counts.discontinued },
-                                { id: 'active', label: 'In Progress', count: counts.active }
-                            ].map((tab) => (
-                                <button
-                                    key={tab.id}
-                                    onClick={() => setActiveTab(tab.id)}
-                                    className={`group flex items-center gap-2 px-4 py-2.5 rounded-full transition-all duration-300 border whitespace-nowrap active:scale-95 ${
-                                        activeTab === tab.id 
-                                            ? 'bg-[#b45309] border-[#b45309] text-[#1a0f0a] shadow-lg shadow-[#b45309]/20 font-bold' 
-                                            : 'bg-transparent border-white/10 text-white/40 hover:text-white/60 hover:border-white/20'
-                                    }`}
-                                >
-                                    <span className="text-[10px] sm:text-[11px] uppercase tracking-widest">{tab.label}</span>
-                                    <span className={`text-[10px] sm:text-[11px] font-black px-2 py-0.5 rounded-md ${
-                                        activeTab === tab.id ? 'bg-[#1a0f0a]/20 text-[#1a0f0a]' : 'bg-white/5 text-white/40 group-hover:bg-white/10'
-                                    }`}>
-                                        {tab.count}
-                                    </span>
-                                </button>
-                            ))}
-                        </div>
+                    <div className="flex items-center gap-2 sm:gap-4 overflow-x-auto pb-2 scrollbar-hide">
+                        {[
+                            { id: 'finished', label: 'Completed', count: counts.finished },
+                            { id: 'active', label: 'Active', count: counts.active },
+                            { id: 'discontinued', label: 'Stopped', count: counts.discontinued }
+                        ].map((tab) => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                className={`flex items-center gap-2 px-5 py-2.5 rounded-full transition-all border whitespace-nowrap text-[10px] font-bold uppercase tracking-widest ${
+                                    activeTab === tab.id 
+                                        ? 'bg-[#b45309]/20 border-[#b45309]/40 text-[#f5cca8]' 
+                                        : 'bg-white/5 border-white/5 text-white/40 hover:text-white/60'
+                                }`}
+                            >
+                                {tab.label}
+                                <span className="opacity-40">/</span>
+                                <span className={activeTab === tab.id ? 'text-white' : ''}>{tab.count}</span>
+                            </button>
+                        ))}
                     </div>
                 </div>
                 
                 {/* Scrollable Area */}
-                <div className="flex-grow overflow-y-auto pr-1 sm:pr-2 -mr-1 sm:-mr-2 mb-2 sm:mb-4 scrollbar-thin scrollbar-thumb-[#b45309]/30 scrollbar-track-transparent">
+                <div className="flex-grow overflow-y-auto pr-2 custom-scrollbar pb-10">
                     {loading ? (
-                        <div className="grid gap-3 md:gap-4 md:grid-cols-2 lg:grid-cols-4">
+                        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                             {[1, 2, 3, 4].map((i) => (
-                                <div key={i} className="bg-white/5 border border-white/10 rounded-[1.5rem] p-4 h-[240px] flex flex-col justify-between overflow-hidden relative">
-                                    <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent"></div>
-                                    <div>
-                                        <div className="flex justify-between items-start mb-3 w-full">
-                                            <div className="h-4 w-14 bg-white/10 rounded-full"></div>
-                                            <div className="h-2.5 w-10 bg-white/5 rounded-full"></div>
-                                        </div>
-                                        <div className="h-5 w-32 bg-white/10 rounded-lg mb-2"></div>
-                                        <div className="h-2.5 w-20 bg-white/5 rounded-md mb-4"></div>
-                                        <div className="p-3 bg-[#1a0f0a]/80 rounded-[1.2rem] border border-white/5 flex justify-between items-center">
-                                            <div className="h-2.5 w-16 bg-white/5 rounded-md"></div>
-                                            <div className="h-5 w-10 bg-white/10 rounded-md"></div>
-                                        </div>
-                                    </div>
-                                    <div className="w-full h-8 bg-white/5 rounded-full mt-auto"></div>
-                                </div>
+                                <div key={i} className="bg-white/5 border border-white/5 rounded-3xl p-6 h-[260px] animate-pulse" />
                             ))}
                         </div>
                     ) : filteredSessions.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center p-20 bg-white/2 border border-white/5 rounded-[2rem] text-center">
-                            <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-6 border border-white/5 text-[#f5cca8]/20">
-                                <FileText className="w-6 h-6" />
+                        <div className="flex flex-col items-center justify-center p-20 bg-white/2 border border-white/5 rounded-[3rem] text-center backdrop-blur-sm">
+                            <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-8 border border-white/5 text-[#f5cca8]/20">
+                                <FileText className="w-8 h-8" />
                             </div>
-                            <h3 className="text-xl font-medium tracking-tighter text-white mb-2">No sessions here</h3>
-                            <p className="text-white/30 font-medium max-w-xs mx-auto mb-6 text-xs">
-                                {activeTab === 'finished' ? "Finish an interview to see your scorecard here." :
-                                 activeTab === 'discontinued' ? "Any discontinued sessions will appear in this list." :
-                                 "Start a new session to begin your practice."}
+                            <h3 className="text-2xl font-medium tracking-tighter text-white mb-2 uppercase">No sessions found</h3>
+                            <p className="text-white/30 font-medium max-w-xs mx-auto mb-8 text-xs tracking-wide">
+                                {activeTab === 'finished' ? "You haven't completed any interviews yet." :
+                                 activeTab === 'discontinued' ? "Any stopped sessions will appear here." :
+                                 "Start your first session to begin your AI tutor prep."}
                             </p>
+                            <button 
+                                onClick={() => setShowModeChoice(true)}
+                                className="px-8 py-3 bg-[#b45309]/10 hover:bg-[#b45309]/20 text-[#f5cca8] border border-[#b45309]/20 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all"
+                            >
+                                Get Started
+                            </button>
                         </div>
                     ) : (
-                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 pb-8">
+                        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 pb-12">
                             {filteredSessions.map((session) => (
-                                <div key={session.id} className="bg-white/5 border border-white/10 hover:border-[#b45309]/50 hover:bg-white/10 rounded-[1.5rem] p-4 transition-all group flex flex-col justify-between h-full shadow-lg">
-                                    <div>
-                                        <div className="flex justify-between items-start mb-3">
-                                            <div className={`px-2 py-0.5 text-[8px] font-bold uppercase rounded-full tracking-widest ${
+                                <motion.div 
+                                    layout
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    key={session.id} 
+                                    className="bg-white/5 hover:bg-white/10 border border-white/5 hover:border-[#b45309]/30 rounded-[2rem] p-6 transition-all group flex flex-col justify-between h-full backdrop-blur-md relative overflow-hidden"
+                                >
+                                    <div className="relative z-10">
+                                        <div className="flex justify-between items-start mb-6">
+                                            <div className={`px-3 py-1 text-[9px] font-bold uppercase rounded-full tracking-widest border ${
                                                 (session.status === 'finished' || (session.assessments && session.assessments.length > 0)) 
-                                                    ? 'bg-[#b45309]/20 text-[#f5cca8] border border-[#b45309]/30' 
+                                                    ? 'bg-green-500/10 text-green-400 border-green-500/20' 
                                                     : session.status === 'discontinued'
                                                         ? 'bg-red-500/10 text-red-500 border border-red-500/20'
-                                                        : 'bg-yellow-500/10 text-yellow-500 border border-yellow-500/20'
+                                                        : 'bg-[#b45309]/10 text-[#f5cca8] border border-[#b45309]/20'
                                             }`}>
-                                                {(session.status === 'finished' || (session.assessments && session.assessments.length > 0)) ? 'FINISHED' : session.status}
+                                                {(session.status === 'finished' || (session.assessments && session.assessments.length > 0)) ? 'COMPLETED' : session.status.toUpperCase()}
                                             </div>
-                                            <span className="text-[9px] text-white/40 flex items-center gap-1 font-bold tracking-widest">
-                                                <Calendar className="w-2.5 h-2.5" />
+                                            <span className="text-[10px] text-white/30 flex items-center gap-1.5 font-bold tracking-widest">
+                                                <Calendar className="w-3 h-3" />
                                                 {new Date(session.created_at).toLocaleDateString()}
                                             </span>
                                         </div>
-                                        <h3 className="text-lg font-medium tracking-tighter text-white mb-1 leading-tight">{session.name} Review</h3>
-                                        <p className="text-[9px] tracking-widest text-[#b45309]/60 font-mono mb-4">ID: {session.id.substring(0,6)}...</p>
+
+                                        <h3 className="text-xl font-medium tracking-tighter text-white mb-1 leading-tight group-hover:text-[#f5cca8] transition-colors uppercase">
+                                            {session.name.replace('Review', '')}
+                                        </h3>
+                                        <p className="text-[10px] tracking-widest text-[#b45309]/60 font-mono mb-6">REF: {session.id.substring(0,8).toUpperCase()}</p>
                                         
                                         {session.assessments && session.assessments.length > 0 && session.assessments[0].scores_json && (
-                                            <div className="mb-4 p-3 bg-[#1a0f0a]/80 rounded-[1rem] border border-white/5 flex justify-between items-center">
-                                                <span className="text-[9px] font-bold tracking-widest uppercase text-white/50">Score</span>
-                                                <span className="text-xl font-medium text-[#f5cca8]">
-                                                    {(Object.values(session.assessments[0].scores_json).reduce((a, b) => a + b, 0) / Object.values(session.assessments[0].scores_json).length || 0).toFixed(1)} <span className="text-[10px] text-white/20 font-bold tracking-widest">/ 5</span>
-                                                </span>
+                                            <div className="mb-6 p-4 bg-black/40 rounded-2xl border border-white/5">
+                                                <div className="flex justify-between items-end">
+                                                    <div>
+                                                        <p className="text-[10px] font-bold tracking-widest uppercase text-white/30 mb-1">Rubric Score</p>
+                                                        <div className="text-3xl font-medium text-white">
+                                                            {(Object.values(session.assessments[0].scores_json).reduce((a, b) => a + b, 0) / Object.values(session.assessments[0].scores_json).length || 0).toFixed(1)}
+                                                            <span className="text-sm text-white/20 ml-1">/ 5</span>
+                                                        </div>
+                                                    </div>
+                                                    <Target className="w-8 h-8 text-[#b45309]/30" />
+                                                </div>
                                             </div>
                                         )}
+                                    </div>
+
+                                    <div className="relative z-10 mt-auto">
                                         {(session.status === 'active' || session.status === 'start' || session.status === 'in_progress') ? (
-                                            <div className="flex flex-col gap-1.5">
+                                            <div className="flex gap-2">
                                                 <button 
                                                     onClick={() => onContinue(session.id)}
-                                                    className="w-full py-2 bg-[#b45309] hover:bg-white text-[#1a0f0a] text-[9px] font-bold uppercase tracking-widest rounded-full transition flex justify-center shadow-md shadow-[#b45309]/10"
+                                                    className="flex-grow py-3.5 bg-white hover:bg-[#b45309] text-[#1a0f0a] hover:text-white text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2"
                                                 >
-                                                    Continue
+                                                    Resume <Play className="w-3 h-3 fill-current" />
                                                 </button>
                                                 <button 
                                                     onClick={async () => {
                                                         await api.discontinueSession(session.id);
                                                         window.location.reload();
                                                     }}
-                                                    className="w-full py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-[8px] font-bold uppercase tracking-widest rounded-full transition flex justify-center border border-red-500/20"
+                                                    className="px-4 py-3.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl border border-red-500/20 transition-all"
+                                                    title="Discontinue"
                                                 >
                                                     Quit
                                                 </button>
@@ -225,22 +233,88 @@ export default function Dashboard({ onStartNew, onViewReport, onContinue, onBack
                                             <button 
                                                 onClick={() => onViewReport(session.id)}
                                                 disabled={session.status === 'discontinued' || (session.status !== 'finished' && (!session.assessments || session.assessments.length === 0))}
-                                                className="w-full py-2.5 bg-white/5 hover:bg-[#b45309] text-white hover:text-[#1a0f0a] text-[9px] font-bold uppercase tracking-widest rounded-full transition flex justify-center disabled:opacity-50 disabled:hover:bg-white/5 disabled:hover:text-white disabled:cursor-not-allowed group-hover:bg-white group-hover:text-[#1a0f0a]"
+                                                className="w-full py-4 bg-white/5 group-hover:bg-white text-white group-hover:text-[#1a0f0a] text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 border border-white/5 group-hover:border-white disabled:opacity-20 disabled:hover:bg-white/5 disabled:hover:text-white disabled:cursor-not-allowed shadow-xl group-hover:shadow-white/5"
                                             >
-                                                {session.status === 'discontinued' ? 'Discontinued' : 'View Report'}
+                                                {session.status === 'discontinued' ? 'Discontinued' : 'Full Analysis'} <ChevronRight className="w-3.5 h-3.5" />
                                             </button>
                                         )}
                                     </div>
-                                </div>
+                                    
+                                    {/* Card Glow Decoration */}
+                                    <div className="absolute top-0 right-0 w-24 h-24 bg-[#b45309]/10 rounded-full blur-3xl group-hover:bg-[#b45309]/20 transition-all pointer-events-none" />
+                                </motion.div>
                             ))}
                         </div>
                     )}
                 </div>
             </main>
         ) : (
-            <AnalyticsView sessions={sessions} onBack={() => setView('list')} />
+            <div className="w-full h-full pb-20 overflow-y-auto custom-scrollbar">
+                <AnalyticsView sessions={sessions} onBack={() => setView('list')} />
+            </div>
         )}
       </div>
+
+      {/* Mode Choice Overlay */}
+      <AnimatePresence>
+        {showModeChoice && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowModeChoice(false)}
+              className="absolute inset-0 bg-[#000]/80 backdrop-blur-xl" 
+            />
+            
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative z-10 w-full max-w-2xl bg-[#1a0f0a] border border-white/10 rounded-[3rem] p-8 sm:p-14 shadow-3xl text-center"
+            >
+              <h2 className="text-3xl sm:text-5xl font-medium tracking-tighter text-white mb-4 uppercase italic">
+                Choose your <span className="text-[#f5cca8]">Path</span>
+              </h2>
+              <p className="text-white/40 font-medium tracking-widest uppercase text-xs mb-12 px-8">
+                Select your intended interview format
+              </p>
+
+              <div className="grid sm:grid-cols-2 gap-6 mb-10">
+                <button 
+                    onClick={() => handleStartChoice('practice')}
+                    className="group relative flex flex-col items-center p-8 bg-white/5 hover:bg-[#b45309]/10 border border-white/5 hover:border-[#b45309]/50 rounded-[2.5rem] transition-all"
+                >
+                    <div className="w-16 h-16 bg-[#b45309]/20 rounded-2xl flex items-center justify-center mb-6 text-[#f5cca8] group-hover:scale-110 transition-transform">
+                        <Play className="w-8 h-8 fill-current" />
+                    </div>
+                    <span className="text-white font-bold tracking-widest uppercase text-xs mb-2">Practice Mode</span>
+                    <span className="text-white/40 text-[10px] italic">Focus on single rounds</span>
+                </button>
+
+                <button 
+                    onClick={() => handleStartChoice('exam')}
+                    className="group relative flex flex-col items-center p-8 bg-white/5 hover:bg-[#b45309]/10 border border-white/5 hover:border-[#b45309]/50 rounded-[2.5rem] transition-all"
+                >
+                    <div className="w-16 h-16 bg-[#b45309]/20 rounded-2xl flex items-center justify-center mb-6 text-[#f5cca8] group-hover:scale-110 transition-transform">
+                        <Target className="w-8 h-8" />
+                    </div>
+                    <span className="text-white font-bold tracking-widest uppercase text-xs mb-2">Exam Mode</span>
+                    <span className="text-white/40 text-[10px] italic">Complete 3-round assessment</span>
+                    <div className="absolute top-4 right-4 px-2 py-0.5 bg-[#b45309] text-[#1a0f0a] text-[8px] font-black uppercase rounded-full">Pro</div>
+                </button>
+              </div>
+
+              <button 
+                onClick={() => setShowModeChoice(false)}
+                className="text-white/30 hover:text-white text-[10px] font-bold uppercase tracking-widest transition-colors"
+              >
+                Close Window
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
