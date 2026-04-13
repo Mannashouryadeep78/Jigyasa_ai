@@ -85,7 +85,7 @@ export default function AnalyticsView({ sessions, onBack }) {
                 <h3 className="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-white/70 mb-4 sm:mb-6 flex items-center gap-2">
                     <TrendingUp className="w-3.5 h-3.5" /> Global Comparison
                 </h3>
-                <div className="flex-1 w-full relative -ml-4">
+                <div className="h-[280px] sm:h-[320px] w-full relative -ml-4">
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 60 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#ffffff1a" vertical={false} />
