@@ -113,19 +113,27 @@ export default function App() {
     if (sessionType === 'exam') {
         setIsInitializing(true);
         try {
-            // Need to potentially wait a bit for assessment generation
+            // Wait slightly for the backend to finalize the status before polling
+            await new Promise(r => setTimeout(r, 2000));
+
             let report = null;
-            for (let i = 0; i < 3; i++) {
+            // Poll for up to 15 seconds (15 attempts, 1s each)
+            for (let i = 0; i < 15; i++) {
                 try {
                     report = await api.getReport(session);
-                    if (report?.assessments?.length > 0) break;
-                } catch (e) {}
+                    // Check if scores exist in the report object
+                    if (report && (report.scores || report.scores_json)) break;
+                } catch (e) {
+                    console.warn(`Polling attempt ${i+1} failed:`, e);
+                }
                 await new Promise(r => setTimeout(r, 1000));
             }
 
-            if (!report?.assessments?.length) throw new Error("Assessment not generated in time");
+            if (!report || (!report.scores && !report.scores_json)) {
+                throw new Error("Assessment not generated in time. The AI may still be processing.");
+            }
 
-            const scores = report.assessments[0].scores_json;
+            const scores = report.scores || report.scores_json;
             const avg = Object.values(scores).reduce((a, b) => a + b, 0) / Object.values(scores).length;
             
             const newScores = [...examScores, avg];
@@ -138,11 +146,14 @@ export default function App() {
                 setPhase('exam_result');
             }
         } catch (err) {
-            console.error("Failed to process exam round result", err);
-            // Fallback to allow continuing the exam even if score fetch fails once
+            console.error("Failed to process exam round result:", err);
+            // Fallback: If score fetching fails, proceed to transition with 0 as placeholder
+            // to avoid blocking the entire exam.
+            const newScores = [...examScores, 0];
+            setExamScores(newScores);
+            setLastRoundScore(0);
+            
             if (examRound < 2) {
-                setLastRoundScore(0);
-                setExamScores([...examScores, 0]);
                 setPhase('round_transition');
             } else {
                 setPhase('exam_result');
