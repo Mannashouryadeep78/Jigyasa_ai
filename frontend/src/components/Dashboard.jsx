@@ -108,8 +108,9 @@ export default function Dashboard({ onStartNew, onViewReport, onContinue, onBack
                     </h2>
                     
                     {/* Tabs */}
-                    <div className="flex-shrink-0 flex items-center overflow-x-auto pb-2">
-                        <div className="flex items-center gap-3 sm:gap-6 px-1 pr-16 md:pr-0">
+                    {/* Tabs */}
+                    <div className="flex-shrink-0 flex items-center overflow-x-auto pb-4 custom-scrollbar lg:no-scrollbar">
+                        <div className="flex items-center gap-3 sm:gap-6 px-1 pr-16 md:pr-0 min-w-max">
                             {[
                                 { id: 'finished', label: 'Finished', count: finishedCount },
                                 { id: 'discontinued', label: 'Discontinued', count: discontinuedCount },
@@ -118,14 +119,14 @@ export default function Dashboard({ onStartNew, onViewReport, onContinue, onBack
                                 <button
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
-                                    className={`group flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full transition-all duration-300 border whitespace-nowrap ${
+                                    className={`group flex items-center gap-2 px-4 py-2.5 rounded-full transition-all duration-300 border whitespace-nowrap active:scale-95 ${
                                         activeTab === tab.id 
-                                            ? 'bg-[#b45309] border-[#b45309] text-[#1a0f0a] shadow-lg shadow-[#b45309]/20' 
+                                            ? 'bg-[#b45309] border-[#b45309] text-[#1a0f0a] shadow-lg shadow-[#b45309]/20 font-bold' 
                                             : 'bg-transparent border-white/10 text-white/40 hover:text-white/60 hover:border-white/20'
                                     }`}
                                 >
-                                    <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest">{tab.label}</span>
-                                    <span className={`text-[9px] sm:text-[10px] font-black px-1.5 py-0.5 rounded-md ${
+                                    <span className="text-[10px] sm:text-[11px] uppercase tracking-widest">{tab.label}</span>
+                                    <span className={`text-[10px] sm:text-[11px] font-black px-2 py-0.5 rounded-md ${
                                         activeTab === tab.id ? 'bg-[#1a0f0a]/20 text-[#1a0f0a]' : 'bg-white/5 text-white/40 group-hover:bg-white/10'
                                     }`}>
                                         {tab.count}

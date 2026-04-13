@@ -31,8 +31,12 @@ export default function App() {
   const [initialHistory, setInitialHistory] = useState(null);
 
   useEffect(() => {
-    localStorage.setItem('jigyasa_phase', phase);
-  }, [phase]);
+    if (user) {
+      localStorage.setItem('jigyasa_phase', phase);
+    } else {
+      localStorage.removeItem('jigyasa_phase');
+    }
+  }, [phase, user]);
 
   useEffect(() => {
     localStorage.setItem('jigyasa_public_phase', publicPhase);

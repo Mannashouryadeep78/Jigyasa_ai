@@ -87,11 +87,7 @@ export default function LandingPage({ onGoToAuth }) {
                     {/* Auth Section */}
                     <div className="flex items-center gap-2 sm:gap-4 shrink-0">
                         {user ? (
-                            <div 
-                                className="relative"
-                                onMouseEnter={() => setIsMenuOpen(true)}
-                                onMouseLeave={() => setIsMenuOpen(false)}
-                            >
+                            <div className="relative">
                                 <button 
                                     onClick={() => setIsMenuOpen(!isMenuOpen)}
                                     className="flex items-center gap-2 group p-1 pl-2 bg-white/5 hover:bg-white/10 rounded-full border border-white/10 transition-all"
@@ -104,27 +100,34 @@ export default function LandingPage({ onGoToAuth }) {
 
                                 <AnimatePresence>
                                     {isMenuOpen && (
-                                        <motion.div
-                                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                                            exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                            className="absolute right-0 mt-2 w-48 bg-[#1a0800]/95 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden shadow-2xl py-2"
-                                        >
-                                            <button
-                                                onClick={() => onGoToAuth('dashboard')}
-                                                className="w-full flex items-center gap-3 px-4 py-3 text-[11px] font-bold uppercase tracking-widest text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+                                        <>
+                                            {/* Invisible backdrop to close menu on outside tap (mobile-first approach) */}
+                                            <div 
+                                                className="fixed inset-0 z-0 bg-transparent" 
+                                                onClick={() => setIsMenuOpen(false)}
+                                            />
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                                className="absolute right-0 mt-2 w-48 bg-[#1a0800]/95 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden shadow-2xl py-2 z-50"
                                             >
-                                                <LayoutDashboard className="w-4 h-4 text-[#f97316]" />
-                                                Dashboard
-                                            </button>
-                                            <button
-                                                onClick={() => signOut()}
-                                                className="w-full flex items-center gap-3 px-4 py-3 text-[11px] font-bold uppercase tracking-widest text-red-400/70 hover:text-red-400 hover:bg-red-500/5 transition-colors border-t border-white/5"
-                                            >
-                                                <LogOut className="w-4 h-4" />
-                                                Sign Out
-                                            </button>
-                                        </motion.div>
+                                                <button
+                                                    onClick={() => onGoToAuth('dashboard')}
+                                                    className="w-full flex items-center gap-3 px-4 py-3 text-[11px] font-bold uppercase tracking-widest text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+                                                >
+                                                    <LayoutDashboard className="w-4 h-4 text-[#f97316]" />
+                                                    Dashboard
+                                                </button>
+                                                <button
+                                                    onClick={() => signOut()}
+                                                    className="w-full flex items-center gap-3 px-4 py-3 text-[11px] font-bold uppercase tracking-widest text-red-400/70 hover:text-red-400 hover:bg-red-500/5 transition-colors border-t border-white/5"
+                                                >
+                                                    <LogOut className="w-4 h-4" />
+                                                    Sign Out
+                                                </button>
+                                            </motion.div>
+                                        </>
                                     )}
                                 </AnimatePresence>
                             </div>
@@ -181,10 +184,10 @@ export default function LandingPage({ onGoToAuth }) {
                                 ✦ Specialized AI mock interviews for educators. Domain deep dives, HR rounds, and policy assessments with a free tutor ATS checker.
                             </p>
                             <button
-                                onClick={() => onGoToAuth('register')}
+                                onClick={() => user ? onGoToAuth('dashboard') : onGoToAuth('register')}
                                 className="w-full sm:w-auto px-8 sm:px-10 py-4 rounded-full bg-white text-[#1a0800] text-[11px] font-black uppercase tracking-[0.2em] hover:bg-[#f5cca8] transition-all shadow-xl"
                             >
-                                Get Started
+                                {user ? 'Go to Dashboard' : 'Get Started'}
                             </button>
                         </motion.div>
                     </div>
