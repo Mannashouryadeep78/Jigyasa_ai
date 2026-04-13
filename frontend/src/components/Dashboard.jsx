@@ -59,7 +59,7 @@ export default function Dashboard({ onStartNew, onViewReport, onContinue, onBack
 
   return (
     <div className="min-h-screen bg-[#e0ccb8] text-white font-sans p-4 md:p-8 selection:bg-black selection:text-white">
-      <div className="max-w-7xl mx-auto bg-[#1a0f0a] rounded-[3rem] p-8 md:p-14 shadow-2xl relative overflow-hidden h-[88vh] flex flex-col">
+      <div className="max-w-7xl mx-auto bg-[#1a0f0a] rounded-[3rem] p-8 md:p-14 shadow-2xl relative overflow-hidden h-[calc(100vh-4rem)] flex flex-col">
         
         {/* Orbital decorative rings */}
         <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20 mix-blend-overlay" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
