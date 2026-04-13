@@ -184,13 +184,11 @@ export default function App() {
 
   return (
     <>
-      {phase === 'landing' && <LandingPage onGoToAuth={(mode) => { if (mode === 'dashboard') setPhase('dashboard'); }} />}
       {phase === 'dashboard' && (
         <Dashboard 
           onStartNew={handleStartNew} 
           onViewReport={handleViewReport} 
           onContinue={handleContinue} 
-          onBackToLanding={() => setPhase('landing')}
         />
       )}
       {phase === 'upload' && <ResumeUpload type={sessionType} onUpload={handleUpload} onBack={() => setPhase('dashboard')} />}

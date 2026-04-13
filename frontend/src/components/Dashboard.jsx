@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import InterviewPrepTool from './InterviewPrepTool';
 import ATSChecker from './ATSChecker';
 
-export default function Dashboard({ onStartNew, onViewReport, onContinue, onBackToLanding }) {
+export default function Dashboard({ onStartNew, onViewReport, onContinue }) {
   const { user } = useAuth();
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -83,7 +83,7 @@ export default function Dashboard({ onStartNew, onViewReport, onContinue, onBack
           </svg>
       </div>
 
-      <Navbar activeView={view} onViewChange={setView} onBackToLanding={onBackToLanding} />
+      <Navbar activeView={view} onViewChange={setView} />
 
       <div className="relative z-10 flex-grow flex flex-col px-4 sm:px-8 md:px-12 py-8 max-w-7xl mx-auto w-full overflow-hidden">
         

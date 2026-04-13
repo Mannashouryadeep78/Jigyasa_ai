@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Home, BarChart2, LogOut, Menu, X, Clock, LayoutGrid, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
-export default function Navbar({ activeView, onViewChange, onBackToLanding }) {
+export default function Navbar({ activeView, onViewChange }) {
   const { signOut, user } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -42,12 +42,6 @@ export default function Navbar({ activeView, onViewChange, onBackToLanding }) {
           
           <div className="h-6 w-px bg-white/10 mx-2" />
 
-          <button 
-            onClick={onBackToLanding}
-            className="flex items-center gap-2 text-white/60 hover:text-white transition-all text-[10px] font-bold uppercase tracking-widest"
-          >
-            <Home className="w-3.5 h-3.5 text-[#b45309]" /> Landing
-          </button>
 
           <button 
             onClick={() => signOut()}
@@ -90,12 +84,6 @@ export default function Navbar({ activeView, onViewChange, onBackToLanding }) {
           
           <div className="h-px w-full bg-white/5" />
 
-          <button 
-            onClick={onBackToLanding}
-            className="flex items-center gap-3 px-4 py-3 text-white/60 hover:text-white transition-all text-sm font-bold uppercase tracking-widest w-full"
-          >
-            <Home className="w-4 h-4" /> Landing
-          </button>
 
           <button 
             onClick={() => signOut()}
