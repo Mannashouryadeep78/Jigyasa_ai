@@ -57,6 +57,7 @@ export default function InterviewPrepTool({ onBack }) {
         }, 100);
     };
 
+    if (status === 'processing') {
         return (
             <div className="flex flex-col items-center justify-center text-white selection:bg-black selection:text-white p-4 font-sans print:hidden py-24">
               <motion.div 
@@ -92,6 +93,7 @@ export default function InterviewPrepTool({ onBack }) {
         );
     }
 
+    if (status === 'complete') {
         return (
             <div className="text-[#1a0f0a] p-4 md:p-8 font-sans selection:bg-black selection:text-white print:bg-white print:p-0 pb-20">
                 {/* Watermark for Print */}
