@@ -12,10 +12,15 @@ import { useAuth } from './contexts/AuthContext';
 
 export default function App() {
   const { user } = useAuth();
-  const [publicPhase, setPublicPhase] = useState('landing'); // landing, auth
-  const [authMode, setAuthMode] = useState('login'); // login, register, otp
+  const [publicPhase, setPublicPhase] = useState(() => localStorage.getItem('jigyasa_public_phase') || 'landing');
+  const [authMode, setAuthMode] = useState('login'); 
   
-  const [phase, setPhase] = useState('dashboard'); // dashboard, upload, welcome, interview, report, landing
+  const [phase, setPhase] = useState(() => {
+    const saved = localStorage.getItem('jigyasa_phase');
+    // Only restore safe phases that don't depend on specific session state
+    if (saved === 'landing' || saved === 'dashboard') return saved;
+    return 'dashboard';
+  });
   const [session, setSession] = useState(null);
   const [candidateName, setCandidateName] = useState('');
   const [resumeFile, setResumeFile] = useState(null);
@@ -24,6 +29,14 @@ export default function App() {
   const [isInitializing, setIsInitializing] = useState(false);
 
   const [initialHistory, setInitialHistory] = useState(null);
+
+  useEffect(() => {
+    localStorage.setItem('jigyasa_phase', phase);
+  }, [phase]);
+
+  useEffect(() => {
+    localStorage.setItem('jigyasa_public_phase', publicPhase);
+  }, [publicPhase]);
 
   useEffect(() => {
      // Ignore user kicks for now, render handled in JSX body

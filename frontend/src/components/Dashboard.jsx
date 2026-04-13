@@ -108,34 +108,36 @@ export default function Dashboard({ onStartNew, onViewReport, onContinue, onBack
                     </h2>
                     
                     {/* Tabs */}
-                    <div className="flex p-1 bg-white/5 rounded-2xl border border-white/5 w-fit overflow-x-auto">
-                        {[
-                            { id: 'finished', label: 'Finished', count: counts.finished },
-                            { id: 'discontinued', label: 'Discontinued', count: counts.discontinued },
-                            { id: 'active', label: 'To Be Continued', count: counts.active },
-                        ].map((tab) => (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`px-4 sm:px-6 py-2 rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-[0.15em] transition-all flex items-center gap-2 whitespace-nowrap ${
-                                    activeTab === tab.id 
-                                        ? 'bg-[#b45309] text-white shadow-lg' 
-                                        : 'text-white/40 hover:text-white/70'
-                                }`}
-                            >
-                                {tab.label}
-                                <span className={`px-1.5 py-0.5 rounded-md text-[8px] ${
-                                    activeTab === tab.id ? 'bg-white/20 text-white' : 'bg-white/10 text-white/30'
-                                }`}>
-                                    {tab.count}
-                                </span>
-                            </button>
-                        ))}
+                    <div className="flex-shrink-0 flex items-center overflow-x-auto pb-2">
+                        <div className="flex items-center gap-3 sm:gap-6 px-1 pr-16 md:pr-0">
+                            {[
+                                { id: 'finished', label: 'Finished', count: finishedCount },
+                                { id: 'discontinued', label: 'Discontinued', count: discontinuedCount },
+                                { id: 'to_be_continued', label: 'In Progress', count: toBeContinuedCount }
+                            ].map((tab) => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id)}
+                                    className={`group flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full transition-all duration-300 border whitespace-nowrap ${
+                                        activeTab === tab.id 
+                                            ? 'bg-[#b45309] border-[#b45309] text-[#1a0f0a] shadow-lg shadow-[#b45309]/20' 
+                                            : 'bg-transparent border-white/10 text-white/40 hover:text-white/60 hover:border-white/20'
+                                    }`}
+                                >
+                                    <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest">{tab.label}</span>
+                                    <span className={`text-[9px] sm:text-[10px] font-black px-1.5 py-0.5 rounded-md ${
+                                        activeTab === tab.id ? 'bg-[#1a0f0a]/20 text-[#1a0f0a]' : 'bg-white/5 text-white/40 group-hover:bg-white/10'
+                                    }`}>
+                                        {tab.count}
+                                    </span>
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
                 
                 {/* Scrollable Area */}
-                <div className="flex-grow overflow-y-auto pr-2 -mr-2 mb-4 scrollbar-thin scrollbar-thumb-[#b45309]/30 scrollbar-track-transparent">
+                <div className="flex-grow overflow-y-auto pr-1 sm:pr-2 -mr-1 sm:-mr-2 mb-2 sm:mb-4 scrollbar-thin scrollbar-thumb-[#b45309]/30 scrollbar-track-transparent">
                     {loading ? (
                         <div className="grid gap-3 md:gap-4 md:grid-cols-2 lg:grid-cols-4">
                             {[1, 2, 3, 4].map((i) => (

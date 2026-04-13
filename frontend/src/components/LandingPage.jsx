@@ -92,7 +92,10 @@ export default function LandingPage({ onGoToAuth }) {
                                 onMouseEnter={() => setIsMenuOpen(true)}
                                 onMouseLeave={() => setIsMenuOpen(false)}
                             >
-                                <button className="flex items-center gap-2 group p-1 pl-2 bg-white/5 hover:bg-white/10 rounded-full border border-white/10 transition-all">
+                                <button 
+                                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                                    className="flex items-center gap-2 group p-1 pl-2 bg-white/5 hover:bg-white/10 rounded-full border border-white/10 transition-all"
+                                >
                                     <div className="w-8 h-8 sm:w-10 sm:h-10 bg-[#f97316] rounded-full flex items-center justify-center text-white font-black text-sm sm:text-base shadow-lg shadow-orange-500/20 uppercase">
                                         {userInitial}
                                     </div>
