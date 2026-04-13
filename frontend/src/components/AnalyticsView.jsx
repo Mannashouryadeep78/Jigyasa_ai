@@ -4,88 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../api/client';
 import { Loader2, ArrowLeft, Brain, TrendingUp, Zap, AlertCircle, Maximize2, Minimize2 } from 'lucide-react';
 
-export default function AnalyticsView({ sessions, onBack }) {
-    const [guidance, setGuidance] = useState(null);
-    const [loadingGuidance, setLoadingGuidance] = useState(true);
-    const [guidanceError, setGuidanceError] = useState(false);
-    const [chartData, setChartData] = useState([]);
-    const [sessionSummaries, setSessionSummaries] = useState([]);
-    const [isExpanded, setIsExpanded] = useState(false);
-    const [isMounted, setIsMounted] = useState(false);
-
-    useEffect(() => {
-        // Small delay to ensure the parent container has finished its layout/animation
-        setIsMounted(false);
-        const timer = setTimeout(() => setIsMounted(true), 300);
-        return () => clearTimeout(timer);
-    }, [isExpanded]);
-
-    useEffect(() => {
-        // Build rich session summaries: include name, date, and all score fields
-        const completedSessions = sessions.filter(
-            s => s.assessments && s.assessments.length > 0 && s.assessments[0].scores_json
-        );
-
-        if (completedSessions.length === 0) {
-            setLoadingGuidance(false);
-            return;
-        }
-
-        // Build per-session summaries to send to AI
-        const summaries = completedSessions.map(s => ({
-            session_name: s.name || 'Interview',
-            date: s.created_at ? new Date(s.created_at).toLocaleDateString() : 'Unknown',
-            scores: s.assessments[0].scores_json,
-        }));
-        setSessionSummaries(summaries);
-
-        // Compute aggregated averages for chart
-        const keyTotals = {};
-        const keyCounts = {};
-        summaries.forEach(({ scores }) => {
-            for (const [key, val] of Object.entries(scores)) {
-                const numVal = parseFloat(val);
-                if (!isNaN(numVal)) {
-                    keyTotals[key] = (keyTotals[key] || 0) + numVal;
-                    keyCounts[key] = (keyCounts[key] || 0) + 1;
-                }
-            }
-        });
-
-        const cData = Object.keys(keyTotals).map(key => {
-            const myAvg = parseFloat((keyTotals[key] / keyCounts[key]).toFixed(2));
-            // Fixed curated benchmarks based on approximate industry averages (not random)
-            const benchmark = 3.5;
-            return {
-                name: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-                'Your Avg': myAvg,
-                'Benchmark (3.5/5)': benchmark,
-            };
-        });
-        setChartData(cData);
-
-        // Send rich payload to AI - up to last 8 sessions
-        fetchGuidance(summaries.slice(0, 8));
-    }, [sessions]);
-
-    const fetchGuidance = async (summaries) => {
-        setGuidanceError(false);
-        try {
-            const data = await api.generateAnalyticsGuidance(summaries);
-            // Validate we got real AI content, not the fallback
-            if (data && data.overview && data.action_items && Array.isArray(data.action_items)) {
-                setGuidance(data);
-            } else {
-                throw new Error('Invalid response structure');
-            }
-        } catch (err) {
-            console.error('Analytics guidance error:', err);
-            setGuidanceError(true);
-        } finally {
-            setLoadingGuidance(false);
-        }
-    };
-
 const AnalyticsContent = ({ isExpanded, isMounted, chartData, loadingGuidance, guidanceError, guidance, sessionSummaries, fetchGuidance, setLoadingGuidance }) => (
     <div className={`grid ${isExpanded ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1 md:grid-cols-2'} gap-6`}>
         {/* Left: Chart */}
@@ -190,7 +108,7 @@ export default function AnalyticsView({ sessions, onBack }) {
     const [isMounted, setIsMounted] = useState(false);
 
     useEffect(() => {
-        // Reset and delay mounting to ensure parent container has finished layout/animation
+        // Reset and delay mounting (500ms) to ensure parent container has finished layout/animation
         setIsMounted(false);
         const timer = setTimeout(() => setIsMounted(true), 500);
         return () => clearTimeout(timer);
@@ -248,7 +166,6 @@ export default function AnalyticsView({ sessions, onBack }) {
         setGuidanceError(false);
         try {
             const data = await api.generateAnalyticsGuidance(summaries);
-            // Validate we got real AI content, not the fallback
             if (data && data.overview && data.action_items && Array.isArray(data.action_items)) {
                 setGuidance(data);
             } else {
@@ -367,7 +284,4 @@ export default function AnalyticsView({ sessions, onBack }) {
         </>
     );
 }
-
-
-    
 
