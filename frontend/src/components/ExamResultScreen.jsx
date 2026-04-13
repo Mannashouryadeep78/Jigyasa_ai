@@ -7,9 +7,9 @@ export default function ExamResultScreen({ examScores, onBackToDashboard }) {
   const isSelected = averageScore >= 3.5;
 
   const rounds = [
-    { name: 'HR Interview', score: examScores[0] },
+    { name: 'GD & Communication', score: examScores[0] },
     { name: 'Technical Domain', score: examScores[1] },
-    { name: 'GD & Communication', score: examScores[2] },
+    { name: 'HR Interview', score: examScores[2] },
   ];
 
   return (

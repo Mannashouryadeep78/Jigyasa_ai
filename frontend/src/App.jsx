@@ -8,8 +8,12 @@ import InterviewRoom from './components/InterviewRoom';
 import AssessmentReport from './components/AssessmentReport';
 import InterviewPrepTool from './components/InterviewPrepTool';
 import ExamResultScreen from './components/ExamResultScreen';
+import RoundTransition from './components/RoundTransition';
 import { api } from './api/client';
 import { useAuth } from './contexts/AuthContext';
+
+const EXAM_MODES = ['gd', 'technical', 'hr'];
+const EXAM_MODE_NAMES = ['Communication & GD', 'Technical Domain', 'HR Round'];
 
 export default function App() {
   const { user } = useAuth();
@@ -34,6 +38,7 @@ export default function App() {
   const [sessionType, setSessionType] = useState('practice'); // 'practice' or 'exam'
   const [examRound, setExamRound] = useState(0); // 0, 1, 2
   const [examScores, setExamScores] = useState([]);
+  const [lastRoundScore, setLastRoundScore] = useState(0);
 
   useEffect(() => {
     if (user) {
@@ -65,7 +70,7 @@ export default function App() {
     if (sessionType === 'practice') {
         setInterviewMode(mode);
     } else {
-        setInterviewMode('hr'); // Exam always starts with HR
+        setInterviewMode(EXAM_MODES[0]); // Starts with GD
     }
     setPhase('welcome');
   };
@@ -93,10 +98,6 @@ export default function App() {
               alert(`Session "${res.candidate_name}" can no longer be continued — the server was restarted.\n\nPlease start a new interview.`);
               return;
           }
-          if (res.status === 'finished' || res.status === 'closer') {
-              alert("This session has already been completed.");
-              return;
-          }
           setSession(sessionId);
           setCandidateName(res.candidate_name);
           setInitialHistory(res.history);
@@ -110,33 +111,55 @@ export default function App() {
 
   const handleFinish = async () => {
     if (sessionType === 'exam') {
-        setIsInitializing(true); // Show loader while fetching score
+        setIsInitializing(true);
         try {
-            const report = await api.getReport(session);
+            // Need to potentially wait a bit for assessment generation
+            let report = null;
+            for (let i = 0; i < 3; i++) {
+                try {
+                    report = await api.getReport(session);
+                    if (report?.assessments?.length > 0) break;
+                } catch (e) {}
+                await new Promise(r => setTimeout(r, 1000));
+            }
+
+            if (!report?.assessments?.length) throw new Error("Assessment not generated in time");
+
             const scores = report.assessments[0].scores_json;
             const avg = Object.values(scores).reduce((a, b) => a + b, 0) / Object.values(scores).length;
             
             const newScores = [...examScores, avg];
             setExamScores(newScores);
+            setLastRoundScore(avg);
 
             if (examRound < 2) {
-                const nextRound = examRound + 1;
-                setExamRound(nextRound);
-                const modes = ['hr', 'technical', 'gd'];
-                setInterviewMode(modes[nextRound]);
-                setPhase('welcome');
+                setPhase('round_transition');
             } else {
                 setPhase('exam_result');
             }
         } catch (err) {
             console.error("Failed to process exam round result", err);
-            setPhase('report'); // Fallback
+            // Fallback to allow continuing the exam even if score fetch fails once
+            if (examRound < 2) {
+                setLastRoundScore(0);
+                setExamScores([...examScores, 0]);
+                setPhase('round_transition');
+            } else {
+                setPhase('exam_result');
+            }
         } finally {
             setIsInitializing(false);
         }
     } else {
         setPhase('report');
     }
+  };
+
+  const handleProceedNextRound = () => {
+      const nextIdx = examRound + 1;
+      setExamRound(nextIdx);
+      setInterviewMode(EXAM_MODES[nextIdx]);
+      setPhase('welcome');
   };
 
   if (!user) {
@@ -171,6 +194,14 @@ export default function App() {
           initialHistory={initialHistory}
           onFinish={handleFinish}
         />
+      )}
+      {phase === 'round_transition' && (
+          <RoundTransition 
+              lastRoundName={EXAM_MODE_NAMES[examRound]} 
+              lastRoundScore={lastRoundScore} 
+              nextRoundName={EXAM_MODE_NAMES[examRound + 1]} 
+              onProceed={handleProceedNextRound} 
+          />
       )}
       {phase === 'report' && (
          <div className="relative">

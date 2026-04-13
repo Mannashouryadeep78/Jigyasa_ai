@@ -132,7 +132,7 @@ export default function ResumeUpload({ type = 'practice', onUpload, onBack }) {
                     </div>
                 </div>
                 <div className="space-y-4">
-                    {['HR Round', 'Domain Specific', 'Communication (GD)'].map((round, idx) => (
+                    {['Communication (GD)', 'Domain Specific', 'HR Round'].map((round, idx) => (
                         <div key={idx} className="flex items-center gap-4 text-white/60">
                             <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[10px] font-bold">{idx + 1}</div>
                             <span className="text-xs font-medium uppercase tracking-widest">{round}</span>
