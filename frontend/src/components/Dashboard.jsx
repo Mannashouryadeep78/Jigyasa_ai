@@ -67,7 +67,7 @@ export default function Dashboard({ onStartNew, onViewReport, onContinue, onBack
   };
 
   return (
-    <div className="min-h-screen bg-[#1a0f0a] text-white font-sans selection:bg-[#b45309] selection:text-white flex flex-col relative overflow-hidden">
+    <div className="h-screen bg-[#1a0f0a] text-white font-sans selection:bg-[#b45309] selection:text-white flex flex-col relative overflow-hidden">
       
       {/* Immersive Background Gradient (matching 1st pic) */}
       <div className="absolute inset-0 pointer-events-none">
