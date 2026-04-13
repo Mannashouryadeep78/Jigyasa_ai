@@ -139,21 +139,21 @@ export default function Dashboard({ onStartNew, onViewReport, onContinue, onBack
                     {loading ? (
                         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                             {[1, 2, 3].map((i) => (
-                                <div key={i} className="bg-white/5 border border-white/10 rounded-[2rem] p-8 h-[340px] flex flex-col justify-between overflow-hidden relative">
+                                <div key={i} className="bg-white/5 border border-white/10 rounded-[2rem] p-6 h-[280px] flex flex-col justify-between overflow-hidden relative">
                                     <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent"></div>
                                     <div>
-                                        <div className="flex justify-between items-start mb-6 w-full">
-                                            <div className="h-6 w-20 bg-white/10 rounded-full"></div>
-                                            <div className="h-4 w-16 bg-white/5 rounded-full"></div>
+                                        <div className="flex justify-between items-start mb-4 w-full">
+                                            <div className="h-5 w-16 bg-white/10 rounded-full"></div>
+                                            <div className="h-3 w-12 bg-white/5 rounded-full"></div>
                                         </div>
-                                        <div className="h-8 w-48 bg-white/10 rounded-lg mb-4"></div>
-                                        <div className="h-4 w-32 bg-white/5 rounded-md mb-8"></div>
-                                        <div className="p-6 bg-[#1a0f0a]/80 rounded-[1.5rem] border border-white/5 flex justify-between items-center">
-                                            <div className="h-4 w-24 bg-white/5 rounded-md"></div>
-                                            <div className="h-8 w-16 bg-white/10 rounded-md"></div>
+                                        <div className="h-6 w-40 bg-white/10 rounded-lg mb-3"></div>
+                                        <div className="h-3 w-24 bg-white/5 rounded-md mb-6"></div>
+                                        <div className="p-4 bg-[#1a0f0a]/80 rounded-[1.2rem] border border-white/5 flex justify-between items-center">
+                                            <div className="h-3 w-20 bg-white/5 rounded-md"></div>
+                                            <div className="h-6 w-12 bg-white/10 rounded-md"></div>
                                         </div>
                                     </div>
-                                    <div className="w-full h-12 bg-white/5 rounded-full mt-auto"></div>
+                                    <div className="w-full h-10 bg-white/5 rounded-full mt-auto"></div>
                                 </div>
                             ))}
                         </div>
@@ -172,10 +172,10 @@ export default function Dashboard({ onStartNew, onViewReport, onContinue, onBack
                     ) : (
                         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 pb-8">
                             {filteredSessions.map((session) => (
-                                <div key={session.id} className="bg-white/5 border border-white/10 hover:border-[#b45309]/50 hover:bg-white/10 rounded-[2rem] p-8 transition-all group flex flex-col justify-between h-full shadow-lg">
+                                <div key={session.id} className="bg-white/5 border border-white/10 hover:border-[#b45309]/50 hover:bg-white/10 rounded-[2rem] p-6 transition-all group flex flex-col justify-between h-full shadow-lg">
                                     <div>
-                                        <div className="flex justify-between items-start mb-6">
-                                            <div className={`px-3 py-1.5 text-[10px] font-bold uppercase rounded-full tracking-widest ${
+                                        <div className="flex justify-between items-start mb-4">
+                                            <div className={`px-2.5 py-1 text-[9px] font-bold uppercase rounded-full tracking-widest ${
                                                 (session.status === 'finished' || (session.assessments && session.assessments.length > 0)) 
                                                     ? 'bg-[#b45309]/20 text-[#f5cca8] border border-[#b45309]/30' 
                                                     : session.status === 'discontinued'
@@ -184,19 +184,19 @@ export default function Dashboard({ onStartNew, onViewReport, onContinue, onBack
                                             }`}>
                                                 {(session.status === 'finished' || (session.assessments && session.assessments.length > 0)) ? 'FINISHED' : session.status}
                                             </div>
-                                            <span className="text-xs text-white/40 flex items-center gap-1.5 font-bold tracking-widest">
-                                                <Calendar className="w-3.5 h-3.5" />
+                                            <span className="text-[10px] text-white/40 flex items-center gap-1.5 font-bold tracking-widest">
+                                                <Calendar className="w-3 h-3" />
                                                 {new Date(session.created_at).toLocaleDateString()}
                                             </span>
                                         </div>
-                                        <h3 className="text-2xl font-medium tracking-tighter text-white mb-2">{session.name} Review</h3>
-                                        <p className="text-xs tracking-widest text-[#b45309]/60 font-mono mb-8">ID: {session.id.substring(0,8)}...</p>
+                                        <h3 className="text-xl font-medium tracking-tighter text-white mb-1.5">{session.name} Review</h3>
+                                        <p className="text-[10px] tracking-widest text-[#b45309]/60 font-mono mb-6">ID: {session.id.substring(0,8)}...</p>
                                         
                                         {session.assessments && session.assessments.length > 0 && session.assessments[0].scores_json && (
-                                            <div className="mb-8 p-6 bg-[#1a0f0a]/80 rounded-[1.5rem] border border-white/5 flex justify-between items-center">
-                                                <span className="text-xs font-bold tracking-widest uppercase text-white/50">Final Score</span>
-                                                <span className="text-3xl font-medium text-[#f5cca8]">
-                                                    {(Object.values(session.assessments[0].scores_json).reduce((a, b) => a + b, 0) / Object.values(session.assessments[0].scores_json).length || 0).toFixed(1)} <span className="text-lg text-white/20 font-bold tracking-widest">/ 5</span>
+                                            <div className="mb-6 p-4 bg-[#1a0f0a]/80 rounded-[1.2rem] border border-white/5 flex justify-between items-center">
+                                                <span className="text-[10px] font-bold tracking-widest uppercase text-white/50">Final Score</span>
+                                                <span className="text-2xl font-medium text-[#f5cca8]">
+                                                    {(Object.values(session.assessments[0].scores_json).reduce((a, b) => a + b, 0) / Object.values(session.assessments[0].scores_json).length || 0).toFixed(1)} <span className="text-sm text-white/20 font-bold tracking-widest">/ 5</span>
                                                 </span>
                                             </div>
                                         )}
@@ -204,7 +204,7 @@ export default function Dashboard({ onStartNew, onViewReport, onContinue, onBack
                                             <div className="flex flex-col gap-2">
                                                 <button 
                                                     onClick={() => onContinue(session.id)}
-                                                    className="w-full py-3 bg-[#b45309] hover:bg-white text-[#1a0f0a] text-xs font-bold uppercase tracking-widest rounded-full transition flex justify-center shadow-lg shadow-[#b45309]/20"
+                                                    className="w-full py-2.5 bg-[#b45309] hover:bg-white text-[#1a0f0a] text-[10px] font-bold uppercase tracking-widest rounded-full transition flex justify-center shadow-lg shadow-[#b45309]/20"
                                                 >
                                                     Continue Interview
                                                 </button>
@@ -213,7 +213,7 @@ export default function Dashboard({ onStartNew, onViewReport, onContinue, onBack
                                                         await api.discontinueSession(session.id);
                                                         window.location.reload();
                                                     }}
-                                                    className="w-full py-3 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-[10px] font-bold uppercase tracking-widest rounded-full transition flex justify-center border border-red-500/20"
+                                                    className="w-full py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-[9px] font-bold uppercase tracking-widest rounded-full transition flex justify-center border border-red-500/20"
                                                 >
                                                     Discontinue
                                                 </button>
@@ -222,7 +222,7 @@ export default function Dashboard({ onStartNew, onViewReport, onContinue, onBack
                                             <button 
                                                 onClick={() => onViewReport(session.id)}
                                                 disabled={session.status === 'discontinued' || (session.status !== 'finished' && (!session.assessments || session.assessments.length === 0))}
-                                                className="w-full py-4 bg-white/5 hover:bg-[#b45309] text-white hover:text-[#1a0f0a] text-xs font-bold uppercase tracking-widest rounded-full transition flex justify-center disabled:opacity-50 disabled:hover:bg-white/5 disabled:hover:text-white disabled:cursor-not-allowed group-hover:bg-white group-hover:text-[#1a0f0a]"
+                                                className="w-full py-3 bg-white/5 hover:bg-[#b45309] text-white hover:text-[#1a0f0a] text-[10px] font-bold uppercase tracking-widest rounded-full transition flex justify-center disabled:opacity-50 disabled:hover:bg-white/5 disabled:hover:text-white disabled:cursor-not-allowed group-hover:bg-white group-hover:text-[#1a0f0a]"
                                             >
                                                 {session.status === 'discontinued' ? 'Discontinued' : 'View Detailed Report'}
                                             </button>
