@@ -133,7 +133,7 @@ export default function App() {
           onBackToLanding={() => setPhase('landing')}
         />
       )}
-      {phase === 'upload' && <ResumeUpload onUpload={handleUpload} />}
+      {phase === 'upload' && <ResumeUpload onUpload={handleUpload} onBack={() => setPhase('dashboard')} />}
       {phase === 'welcome' && (
          <WelcomeScreen onStart={handleStartInterview} candidateName={candidateName} isInitializing={isInitializing} />
       )}

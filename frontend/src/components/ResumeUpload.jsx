@@ -35,7 +35,7 @@ const MODES = [
   },
 ];
 
-export default function ResumeUpload({ onUpload }) {
+export default function ResumeUpload({ onUpload, onBack }) {
   const [file, setFile] = useState(null);
   const [selectedMode, setSelectedMode] = useState(null);
   const [dragging, setDragging] = useState(false);
@@ -61,6 +61,14 @@ export default function ResumeUpload({ onUpload }) {
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-3xl bg-[#1a0f0a] border border-white/5 rounded-3xl sm:rounded-[3rem] p-5 sm:p-10 md:p-12 shadow-2xl relative overflow-hidden"
       >
+        {/* Back Button */}
+        <button 
+          onClick={onBack}
+          className="absolute top-6 left-6 z-20 flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white rounded-full border border-white/10 transition-all text-[10px] font-bold uppercase tracking-widest"
+        >
+          <span>←</span> Back
+        </button>
+
         {/* Orbital rings */}
         <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20 mix-blend-overlay" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
           <ellipse cx="80%" cy="20%" rx="50%" ry="100%" fill="none" stroke="#fff" strokeWidth="1" />
@@ -68,7 +76,7 @@ export default function ResumeUpload({ onUpload }) {
         </svg>
 
         <div className="relative z-10">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-medium tracking-tighter mb-2 text-white text-center">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-medium tracking-tighter mb-2 text-white text-center mt-4 sm:mt-0">
             <span className="text-[#b45309]">{"{"}</span> Choose Your Round <span className="text-[#b45309]">{"}"}</span>
           </h1>
           <p className="text-white/40 font-medium mb-6 sm:mb-8 text-center tracking-wide text-xs sm:text-sm px-4">
