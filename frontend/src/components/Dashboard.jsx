@@ -112,9 +112,9 @@ export default function Dashboard({ onStartNew, onViewReport, onContinue, onBack
                     <div className="flex-shrink-0 flex items-center overflow-x-auto pb-4 custom-scrollbar lg:no-scrollbar">
                         <div className="flex items-center gap-3 sm:gap-6 px-1 pr-16 md:pr-0 min-w-max">
                             {[
-                                { id: 'finished', label: 'Finished', count: finishedCount },
-                                { id: 'discontinued', label: 'Discontinued', count: discontinuedCount },
-                                { id: 'to_be_continued', label: 'In Progress', count: toBeContinuedCount }
+                                { id: 'finished', label: 'Finished', count: counts.finished },
+                                { id: 'discontinued', label: 'Discontinued', count: counts.discontinued },
+                                { id: 'active', label: 'In Progress', count: counts.active }
                             ].map((tab) => (
                                 <button
                                     key={tab.id}
