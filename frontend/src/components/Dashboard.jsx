@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
-import { LogOut, Plus, FileText, Loader2, Calendar, BarChart2 } from 'lucide-react';
+import { LogOut, Plus, FileText, Loader2, Calendar, BarChart2, Home } from 'lucide-react';
 import { api } from '../api/client';
 import AnalyticsView from './AnalyticsView';
 
-export default function Dashboard({ onStartNew, onViewReport, onContinue }) {
+export default function Dashboard({ onStartNew, onViewReport, onContinue, onBackToLanding }) {
   const { user, signOut } = useAuth();
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -55,6 +55,12 @@ export default function Dashboard({ onStartNew, onViewReport, onContinue }) {
                 <p className="text-white/50 font-medium mt-2">Welcome back, <span className="text-white tracking-wide">{user?.user_metadata?.full_name || user?.email}</span></p>
             </div>
             <div className="flex flex-wrap justify-center items-center gap-4">
+                <button 
+                  onClick={onBackToLanding}
+                  className="px-6 py-3.5 bg-white/5 hover:bg-white/10 text-white/80 hover:text-white rounded-full transition font-bold tracking-widest uppercase text-xs flex items-center gap-2 border border-white/10"
+                >
+                  <Home className="w-3.5 h-3.5 text-[#b45309]" /> Back to Landing Page
+                </button>
                 <button 
                   onClick={() => setView('analytics')}
                   className="flex px-6 py-3.5 bg-white/5 hover:bg-white/10 text-white/80 hover:text-white rounded-full transition font-bold tracking-widest uppercase text-xs items-center gap-2 border border-white/10"

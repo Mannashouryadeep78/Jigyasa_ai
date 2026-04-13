@@ -15,7 +15,7 @@ export default function App() {
   const [publicPhase, setPublicPhase] = useState('landing'); // landing, auth
   const [authMode, setAuthMode] = useState('login'); // login, register, otp
   
-  const [phase, setPhase] = useState('dashboard'); // dashboard, upload, welcome, interview, report
+  const [phase, setPhase] = useState('dashboard'); // dashboard, upload, welcome, interview, report, landing
   const [session, setSession] = useState(null);
   const [candidateName, setCandidateName] = useState('');
   const [resumeFile, setResumeFile] = useState(null);
@@ -118,7 +118,21 @@ export default function App() {
 
   return (
     <>
-      {phase === 'dashboard' && <Dashboard onStartNew={handleStartNew} onViewReport={handleViewReport} onContinue={handleContinue} />}
+      {phase === 'landing' && <LandingPage onGoToAuth={(mode) => {
+          if (mode === 'dashboard') setPhase('dashboard');
+          if (mode === 'prep') {
+              // This is a bit tricky since Prep tool is currently only for public. 
+              // But we can let it work for auth users too if we want.
+          }
+      }} />}
+      {phase === 'dashboard' && (
+        <Dashboard 
+          onStartNew={handleStartNew} 
+          onViewReport={handleViewReport} 
+          onContinue={handleContinue} 
+          onBackToLanding={() => setPhase('landing')}
+        />
+      )}
       {phase === 'upload' && <ResumeUpload onUpload={handleUpload} />}
       {phase === 'welcome' && (
          <WelcomeScreen onStart={handleStartInterview} candidateName={candidateName} isInitializing={isInitializing} />
@@ -134,7 +148,7 @@ export default function App() {
       )}
       {phase === 'report' && (
          <div className="relative">
-             <button onClick={() => setPhase('dashboard')} className="fixed top-6 left-6 z-50 bg-slate-800 text-white px-4 py-2 rounded-lg font-medium hover:bg-slate-700 shadow-lg">← Back to Dashboard</button>
+             <button onClick={() => setPhase('dashboard')} className="fixed top-6 left-6 z-50 bg-slate-800 text-white px-4 py-2 rounded-lg font-medium hover:bg-slate-700 shadow-lg" style={{border: '1px solid rgba(255,255,255,0.1)'}}>← Back to Dashboard</button>
              <AssessmentReport sessionId={session} />
          </div>
       )}

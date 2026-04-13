@@ -1,6 +1,7 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Zap } from 'lucide-react';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Zap, LogOut, LayoutDashboard, ChevronDown } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 import ATSChecker from './ATSChecker';
 
 const SparkleIcon = ({ className = "w-6 h-6" }) => (
@@ -10,6 +11,10 @@ const SparkleIcon = ({ className = "w-6 h-6" }) => (
 );
 
 export default function LandingPage({ onGoToAuth }) {
+    const { user, signOut } = useAuth();
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+    const userInitial = user?.user_metadata?.full_name?.charAt(0) || user?.email?.charAt(0) || '?';
 
     const features = [
         {
@@ -57,7 +62,7 @@ export default function LandingPage({ onGoToAuth }) {
                 </div>
 
                 {/* ── NAVBAR ── */}
-                <nav className="relative z-20 w-full flex items-center justify-between px-4 sm:px-8 md:px-14 py-4 sm:py-6">
+                <nav className="relative z-50 w-full flex items-center justify-between px-4 sm:px-8 md:px-14 py-4 sm:py-6">
                     {/* Logo */}
                     <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                         <div className="w-8 h-8 sm:w-10 sm:h-10 bg-[#f97316] rounded-xl flex items-center justify-center shadow-lg shrink-0">
@@ -79,20 +84,63 @@ export default function LandingPage({ onGoToAuth }) {
                         </a>
                     </div>
 
-                    {/* Auth Buttons */}
+                    {/* Auth Section */}
                     <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-                        <button
-                            onClick={() => onGoToAuth('login')}
-                            className="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-white/70 hover:text-white transition-colors px-2 py-1"
-                        >
-                            Sign In
-                        </button>
-                        <button
-                            onClick={() => onGoToAuth('register')}
-                            className="px-4 sm:px-7 py-2 sm:py-3 rounded-full border border-white/30 bg-white/10 hover:bg-white/20 text-white text-[10px] font-black uppercase tracking-widest transition-all backdrop-blur-sm whitespace-nowrap"
-                        >
-                            Register
-                        </button>
+                        {user ? (
+                            <div 
+                                className="relative"
+                                onMouseEnter={() => setIsMenuOpen(true)}
+                                onMouseLeave={() => setIsMenuOpen(false)}
+                            >
+                                <button className="flex items-center gap-2 group p-1 pl-2 bg-white/5 hover:bg-white/10 rounded-full border border-white/10 transition-all">
+                                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-[#f97316] rounded-full flex items-center justify-center text-white font-black text-sm sm:text-base shadow-lg shadow-orange-500/20 uppercase">
+                                        {userInitial}
+                                    </div>
+                                    <ChevronDown className={`w-4 h-4 text-white/50 group-hover:text-white transition-transform duration-300 ${isMenuOpen ? 'rotate-180' : ''}`} />
+                                </button>
+
+                                <AnimatePresence>
+                                    {isMenuOpen && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                                            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                                            className="absolute right-0 mt-2 w-48 bg-[#1a0800]/95 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden shadow-2xl py-2"
+                                        >
+                                            <button
+                                                onClick={() => onGoToAuth('dashboard')}
+                                                className="w-full flex items-center gap-3 px-4 py-3 text-[11px] font-bold uppercase tracking-widest text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+                                            >
+                                                <LayoutDashboard className="w-4 h-4 text-[#f97316]" />
+                                                Dashboard
+                                            </button>
+                                            <button
+                                                onClick={() => signOut()}
+                                                className="w-full flex items-center gap-3 px-4 py-3 text-[11px] font-bold uppercase tracking-widest text-red-400/70 hover:text-red-400 hover:bg-red-500/5 transition-colors border-t border-white/5"
+                                            >
+                                                <LogOut className="w-4 h-4" />
+                                                Sign Out
+                                            </button>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+                        ) : (
+                            <>
+                                <button
+                                    onClick={() => onGoToAuth('login')}
+                                    className="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-white/70 hover:text-white transition-colors px-2 py-1"
+                                >
+                                    Sign In
+                                </button>
+                                <button
+                                    onClick={() => onGoToAuth('register')}
+                                    className="px-4 sm:px-7 py-2 sm:py-3 rounded-full border border-white/30 bg-white/10 hover:bg-white/20 text-white text-[10px] font-black uppercase tracking-widest transition-all backdrop-blur-sm whitespace-nowrap"
+                                >
+                                    Register
+                                </button>
+                            </>
+                        )}
                     </div>
                 </nav>
 
