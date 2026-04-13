@@ -62,8 +62,14 @@ export default function Navbar({ activeView, onViewChange }) {
       </div>
 
       {/* Mobile Menu */}
+      <AnimatePresence>
       {isMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 w-full bg-[#1a0f0a] border-b border-white/10 p-4 space-y-4 animate-in slide-in-from-top duration-300">
+        <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="md:hidden absolute top-full left-0 w-full bg-[#1a0f0a] border-b border-white/10 p-6 space-y-6 shadow-3xl z-[200] backdrop-blur-3xl"
+        >
           <div className="flex flex-col gap-2">
             {navItems.map((item) => (
               <button
@@ -92,8 +98,9 @@ export default function Navbar({ activeView, onViewChange }) {
           >
             <LogOut className="w-4 h-4" /> Sign Out
           </button>
-        </div>
+        </motion.div>
       )}
+      </AnimatePresence>
     </nav>
   );
 }

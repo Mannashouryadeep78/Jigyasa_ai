@@ -109,7 +109,7 @@ export default function InterviewPrepTool({ onBack }) {
                             <button onClick={onBack} className="text-white/50 hover:text-white transition text-sm font-bold flex items-center gap-1 mb-4 print-hidden uppercase tracking-widest">
                                 ← Return to Home
                             </button>
-                            <h1 className="text-3xl md:text-4xl font-medium tracking-tighter">
+                            <h1 className="text-2xl md:text-4xl font-medium tracking-tighter leading-tight">
                                 <span className="text-[#b45309]">{"}"}</span> Interview Prep Sheet
                             </h1>
                             <p className="text-white/60 font-medium mt-2">Customized top 15 highly-targeted questions & suggested responses.</p>
@@ -167,12 +167,12 @@ export default function InterviewPrepTool({ onBack }) {
                 ← Return to History
             </button>
             
-            <div className="w-full max-w-xl bg-[#1a0f0a] rounded-[3rem] p-8 md:p-12 shadow-2xl relative border border-white/5">
+            <div className="w-full max-w-xl bg-[#1a0f0a] rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-12 shadow-2xl relative border border-white/5">
                 <div className="text-center mb-8">
-                    <h1 className="text-3xl font-medium tracking-tighter text-white">
+                    <h1 className="text-2xl sm:text-3xl font-medium tracking-tighter text-white uppercase italic leading-tight">
                         <span className="text-[#b45309]">{"}"}</span> Interview Prep
                     </h1>
-                    <p className="text-white/50 mt-2 font-medium">Upload your resume to generate 15 highly-targeted behavioral and technical practice questions.</p>
+                    <p className="text-white/40 mt-2 font-medium text-[10px] sm:text-sm uppercase tracking-widest leading-relaxed">Upload resume for targeted behavioral practice questions.</p>
                 </div>
 
                 <div 

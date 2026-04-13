@@ -113,11 +113,11 @@ export default function InterviewRoom({ sessionId, candidateName, initialMessage
         <div className="flex flex-col h-screen sm:min-h-screen bg-[#e0ccb8] text-white font-sans selection:bg-black selection:text-white pb-2 md:pb-8">
 
             <header className="p-4 sm:p-6 md:px-12 flex items-center justify-between shrink-0">
-                <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-red-400 animate-pulse shadow-[0_0_10px_2px_rgba(248,113,113,0.5)]"></div>
+                <div className="flex items-center gap-2 group">
+                    <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-red-400 animate-pulse shadow-[0_0_10px_2px_rgba(248,113,113,0.3)]"></div>
                     <span className="font-bold tracking-widest text-[#1a0f0a] uppercase text-[9px] sm:text-xs">Live • {candidateName}</span>
                 </div>
-                <div className="text-[9px] sm:text-xs text-[#1a0f0a]/50 font-bold tracking-widest uppercase">
+                <div className="hidden sm:block text-[9px] sm:text-xs text-[#1a0f0a]/50 font-bold tracking-widest uppercase">
                     ID: {sessionId?.split('-')[0] || 'TEST'}
                 </div>
             </header>
@@ -143,7 +143,7 @@ export default function InterviewRoom({ sessionId, candidateName, initialMessage
                                     <span className="text-[9px] text-white/40 mb-1.5 font-bold tracking-widest uppercase select-none">
                                         {msg.role === 'ai' ? 'Screener' : 'You'}
                                     </span>
-                                    <div className={`px-4 sm:px-6 py-3 sm:py-5 rounded-[1.2rem] sm:rounded-[2rem] max-w-[90%] sm:max-w-[85%] text-xs sm:text-sm md:text-base font-medium shadow-xl ${msg.role === 'ai'
+                                    <div className={`px-4 sm:px-6 py-3 sm:py-5 rounded-[1.2rem] sm:rounded-[2rem] max-w-[95%] sm:max-w-[85%] text-xs sm:text-sm md:text-base font-medium shadow-xl ${msg.role === 'ai'
                                             ? 'bg-white/5 text-white rounded-bl-sm border border-white/10'
                                             : 'bg-[#b45309] text-[#1a0f0a] rounded-br-sm'
                                         }`}>
@@ -183,12 +183,12 @@ export default function InterviewRoom({ sessionId, candidateName, initialMessage
                         <button
                             onClick={toggleListening}
                             disabled={isSpeaking || isProcessing}
-                            className={`w-16 h-16 sm:w-24 sm:h-24 rounded-full transition-all flex items-center justify-center border-2 sm:border-4 ${isListening
+                            className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full transition-all flex items-center justify-center border-2 sm:border-4 ${isListening
                                     ? 'bg-red-500 hover:bg-red-600 text-white border-red-400 shadow-[0_0_40px_rgba(239,68,68,0.4)]'
                                     : 'bg-white hover:bg-white/90 text-[#1a0f0a] grayscale hover:grayscale-0 border-white/10 shadow-[0_0_40px_rgba(255,255,255,0.05)]'
                                 } disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed group`}
                         >
-                            {isListening ? <Mic className="w-6 h-6 sm:w-10 sm:h-10 animate-pulse" /> : <MicOff className="w-6 h-6 sm:w-10 sm:h-10 group-hover:scale-110 transition-transform" />}
+                            {isListening ? <Mic className="w-8 h-8 sm:w-10 sm:h-10 animate-pulse" /> : <MicOff className="w-8 h-8 sm:w-10 sm:h-10 group-hover:scale-110 transition-transform" />}
                         </button>
                         <p className="mt-4 sm:mt-6 text-[8px] sm:text-[10px] tracking-widest font-bold uppercase text-white/50 text-center max-w-[200px] sm:max-w-sm px-4">
                             {isListening ? 'Speak naturally. Pausing for 3 seconds will auto-submit.' : 'Microphone disabled'}

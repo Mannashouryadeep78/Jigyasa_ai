@@ -3,14 +3,14 @@ import { motion } from 'framer-motion';
 import { HelpCircle, Target, Play, LayoutGrid, ShieldCheck, Info, BarChart2, CheckCircle2 } from 'lucide-react';
 
 const HelpSection = ({ title, icon: Icon, children }) => (
-  <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 md:p-10 backdrop-blur-md">
-    <div className="flex items-center gap-4 mb-6">
-      <div className="w-12 h-12 rounded-2xl bg-[#b45309]/20 flex items-center justify-center text-[#f5cca8]">
-        <Icon className="w-6 h-6" />
+  <div className="bg-white/5 border border-white/10 rounded-[1.8rem] sm:rounded-[2.5rem] p-6 sm:p-10 backdrop-blur-md">
+    <div className="flex items-center gap-4 mb-4 sm:mb-6">
+      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-[#b45309]/20 flex items-center justify-center text-[#f5cca8]">
+        <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
       </div>
-      <h2 className="text-xl font-bold uppercase tracking-widest text-white">{title}</h2>
+      <h2 className="text-sm sm:text-lg font-bold uppercase tracking-widest text-white">{title}</h2>
     </div>
-    <div className="space-y-4 text-white/60 text-sm leading-relaxed font-medium">
+    <div className="space-y-4 text-white/50 text-[11px] sm:text-sm leading-relaxed font-medium">
       {children}
     </div>
   </div>
@@ -21,18 +21,18 @@ export default function HelpView({ onBack }) {
     <div className="w-full h-full pb-20 overflow-y-auto custom-scrollbar">
       <div className="max-w-5xl mx-auto py-12 px-4">
         
-        <header className="mb-14 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <header className="mb-10 sm:mb-14 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold uppercase tracking-widest text-white/40 mb-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-white/40 mb-3 sm:mb-4">
               <HelpCircle className="w-3 h-3" /> Documentation & Guidance
             </div>
-            <h1 className="text-4xl sm:text-6xl font-medium tracking-tighter text-white uppercase italic">
+            <h1 className="text-3xl sm:text-6xl font-medium tracking-tighter text-white uppercase italic leading-tight">
               Platform <span className="text-[#f5cca8]">Guide</span>
             </h1>
           </div>
           <button 
             onClick={onBack}
-            className="px-8 py-3 bg-white/5 hover:bg-white text-white hover:text-[#1a0f0a] border border-white/10 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all"
+            className="px-6 py-3 bg-white hover:bg-white text-[#1a0f0a] border border-white/10 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-widest transition-all w-full md:w-auto"
           >
             ← Back to History
           </button>

@@ -28,7 +28,7 @@ export default function FeatureDiscoveryModal({ isOpen, onConfirm }) {
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="relative z-10 w-full max-w-4xl bg-white/5 border border-white/10 rounded-[3.5rem] p-8 sm:p-16 shadow-3xl text-center overflow-hidden"
+            className="relative z-10 w-full max-w-4xl bg-white/5 border border-white/10 rounded-[2.5rem] sm:rounded-[3.5rem] p-6 sm:p-16 shadow-3xl text-center overflow-hidden"
           >
             {/* Background Glows */}
             <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-[#b45309]/20 rounded-full blur-[120px] pointer-events-none" />
@@ -39,7 +39,7 @@ export default function FeatureDiscoveryModal({ isOpen, onConfirm }) {
                 <Sparkles className="w-3 h-3" /> Welcome to Jigyasa AI
               </div>
 
-              <h2 className="text-4xl sm:text-6xl font-medium tracking-tighter text-white mb-4 uppercase italic">
+              <h2 className="text-3xl sm:text-6xl font-medium tracking-tighter text-white mb-4 uppercase italic leading-tight">
                 Master your <span className="text-[#f5cca8]">Tutor Career</span>
               </h2>
               
@@ -47,7 +47,7 @@ export default function FeatureDiscoveryModal({ isOpen, onConfirm }) {
                 Elevate your teaching profile with AI-driven interview assessments and highly targeted pedagogy prep.
               </p>
 
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-14">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10 sm:mb-14">
                 <FeatureCard 
                   icon={Play}
                   title="Practice Mode"

@@ -106,7 +106,7 @@ export default function Dashboard({ onStartNew, onViewReport, onContinue }) {
             <main className="w-full h-full flex flex-col min-h-0">
                 <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 shrink-0">
                     <div>
-                        <h2 className="text-3xl sm:text-5xl font-medium tracking-tighter text-white mb-2 uppercase italic">
+                        <h2 className="text-3xl sm:text-5xl font-medium tracking-tighter text-white mb-2 uppercase italic leading-tight">
                             Member <span className="text-[#f5cca8]">Portal</span>
                         </h2>
                         <p className="text-white/40 font-medium tracking-widest uppercase text-[10px] sm:text-xs">
@@ -116,7 +116,7 @@ export default function Dashboard({ onStartNew, onViewReport, onContinue }) {
 
                     <button 
                         onClick={() => setShowModeChoice(true)}
-                        className="group flex items-center gap-3 px-8 py-4 bg-white hover:bg-[#b45309] text-[#1a0f0a] hover:text-white rounded-full transition-all duration-500 font-bold tracking-widest uppercase text-xs shadow-2xl hover:shadow-[#b45309]/40"
+                        className="group flex items-center justify-center gap-3 px-6 py-4 bg-white hover:bg-[#b45309] text-[#1a0f0a] hover:text-white rounded-full transition-all duration-500 font-bold tracking-widest uppercase text-[10px] shadow-2xl hover:shadow-[#b45309]/40 w-full md:w-auto"
                     >
                         <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform duration-500" /> Start New Session
                     </button>
@@ -303,12 +303,12 @@ export default function Dashboard({ onStartNew, onViewReport, onContinue }) {
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative z-10 w-full max-w-2xl bg-[#1a0f0a] border border-white/10 rounded-[3rem] p-8 sm:p-14 shadow-3xl text-center"
+              className="relative z-10 w-full max-w-2xl bg-[#1a0f0a] border border-white/10 rounded-[2.5rem] p-6 sm:p-14 shadow-3xl text-center"
             >
-              <h2 className="text-3xl sm:text-5xl font-medium tracking-tighter text-white mb-4 uppercase italic">
+              <h2 className="text-3xl sm:text-5xl font-medium tracking-tighter text-white mb-4 uppercase italic leading-tight">
                 Choose your <span className="text-[#f5cca8]">Path</span>
               </h2>
-              <p className="text-white/40 font-medium tracking-widest uppercase text-xs mb-12 px-8">
+              <p className="text-white/40 font-medium tracking-widest uppercase text-[10px] sm:text-xs mb-8 sm:mb-12 px-4 sm:px-8">
                 Select your intended interview format
               </p>
 

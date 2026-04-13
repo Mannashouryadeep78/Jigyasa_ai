@@ -253,14 +253,14 @@ export default function ATSChecker({ onGoToAuth }) {
                 </div>
               </div>
 
-              <div className="p-10 rounded-[2.5rem] bg-[#b45309]/10 border border-[#b45309]/30 flex flex-col md:flex-row items-center justify-between gap-8 backdrop-blur-md">
+              <div className="p-6 sm:p-10 rounded-[1.5rem] sm:rounded-[2.5rem] bg-[#b45309]/10 border border-[#b45309]/30 flex flex-col md:flex-row items-center justify-between gap-8 backdrop-blur-md">
                 <div className="text-center md:text-left">
                   <p className="text-[#f5cca8] font-medium text-lg mb-1 tracking-tight">Ready for a tutor mock interview?</p>
-                  <p className="text-white/40 text-xs font-medium">Practice Tutor HR, Domain, or Policy rounds with AI feedback.</p>
+                  <p className="text-white/40 text-[10px] sm:text-xs font-medium uppercase tracking-widest">Practice Tutor Rounds with AI feedback.</p>
                 </div>
                 <button
                   onClick={() => window.location.reload()}
-                  className="px-10 py-5 rounded-full bg-white text-[#1a0f0a] text-[10px] font-black tracking-widest uppercase hover:bg-[#f5cca8] transition-all"
+                  className="px-10 py-5 rounded-full bg-white text-[#1a0f0a] text-[9px] sm:text-[10px] font-black tracking-widest uppercase hover:bg-[#f5cca8] transition-all w-full md:w-auto"
                 >
                   Start Practice Session
                 </button>
