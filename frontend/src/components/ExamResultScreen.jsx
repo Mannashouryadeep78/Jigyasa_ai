@@ -44,7 +44,7 @@ export default function ExamResultScreen({ examScores, onBackToDashboard }) {
             <div key={index} className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
               <span className="text-white/70 font-medium text-sm sm:text-base">{round.name}</span>
               <div className="flex items-center gap-3">
-                <span className="text-white font-black text-lg">{round.score.toFixed(1)}</span>
+                <span className="text-white font-black text-lg">{(round.score || 0).toFixed(1)}</span>
                 <span className="text-white/20 text-xs font-bold">/ 5.0</span>
               </div>
             </div>
@@ -54,7 +54,7 @@ export default function ExamResultScreen({ examScores, onBackToDashboard }) {
         <div className="bg-black/30 rounded-3xl p-8 border border-white/5 mb-8">
           <p className="text-white/40 text-[10px] font-bold uppercase tracking-[0.2em] mb-2">Final Average Score</p>
           <div className="text-5xl sm:text-7xl font-medium text-white mb-6">
-            {averageScore.toFixed(2)}
+            {(averageScore || 0).toFixed(2)}
             <span className="text-lg sm:text-2xl text-white/20 ml-2">/ 5.00</span>
           </div>
 

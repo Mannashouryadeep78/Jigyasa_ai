@@ -41,7 +41,7 @@ export default function RoundTransition({ lastRoundName, lastRoundScore, nextRou
         <div className="mb-10 p-6 bg-black/40 rounded-2xl border border-white/5 inline-block mx-auto min-w-[200px]">
             <p className="text-white/30 text-[10px] font-bold tracking-[0.2em] uppercase mb-1">{lastRoundName} Score</p>
             <div className="text-4xl font-medium text-white">
-                {lastRoundScore.toFixed(1)}
+                {(lastRoundScore || 0).toFixed(1)}
                 <span className="text-sm text-white/20 ml-1">/ 5</span>
             </div>
         </div>
