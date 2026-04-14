@@ -84,16 +84,25 @@ body {
 /* ─── Print / PDF Styles ──────────────────────────────────────────────────── */
 @page {
   size: A4;
-  margin: 18mm 16mm 18mm 16mm;
+  margin: 16mm 14mm 16mm 14mm;
 }
 
 @media print {
-  /* Reset sizing */
-  html, body {
+  /* ══ CRITICAL FIX 1: Remove ALL overflow/height clipping ══
+     Dashboard root has h-dvh + overflow-hidden which clips to 1 screen height.
+     Setting overflow:visible on everything lets content flow across pages. */
+  *, *::before, *::after {
+    overflow: visible !important;
+    max-height: none !important;
+  }
+  /* Remove the viewport-height lock on root elements */
+  html, body, #root {
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
     background-color: white !important;
     font-size: 10pt !important;
     line-height: 1.45 !important;
-    color: #1a1a1a !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
@@ -107,7 +116,7 @@ body {
     justify-content: center !important;
     pointer-events: none !important;
     z-index: 0 !important;
-    overflow: hidden !important;
+    overflow: hidden !important; /* intentional: crop the large text */
   }
   .print-watermark-text {
     font-size: 72pt !important;
@@ -119,61 +128,71 @@ body {
     letter-spacing: -2px !important;
   }
 
-  /* ── Layout helpers ── */
+  /* ── Visibility helpers ── */
   .print-hidden { display: none !important; }
-  .print-visible-text { color: #111 !important; }
-  /* Show all Q&A answer sections regardless of expanded state */
+  /* Always show Q&A answers in print regardless of expanded state */
   .qa-answer { display: block !important; }
+  .page-break { page-break-inside: avoid; }
+
+  /* ══ CRITICAL FIX 2: White text is invisible on white paper ══
+     Catch ALL Tailwind text-white/* variants (text-white, text-white/70, etc.) */
+  [class*="text-white"] { color: #1a1a1a !important; }
+
+  /* ══ CRITICAL FIX 3: Dark backgrounds are unreadable on paper ══ */
+  [class*="bg-[#1a0f0a]"],
+  [class*="bg-[#1e1d24]"],
+  [class*="bg-[#0a0503]"] { background-color: #ffffff !important; }
+  [class*="bg-white/5"],
+  [class*="bg-white/10"],
+  [class*="bg-white/20"] { background-color: #f8fafc !important; }
+  /* Catch any remaining dark backgrounds via color proximity */
   .print-bg {
     background-color: #f8fafc !important;
     border-color: #e2e8f0 !important;
     color: #111 !important;
     box-shadow: none !important;
   }
-  .page-break { page-break-inside: avoid; }
 
-  /* ── Compact headings ── */
-  h1 { font-size: 18pt !important; margin-bottom: 6pt !important; }
-  h2 { font-size: 14pt !important; margin-bottom: 4pt !important; }
-  h3 { font-size: 11pt !important; margin-bottom: 3pt !important; }
+  /* ── Restore intentionally colored text ── */
+  [class*="text-green"] { color: #15803d !important; }
+  [class*="text-red"]   { color: #b91c1c !important; }
+  [class*="text-[#b45309]"],
+  [class*="text-[#f5cca8]"] { color: #92400e !important; }
 
-  /* ── Tighten card spacing ── */
-  .rounded-\[2rem\], .rounded-\[3rem\], .rounded-\[1\.5rem\] {
-    border-radius: 8pt !important;
-    padding: 10pt 12pt !important;
-  }
-
-  /* ── Remove Framer Motion interference ── */
+  /* ── Remove Framer Motion inline style interference ── */
   [style*="transform"], [style*="opacity"] {
     opacity: 1 !important;
     transform: none !important;
   }
 
-  /* ── Text size reductions ── */
-  p, li, blockquote { font-size: 9.5pt !important; }
-  .text-xs, .text-\[10px\], .text-\[9px\] { font-size: 7.5pt !important; }
-  .text-sm { font-size: 8.5pt !important; }
-  .text-base { font-size: 9.5pt !important; }
-  .text-lg { font-size: 10.5pt !important; }
-  .text-xl { font-size: 11pt !important; }
-  .text-2xl { font-size: 14pt !important; }
-  .text-4xl, .text-5xl, .text-6xl { font-size: 20pt !important; }
+  /* ── Compact headings ── */
+  h1 { font-size: 17pt !important; margin-bottom: 5pt !important; }
+  h2 { font-size: 13pt !important; margin-bottom: 4pt !important; }
+  h3 { font-size: 10.5pt !important; margin-bottom: 3pt !important; }
 
-  /* ── Score badges ── */
-  .text-green-400  { color: #15803d !important; }
-  .text-red-400    { color: #b91c1c !important; }
-  .text-\[#f5cca8\] { color: #92400e !important; }
-  .text-\[#b45309\] { color: #92400e !important; }
-  .border-\[#b45309\] { border-color: #92400e !important; }
+  /* ── Text size reductions for compact pages ── */
+  p, li, blockquote { font-size: 9pt !important; }
+  .text-xs, [class*="text-[10px]"], [class*="text-[9px]"] { font-size: 7pt !important; }
+  .text-sm  { font-size: 8.5pt !important; }
+  .text-base { font-size: 9pt !important; }
+  .text-lg  { font-size: 10pt !important; }
+  .text-xl  { font-size: 10.5pt !important; }
+  .text-2xl { font-size: 13pt !important; }
+  .text-4xl, .text-5xl, .text-6xl { font-size: 19pt !important; }
 
-  /* ── Spacing resets ── */
-  .space-y-6 > * + * { margin-top: 10pt !important; }
-  .space-y-8 > * + * { margin-top: 12pt !important; }
-  .p-8, .p-12 { padding: 10pt 12pt !important; }
-  .mb-8, .mb-6 { margin-bottom: 8pt !important; }
-  .mt-4, .mt-8, .mt-10 { margin-top: 6pt !important; }
-  .gap-6 { gap: 8pt !important; }
+  /* ── Tighten card spacing ── */
+  .p-8, .p-12 { padding: 7pt 9pt !important; }
+  .p-6 { padding: 6pt 8pt !important; }
+  .space-y-6 > * + * { margin-top: 7pt !important; }
+  .space-y-8 > * + * { margin-top: 9pt !important; }
+  .gap-6 { gap: 7pt !important; }
+  .mb-8, .mb-6 { margin-bottom: 7pt !important; }
+  .mt-4, .mt-8, .mt-10, .mt-12 { margin-top: 5pt !important; }
 
-  /* ── Grid: force single column for narrow pages ── */
+  /* ── Assessment grid stays 2-col on A4 ── */
   .md\:grid-cols-2 { grid-template-columns: 1fr 1fr !important; }
+
+  /* ── Border colours ── */
+  [class*="border-white"] { border-color: #e2e8f0 !important; }
+  [class*="border-[#b45309]"] { border-color: #92400e !important; }
 }
