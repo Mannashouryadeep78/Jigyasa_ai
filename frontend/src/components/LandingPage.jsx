@@ -198,54 +198,72 @@ export default function LandingPage({ onGoToAuth }) {
                     {features.map((f, idx) => (
                         <motion.div
                             key={idx}
-                            initial={{ opacity: 0, y: 80 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true, amount: 0.3 }}
-                            transition={{ delay: idx * 0.15, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                            initial={{ opacity: 0, y: 60, scale: 0.94 }}
+                            whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                            viewport={{ once: true, amount: 0.25 }}
+                            transition={{ delay: idx * 0.18, duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
                             className="bg-[#1a0800]/90 backdrop-blur-sm border border-white/8 rounded-[1.8rem] sm:rounded-[2.2rem] p-8 sm:p-12 hover:border-[#b45309]/40 transition-all duration-500 shadow-2xl group"
                         >
-                            <h3 className="text-2xl sm:text-3xl font-bold text-[#f5cca8] tracking-tight mb-2 group-hover:translate-x-1 transition-transform">{f.title}</h3>
-                            <p className="text-[11px] font-black tracking-[0.25em] text-white/35 uppercase mb-5 sm:mb-6">{f.subtitle}</p>
-                            <p className="text-white/50 text-sm leading-relaxed">{f.description}</p>
+                            <motion.div
+                                initial={{ opacity: 0, x: -16 }}
+                                whileInView={{ opacity: 1, x: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: idx * 0.18 + 0.25, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                            >
+                                <h3 className="text-2xl sm:text-3xl font-bold text-[#f5cca8] tracking-tight mb-2 group-hover:translate-x-1 transition-transform">{f.title}</h3>
+                                <p className="text-[11px] font-black tracking-[0.25em] text-white/35 uppercase mb-5 sm:mb-6">{f.subtitle}</p>
+                                <p className="text-white/50 text-sm leading-relaxed">{f.description}</p>
+                            </motion.div>
                         </motion.div>
                     ))}
                 </section>
 
                 {/* ── RESUME-TO-PREP MATRIX BANNER ── */}
                 <motion.div
-                    initial={{ opacity: 0, y: 50 }}
+                    initial={{ opacity: 0, y: 56 }}
                     whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, amount: 0.3 }}
-                    transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                    viewport={{ once: true, amount: 0.25 }}
+                    transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
                     className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-8 md:px-14 pb-10 sm:pb-16"
                 >
                     <div className="bg-[#1a0800]/90 backdrop-blur-sm border border-white/8 rounded-[1.5rem] sm:rounded-[1.8rem] px-6 sm:px-12 py-8 sm:py-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-2xl">
                         <div className="flex-1 min-w-0">
-                            <div className="text-[10px] font-black tracking-[0.2em] text-[#f5cca8]/60 uppercase flex items-center gap-2 mb-3">
-                                <Zap className="w-3 h-3" /> Complimentary Access
-                            </div>
-                            <h2 className="text-2xl sm:text-4xl font-bold text-white mb-3 tracking-tight">Resume-to-Prep Matrix</h2>
-                            <p className="text-white/40 text-sm leading-relaxed">
-                                Upload your resume and instantly generate the top 15 highly-targeted pedagogical and
-                                subject-specific interview questions to practice with. Automatically formatted into a printable study guide.
-                            </p>
+                            <motion.div
+                                initial={{ opacity: 0, x: -24 }}
+                                whileInView={{ opacity: 1, x: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: 0.2, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                            >
+                                <div className="text-[10px] font-black tracking-[0.2em] text-[#f5cca8]/60 uppercase flex items-center gap-2 mb-3">
+                                    <Zap className="w-3 h-3" /> Complimentary Access
+                                </div>
+                                <h2 className="text-2xl sm:text-4xl font-bold text-white mb-3 tracking-tight">Resume-to-Prep Matrix</h2>
+                                <p className="text-white/40 text-sm leading-relaxed">
+                                    Upload your resume and instantly generate up to 20 highly-targeted pedagogical and
+                                    subject-specific interview questions to practice with. Automatically formatted into a printable study guide.
+                                </p>
+                            </motion.div>
                         </div>
-                        <button
+                        <motion.button
+                            initial={{ opacity: 0, scale: 0.7 }}
+                            whileInView={{ opacity: 1, scale: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: 0.35, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                             onClick={() => onGoToAuth('prep')}
                             className="shrink-0 sm:ml-8 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white text-[#1a0800] flex items-center justify-center hover:bg-[#f5cca8] transition-all shadow-xl text-xl font-bold self-end sm:self-auto"
                         >
                             ›
-                        </button>
+                        </motion.button>
                     </div>
                 </motion.div>
 
                 {/* ── ATS CHECKER ── */}
                 <motion.div
                     id="ats-checker"
-                    initial={{ opacity: 0, y: 50 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, amount: 0.2 }}
-                    transition={{ delay: 0.1, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                    initial={{ opacity: 0, y: 56, scale: 0.97 }}
+                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                    viewport={{ once: true, amount: 0.15 }}
+                    transition={{ duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
                     className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-8 md:px-14 pb-16 sm:pb-20"
                 >
                     <ATSChecker onGoToAuth={onGoToAuth} />
@@ -256,13 +274,19 @@ export default function LandingPage({ onGoToAuth }) {
             <div className="bg-[#e8d5c0] py-6 px-4 md:px-8">
                 <section id="how-it-works" className="w-full max-w-5xl mx-auto bg-[#e8d5c0] rounded-[2.5rem] py-12 sm:py-16 px-4 sm:px-8">
                     {/* Heading */}
-                    <div className="text-center mb-10 sm:mb-14">
+                    <motion.div
+                        initial={{ opacity: 0, y: 36 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, amount: 0.5 }}
+                        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                        className="text-center mb-10 sm:mb-14"
+                    >
                         <div className="flex items-center justify-center gap-3 mb-3">
                             <SparkleIcon className="w-5 h-5 sm:w-6 sm:h-6 text-[#1a0800]" />
                             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-[#1a0800] tracking-tight">How it works</h2>
                         </div>
                         <p className="text-[#1a0800]/40 text-sm">Three simple steps to automate your teaching assessment.</p>
-                    </div>
+                    </motion.div>
 
                     {/* Step Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
@@ -273,13 +297,21 @@ export default function LandingPage({ onGoToAuth }) {
                         ].map((step, idx) => (
                             <motion.div
                                 key={idx}
-                                initial={{ opacity: 0, y: 30 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ delay: idx * 0.12, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                                initial={{ opacity: 0, y: 48, scale: 0.92 }}
+                                whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                                viewport={{ once: true, amount: 0.3 }}
+                                transition={{ delay: idx * 0.15, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
                                 className="bg-[#1a0800] rounded-[1.5rem] sm:rounded-[1.8rem] p-8 sm:p-10 flex flex-col items-center text-center shadow-2xl hover:scale-[1.02] transition-transform duration-300"
                             >
-                                <span className="text-6xl sm:text-7xl font-bold text-[#f5cca8] mb-4 leading-none">{step.num}</span>
+                                <motion.span
+                                    initial={{ opacity: 0, scale: 0.5 }}
+                                    whileInView={{ opacity: 1, scale: 1 }}
+                                    viewport={{ once: true }}
+                                    transition={{ delay: idx * 0.15 + 0.2, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                                    className="text-6xl sm:text-7xl font-bold text-[#f5cca8] mb-4 leading-none block"
+                                >
+                                    {step.num}
+                                </motion.span>
                                 <p className="text-[10px] font-black tracking-[0.2em] text-white/35 uppercase mb-3">{step.title}</p>
                                 <p className="text-white/30 text-xs leading-relaxed">{step.desc}</p>
                             </motion.div>
