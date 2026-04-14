@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
-  ResponsiveContainer,
   BarChart,
   Bar,
   XAxis,
@@ -32,13 +31,21 @@ const AnalyticsContent = ({
   fetchGuidance,
   setLoadingGuidance
 }) => {
-  const [isMounted, setIsMounted] = useState(false);
+  const chartContainerRef = useRef(null);
+  const [chartDims, setChartDims] = useState({ width: 0, height: 0 });
 
-  useEffect(() => {
-    setIsMounted(false);
-    const timer = setTimeout(() => setIsMounted(true), 150);
-    return () => clearTimeout(timer);
-  }, [isExpanded]);
+  useLayoutEffect(() => {
+    const el = chartContainerRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver(entries => {
+      const { width, height } = entries[0].contentRect;
+      if (width > 0 && height > 0) {
+        setChartDims({ width: Math.floor(width), height: Math.floor(height) });
+      }
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   return (
   <div className={`grid ${isExpanded ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1 md:grid-cols-2'} gap-6`}>
@@ -49,52 +56,49 @@ const AnalyticsContent = ({
         <TrendingUp className="w-4 h-4" /> Global Comparison
       </h3>
 
-      {/* FIXED HEIGHT CONTAINER */}
-      <div className="w-full h-[300px] sm:h-[350px]">
-        {isMounted && chartData.length > 0 && (
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 10, right: 30, left: -20, bottom: 60 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#ffffff1a" vertical={false} />
+      <div ref={chartContainerRef} className="w-full h-[300px] sm:h-[350px]">
+        {chartDims.width > 0 && chartDims.height > 0 && chartData.length > 0 && (
+          <BarChart width={chartDims.width} height={chartDims.height} data={chartData} margin={{ top: 10, right: 30, left: -20, bottom: 60 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#ffffff1a" vertical={false} />
 
-              <XAxis
-                dataKey="name"
-                stroke="#ffffff80"
-                fontSize={10}
-                tickMargin={15}
-                angle={-35}
-                textAnchor="end"
-              />
+            <XAxis
+              dataKey="name"
+              stroke="#ffffff80"
+              fontSize={10}
+              tickMargin={15}
+              angle={-35}
+              textAnchor="end"
+            />
 
-              <YAxis
-                domain={[0, 5]}
-                stroke="#ffffff80"
-                fontSize={10}
-                tickMargin={10}
-              />
+            <YAxis
+              domain={[0, 5]}
+              stroke="#ffffff80"
+              fontSize={10}
+              tickMargin={10}
+            />
 
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: '#1a0f0a',
-                  borderColor: '#ffffff20',
-                  borderRadius: '1rem',
-                  color: '#fff'
-                }}
-                itemStyle={{ fontSize: '11px' }}
-              />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: '#1a0f0a',
+                borderColor: '#ffffff20',
+                borderRadius: '1rem',
+                color: '#fff'
+              }}
+              itemStyle={{ fontSize: '11px' }}
+            />
 
-              <Legend
-                verticalAlign="top"
-                wrapperStyle={{
-                  paddingBottom: '10px',
-                  fontSize: '10px',
-                  color: '#ffffff80'
-                }}
-              />
+            <Legend
+              verticalAlign="top"
+              wrapperStyle={{
+                paddingBottom: '10px',
+                fontSize: '10px',
+                color: '#ffffff80'
+              }}
+            />
 
-              <Bar dataKey="Your Avg" fill="#f5cca8" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="Benchmark (3.5/5)" fill="#b4530980" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+            <Bar dataKey="Your Avg" fill="#f5cca8" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="Benchmark (3.5/5)" fill="#b4530980" radius={[4, 4, 0, 0]} />
+          </BarChart>
         )}
       </div>
     </div>
