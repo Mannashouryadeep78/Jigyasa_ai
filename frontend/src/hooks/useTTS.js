@@ -58,8 +58,8 @@ export function useTTS() {
 
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'en-US';
-    utterance.rate = 1.0;
-    utterance.pitch = 1.0;
+    utterance.rate = 0.9;   // slightly slower = more deliberate, less robotic
+    utterance.pitch = 0.95; // fractionally lower = warmer, less synthetic
 
     // Use the pre-cached best voice if available
     if (nativeVoiceRef.current) {
@@ -92,7 +92,8 @@ export function useTTS() {
         if (currentFetchId !== fetchIdRef.current || !isMountedRef.current) return;
         const utt = new SpeechSynthesisUtterance(sentences[idx++].trim());
         utt.lang = 'en-US';
-        utt.rate = 1.0;
+        utt.rate = 0.9;
+        utt.pitch = 0.95;
         if (nativeVoiceRef.current) utt.voice = nativeVoiceRef.current;
         utt.onend = speakNext;
         utt.onerror = finish;
@@ -142,17 +143,13 @@ export function useTTS() {
     if (isMountedRef.current) setIsSpeaking(true);
 
     // iOS blocks Audio() autoplay without a prior user gesture — always use native speechSynthesis.
-    // On production (non-localhost), browser SpeechSynthesis is always reliable.
-    // Backend TTS (gTTS / edge-tts) only works predictably in local dev.
-    const isLocalhost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
-
-    if (isIOS || !isLocalhost) {
-      // iOS or production: go straight to native — zero latency, no autoplay block
+    if (isIOS) {
       _speakNative(text, onFinish, currentFetchId);
       return;
     }
 
-    // Localhost: try backend first for higher-quality audio
+    // All other environments: try backend Neural TTS (edge-tts AndrewNeural/AriaNeural)
+    // for the most human-sounding voice. Fall back to native only on failure.
     try {
       const audioBlob = await api.generateTTS(text);
 

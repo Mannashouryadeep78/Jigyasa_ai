@@ -435,42 +435,49 @@ async def generate_tts(
     if not text:
         return Response(status_code=204)
 
-    # ── Strategy 1: gTTS (Google) — reliable on cloud IPs ─────────────────────
+    # ── Strategy 1: edge-tts Neural (Microsoft) — most natural-sounding ─────────
+    # These Neural voices use deep-learning prosody and sound like a real person.
+    # Rate -8% = slightly deliberate interview pace; volume unchanged.
     try:
-        from gtts import gTTS
-        print("[TTS] Trying gTTS (Google)...")
-        tts = gTTS(text=text, lang='en', tld='com', slow=False)
-        buf = io.BytesIO()
-        tts.write_to_fp(buf)
-        audio_bytes = buf.getvalue()
-        if audio_bytes and len(audio_bytes) > 100:
-            print(f"[TTS] gTTS success — {len(audio_bytes)} bytes")
-            return Response(content=audio_bytes, media_type="audio/mpeg")
-        print("[TTS] gTTS returned empty audio.")
-    except Exception as e:
-        print(f"[TTS] gTTS failed: {e}")
-
-    # ── Strategy 2: edge-tts fallback ─────────────────────────────────────────
-    try:
-        import edge_tts, io as _io, asyncio as _asyncio
-        print("[TTS] Falling back to edge-tts...")
-        VOICES = ["en-US-JennyNeural", "en-US-GuyNeural"]
+        import edge_tts
+        print("[TTS] Trying edge-tts Neural voices...")
+        VOICES = [
+            "en-US-AndrewNeural",   # warm, natural male — best for an interviewer
+            "en-US-AriaNeural",     # conversational female — friendly & clear
+            "en-US-BrianNeural",    # calm, professional male
+            "en-US-JennyNeural",    # clear, warm female fallback
+        ]
         for voice in VOICES:
             try:
-                communicate = edge_tts.Communicate(text, voice)
-                buf2 = _io.BytesIO()
+                communicate = edge_tts.Communicate(text, voice, rate="-8%", volume="+0%")
+                buf = io.BytesIO()
                 async for chunk in communicate.stream():
                     if chunk["type"] == "audio":
-                        buf2.write(chunk["data"])
-                audio_bytes2 = buf2.getvalue()
-                if audio_bytes2 and len(audio_bytes2) > 100:
-                    print(f"[TTS] edge-tts success with {voice} — {len(audio_bytes2)} bytes")
-                    return Response(content=audio_bytes2, media_type="audio/mpeg")
+                        buf.write(chunk["data"])
+                audio_bytes = buf.getvalue()
+                if audio_bytes and len(audio_bytes) > 100:
+                    print(f"[TTS] edge-tts success with {voice} — {len(audio_bytes)} bytes")
+                    return Response(content=audio_bytes, media_type="audio/mpeg")
                 print(f"[TTS] edge-tts {voice} returned no audio.")
             except Exception as ve:
                 print(f"[TTS] edge-tts {voice} error: {ve}")
     except Exception as e:
         print(f"[TTS] edge-tts import/setup failed: {e}")
+
+    # ── Strategy 2: gTTS (Google) — reliable fallback, less natural ──────────
+    try:
+        from gtts import gTTS
+        print("[TTS] Falling back to gTTS...")
+        tts = gTTS(text=text, lang='en', tld='com', slow=False)
+        buf2 = io.BytesIO()
+        tts.write_to_fp(buf2)
+        audio_bytes2 = buf2.getvalue()
+        if audio_bytes2 and len(audio_bytes2) > 100:
+            print(f"[TTS] gTTS success — {len(audio_bytes2)} bytes")
+            return Response(content=audio_bytes2, media_type="audio/mpeg")
+        print("[TTS] gTTS returned empty audio.")
+    except Exception as e:
+        print(f"[TTS] gTTS failed: {e}")
 
     # ── Strategy 3: 204 — tells the frontend to use native browser TTS ─────────
     print("[TTS] All strategies failed. Returning 204 for native TTS fallback.")
