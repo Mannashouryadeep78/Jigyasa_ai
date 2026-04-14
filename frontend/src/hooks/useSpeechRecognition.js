@@ -11,10 +11,15 @@ export function useSpeechRecognition({ onTranscriptSubmit }) {
   const transcriptRef = useRef('');
   const isListeningRef = useRef(false);
   const submitCallbackRef = useRef(onTranscriptSubmit);
-  // KEY FIX: Track which result index we have already consumed to prevent re-reading on mobile restarts
+  // Track which result index we have already consumed to prevent re-reading on mobile restarts
   const lastResultIndexRef = useRef(0);
-  // Accumulated final text across multiple recognition sessions (needed because mobile stops/starts)
+  // Accumulated final text across multiple recognition sessions
   const accumulatedFinalRef = useRef('');
+
+  // ── Whisper audio recording ─────────────────────────────────────────────────
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+  const mediaStreamRef = useRef(null);
 
   useEffect(() => {
     submitCallbackRef.current = onTranscriptSubmit;
@@ -25,20 +30,51 @@ export function useSpeechRecognition({ onTranscriptSubmit }) {
     if (maxDurationTimerRef.current) clearTimeout(maxDurationTimerRef.current);
   };
 
-  const submitTranscript = useCallback(() => {
-    const finalText = transcriptRef.current.trim();
-    if (finalText) {
-        submitCallbackRef.current(finalText);
-    } else {
-        // Submit empty to advance the session gracefully on silence
-        submitCallbackRef.current('');
-    }
+  // Stops MediaRecorder and resolves with the recorded audio blob (or null if too short)
+  const stopMediaRecorder = useCallback(() => {
+    return new Promise((resolve) => {
+      const recorder = mediaRecorderRef.current;
+      if (recorder && recorder.state !== 'inactive') {
+        recorder.onstop = () => {
+          const blob = audioChunksRef.current.length > 0
+            ? new Blob(audioChunksRef.current, { type: 'audio/webm' })
+            : null;
+          audioChunksRef.current = [];
+          mediaRecorderRef.current = null;
+          // Stop the underlying stream tracks
+          if (mediaStreamRef.current) {
+            mediaStreamRef.current.getTracks().forEach(t => t.stop());
+            mediaStreamRef.current = null;
+          }
+          // Only return the blob if it's large enough to contain real speech (>2 KB)
+          resolve(blob && blob.size > 2000 ? blob : null);
+        };
+        try { recorder.stop(); } catch (e) { resolve(null); }
+      } else {
+        audioChunksRef.current = [];
+        mediaRecorderRef.current = null;
+        if (mediaStreamRef.current) {
+          mediaStreamRef.current.getTracks().forEach(t => t.stop());
+          mediaStreamRef.current = null;
+        }
+        resolve(null);
+      }
+    });
+  }, []);
+
+  const submitTranscript = useCallback(async () => {
+    const browserText = transcriptRef.current.trim();
+    const audioBlob = await stopMediaRecorder();
+
+    // Call with both browser transcript (for instant fallback) and audio blob (for Whisper)
+    submitCallbackRef.current(browserText, audioBlob);
+
     // Full reset
     transcriptRef.current = '';
     accumulatedFinalRef.current = '';
     lastResultIndexRef.current = 0;
     setTranscript('');
-  }, []);
+  }, [stopMediaRecorder]);
 
   const stopListening = useCallback((submit = false) => {
     isListeningRef.current = false;
@@ -52,11 +88,17 @@ export function useSpeechRecognition({ onTranscriptSubmit }) {
     setIsListening(false);
 
     if (submit) {
-      submitTranscript();
+      submitTranscript(); // async — caller doesn't need to await
+    } else {
+      stopMediaRecorder(); // discard recording
+      transcriptRef.current = '';
+      accumulatedFinalRef.current = '';
+      lastResultIndexRef.current = 0;
+      setTranscript('');
     }
-  }, [submitTranscript]);
+  }, [submitTranscript, stopMediaRecorder]);
 
-  const startListening = useCallback(() => {
+  const startListening = useCallback(async () => {
     if (isListeningRef.current) return;
 
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
@@ -64,89 +106,97 @@ export function useSpeechRecognition({ onTranscriptSubmit }) {
       return;
     }
 
-    // Full cleanup before starting fresh
+    // Full cleanup
     if (recognitionRef.current) {
       try { recognitionRef.current.stop(); } catch (e) {}
       recognitionRef.current = null;
     }
     clearTimers();
 
-    // Full state reset before starting a new session
+    // Full state reset
     transcriptRef.current = '';
     accumulatedFinalRef.current = '';
     lastResultIndexRef.current = 0;
+    audioChunksRef.current = [];
     setTranscript('');
 
+    // ── Start MediaRecorder for Whisper (fail silently if unavailable) ──────
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaStreamRef.current = stream;
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? 'audio/webm;codecs=opus'
+        : MediaRecorder.isTypeSupported('audio/webm')
+          ? 'audio/webm'
+          : '';
+      const recorder = mimeType
+        ? new MediaRecorder(stream, { mimeType })
+        : new MediaRecorder(stream);
+      mediaRecorderRef.current = recorder;
+      recorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) audioChunksRef.current.push(e.data);
+      };
+      recorder.start(250); // collect chunks every 250 ms
+    } catch (e) {
+      console.warn('[Whisper] MediaRecorder unavailable — browser-only transcription:', e.message);
+    }
+
+    // ── Browser SpeechRecognition for real-time visual feedback ─────────────
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
     recognitionRef.current = recognition;
 
-    // KEY FIX: Use continuous=false and restart manually.
-    // Mobile browsers (Android Chrome, iOS Safari) have critical bugs with continuous=true:
-    // they accumulate and re-deliver old result buffers on every restart, causing infinite repetition.
     recognition.continuous = false;
     recognition.interimResults = true;
     recognition.lang = 'en-US';
     recognition.maxAlternatives = 1;
 
     recognition.onresult = (event) => {
-      // Only read results starting from the last known index to prevent re-processing old results
       let newFinalText = '';
       let newInterimText = '';
 
       for (let i = lastResultIndexRef.current; i < event.results.length; i++) {
         if (event.results[i].isFinal) {
           newFinalText += event.results[i][0].transcript + ' ';
-          lastResultIndexRef.current = i + 1; // advance the pointer
+          lastResultIndexRef.current = i + 1;
         } else {
           newInterimText = event.results[i][0].transcript;
         }
       }
 
-      if (newFinalText) {
-        accumulatedFinalRef.current += newFinalText;
-      }
+      if (newFinalText) accumulatedFinalRef.current += newFinalText;
 
       const displayText = (accumulatedFinalRef.current + newInterimText).trim();
       transcriptRef.current = displayText;
       setTranscript(displayText);
 
-      // Reset the silence timer on each new word
       if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
       silenceTimerRef.current = setTimeout(() => {
-        if (isListeningRef.current) {
-          stopListening(true);
-        }
-      }, 3000); // 3 seconds of silence triggers submission
+        if (isListeningRef.current) stopListening(true);
+      }, 3000);
     };
 
     recognition.onerror = (event) => {
       console.error('Speech recognition error:', event.error);
       if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
-        // Microphone permission denied - stop completely
         stopListening(false);
       }
-      // For network, aborted, audio-capture - just stop and let user retry
     };
 
     recognition.onend = () => {
-      // If we're still supposed to be listening AND have accumulated some text,
-      // restart without resetting to capture more speech.
-      // If we have NO text yet and still listening, also restart (user is just thinking).
       if (isListeningRef.current) {
-        // Reset result index because a new recognition session starts fresh from index 0
         lastResultIndexRef.current = 0;
         try {
-          const newRecognition = new SpeechRecognition();
-          recognitionRef.current = newRecognition;
-          newRecognition.continuous = false;
-          newRecognition.interimResults = true;
-          newRecognition.lang = 'en-US';
-          newRecognition.maxAlternatives = 1;
-          newRecognition.onresult = recognition.onresult;
-          newRecognition.onerror = recognition.onerror;
-          newRecognition.onend = recognition.onend;
-          newRecognition.start();
+          const newRec = new SpeechRecognition();
+          recognitionRef.current = newRec;
+          newRec.continuous = false;
+          newRec.interimResults = true;
+          newRec.lang = 'en-US';
+          newRec.maxAlternatives = 1;
+          newRec.onresult = recognition.onresult;
+          newRec.onerror = recognition.onerror;
+          newRec.onend = recognition.onend;
+          newRec.start();
         } catch (e) {
           console.warn('Could not restart recognition:', e);
           setIsListening(false);
@@ -160,18 +210,16 @@ export function useSpeechRecognition({ onTranscriptSubmit }) {
       setIsListening(true);
       isListeningRef.current = true;
 
-      // 20-second silence guard (no speech at all detected)
+      // 20-second guard — no speech detected at all
       silenceTimerRef.current = setTimeout(() => {
         if (isListeningRef.current && transcriptRef.current.trim() === '') {
           stopListening(true);
         }
       }, 20000);
 
-      // Hard 120-second max cap
+      // Hard 120-second cap
       maxDurationTimerRef.current = setTimeout(() => {
-        if (isListeningRef.current) {
-          stopListening(true);
-        }
+        if (isListeningRef.current) stopListening(true);
       }, 120000);
 
     } catch (e) {
@@ -185,6 +233,12 @@ export function useSpeechRecognition({ onTranscriptSubmit }) {
       clearTimers();
       if (recognitionRef.current) {
         try { recognitionRef.current.stop(); } catch (e) {}
+      }
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        try { mediaRecorderRef.current.stop(); } catch (e) {}
+      }
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach(t => t.stop());
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

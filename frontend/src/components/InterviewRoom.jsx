@@ -32,11 +32,24 @@ export default function InterviewRoom({ sessionId, candidateName, initialMessage
         };
     }, []);
 
-    const handleTranscriptSubmit = async (text) => {
+    const handleTranscriptSubmit = async (browserText, audioBlob) => {
         // Guard against submitting while already processing (Fix #6)
         if (isProcessingRef.current) return;
 
-        let submitText = text.trim();
+        // ── Whisper transcription (more accurate than browser Speech API) ──
+        // Try to get a Whisper-quality transcript from the recorded audio blob.
+        // Fall back to the browser's live transcript if Whisper fails or is unavailable.
+        let submitText = browserText.trim();
+        if (audioBlob) {
+            try {
+                const result = await api.transcribeAudio(audioBlob);
+                if (result?.transcript?.trim()) {
+                    submitText = result.transcript.trim();
+                }
+            } catch (e) {
+                console.warn('[Whisper] Transcription failed, using browser transcript as fallback:', e.message);
+            }
+        }
 
         if (!submitText) {
             if (blankCountRef.current === 0) {
