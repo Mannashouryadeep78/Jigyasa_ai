@@ -1,48 +1,56 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { api } from '../api/client';
 
-// iOS Safari does not have Neural voices and blocks Audio() autoplay without gesture
+// iOS Safari blocks Audio() autoplay without a prior user gesture
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
 
 export function useTTS() {
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const audioRef = useRef(null);
-  const blobUrlRef = useRef(null);
   const fetchIdRef = useRef(0);
   const isMountedRef = useRef(true);
-  const nativeVoiceRef = useRef(null); // Cached best English voice
+  const nativeVoiceRef = useRef(null);
 
   useEffect(() => {
     isMountedRef.current = true;
 
-    // Pre-load the best available English voice so it's ready when TTS is called
     const loadVoice = () => {
       const voices = window.speechSynthesis?.getVoices() || [];
-      // iOS only ships 1-2 system voices — Neural voices don't exist there
+      if (!voices.length) return;
+
       const preferred = isIOS
-        ? (voices.find(v => v.lang === 'en-US') || voices.find(v => v.lang.startsWith('en')) || voices[0])
+        // iOS: just grab any English voice — Neural ones don't exist there
+        ? (
+            voices.find(v => v.lang === 'en-US') ||
+            voices.find(v => v.lang.startsWith('en')) ||
+            voices[0]
+          )
+        // Desktop: prefer the most natural-sounding voices first
         : [
-            voices.find(v => v.name.includes('Neural') && v.lang.startsWith('en-US')),
+            // Microsoft Edge "Online (Natural)" Neural voices — best quality
+            voices.find(v => v.name.includes('Aria')   && v.name.includes('Online') && v.lang.startsWith('en')),
+            voices.find(v => v.name.includes('Jenny')  && v.name.includes('Online') && v.lang.startsWith('en')),
+            voices.find(v => v.name.includes('Online') && v.lang === 'en-US'),
+            voices.find(v => v.name.includes('Natural') && v.lang === 'en-US'),
+            // Google Chrome neural voices
+            voices.find(v => v.name === 'Google US English'),
+            // Any online/neural voice
+            voices.find(v => (v.name.includes('Online') || v.name.includes('Neural')) && v.lang.startsWith('en')),
+            // Standard fallbacks
             voices.find(v => v.lang === 'en-US'),
             voices.find(v => v.lang.startsWith('en-GB')),
             voices.find(v => v.lang.startsWith('en')),
           ].find(Boolean);
+
       if (preferred) nativeVoiceRef.current = preferred;
     };
 
     if (window.speechSynthesis) {
       loadVoice();
-      // voiceschanged fires asynchronously in most browsers
       window.speechSynthesis.addEventListener('voiceschanged', loadVoice);
     }
 
     return () => {
       isMountedRef.current = false;
       window.speechSynthesis?.removeEventListener?.('voiceschanged', loadVoice);
-      if (blobUrlRef.current) {
-        URL.revokeObjectURL(blobUrlRef.current);
-        blobUrlRef.current = null;
-      }
     };
   }, []);
 
@@ -53,86 +61,54 @@ export function useTTS() {
       return;
     }
 
-    // Cancel anything already speaking
     window.speechSynthesis.cancel();
 
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'en-US';
-    utterance.rate = 0.9;   // slightly slower = more deliberate, less robotic
-    utterance.pitch = 0.95; // fractionally lower = warmer, less synthetic
-
-    // Use the pre-cached best voice if available
-    if (nativeVoiceRef.current) {
-      utterance.voice = nativeVoiceRef.current;
-    }
+    const makeUtt = (chunk) => {
+      const utt = new SpeechSynthesisUtterance(chunk);
+      utt.lang = 'en-US';
+      utt.rate = 1.0;   // natural conversational pace
+      utt.pitch = 0.95; // slightly warmer tone
+      if (nativeVoiceRef.current) utt.voice = nativeVoiceRef.current;
+      return utt;
+    };
 
     const finish = () => {
-      if (currentFetchId === fetchIdRef.current && isMountedRef.current) {
-        setIsSpeaking(false);
-      }
+      if (currentFetchId === fetchIdRef.current && isMountedRef.current) setIsSpeaking(false);
       if (onFinish && isMountedRef.current) onFinish();
     };
 
-    utterance.onend = finish;
-    utterance.onerror = (e) => {
-      // 'interrupted' is not a real error — happens when stop() is called
-      if (e.error !== 'interrupted' && e.error !== 'canceled') {
-        console.warn('SpeechSynthesis error:', e.error);
-      }
-      finish();
-    };
-
-    // Chrome bug: long utterances get cut off — split into sentences
+    // Chrome bug: utterances >200 chars get silently cut off — split at sentences
     if (text.length > 200) {
       const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
       let idx = 0;
-
       const speakNext = () => {
         if (idx >= sentences.length) { finish(); return; }
         if (currentFetchId !== fetchIdRef.current || !isMountedRef.current) return;
-        const utt = new SpeechSynthesisUtterance(sentences[idx++].trim());
-        utt.lang = 'en-US';
-        utt.rate = 0.9;
-        utt.pitch = 0.95;
-        if (nativeVoiceRef.current) utt.voice = nativeVoiceRef.current;
+        const utt = makeUtt(sentences[idx++].trim());
         utt.onend = speakNext;
         utt.onerror = finish;
         window.speechSynthesis.speak(utt);
       };
-
       speakNext();
     } else {
-      window.speechSynthesis.speak(utterance);
+      const utt = makeUtt(text);
+      utt.onend = finish;
+      utt.onerror = (e) => {
+        if (e.error !== 'interrupted' && e.error !== 'canceled') console.warn('TTS error:', e.error);
+        finish();
+      };
+      window.speechSynthesis.speak(utt);
     }
   }, []);
 
   const stop = useCallback(() => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      audioRef.current = null;
-    }
-    if (blobUrlRef.current) {
-      URL.revokeObjectURL(blobUrlRef.current);
-      blobUrlRef.current = null;
-    }
-    if (window.speechSynthesis) {
-      window.speechSynthesis.cancel();
-    }
-    fetchIdRef.current += 1; // Invalidate any in-flight fetches
+    window.speechSynthesis?.cancel();
+    fetchIdRef.current += 1;
     if (isMountedRef.current) setIsSpeaking(false);
   }, []);
 
-  const speak = useCallback(async (text, onFinish) => {
-    // Interrupt current playback WITHOUT incrementing fetchIdRef
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      audioRef.current = null;
-    }
-    if (window.speechSynthesis) {
-      window.speechSynthesis.cancel();
-    }
+  const speak = useCallback((text, onFinish) => {
+    window.speechSynthesis?.cancel();
 
     if (!text?.trim()) {
       if (onFinish && isMountedRef.current) onFinish();
@@ -142,48 +118,10 @@ export function useTTS() {
     const currentFetchId = ++fetchIdRef.current;
     if (isMountedRef.current) setIsSpeaking(true);
 
-    // iOS blocks Audio() autoplay without a prior user gesture — always use native speechSynthesis.
-    if (isIOS) {
-      _speakNative(text, onFinish, currentFetchId);
-      return;
-    }
-
-    // All other environments: try backend Neural TTS (edge-tts AndrewNeural/AriaNeural)
-    // for the most human-sounding voice. Fall back to native only on failure.
-    try {
-      const audioBlob = await api.generateTTS(text);
-
-      if (currentFetchId !== fetchIdRef.current || !isMountedRef.current) return;
-
-      // null = backend returned 204 → fall back to native silently
-      if (audioBlob === null) {
-        _speakNative(text, onFinish, currentFetchId);
-        return;
-      }
-
-      if (!audioBlob || audioBlob.size < 100) {
-        throw new Error('Empty audio blob from backend');
-      }
-
-      if (blobUrlRef.current) URL.revokeObjectURL(blobUrlRef.current);
-      const url = URL.createObjectURL(audioBlob);
-      blobUrlRef.current = url;
-
-      const audio = new Audio(url);
-      audioRef.current = audio;
-
-      audio.onended = () => {
-        if (currentFetchId === fetchIdRef.current && isMountedRef.current) setIsSpeaking(false);
-        if (onFinish && isMountedRef.current) onFinish();
-      };
-      audio.onerror = () => _speakNative(text, onFinish, currentFetchId);
-      audio.play().catch(() => _speakNative(text, onFinish, currentFetchId));
-
-    } catch {
-      if (currentFetchId !== fetchIdRef.current || !isMountedRef.current) return;
-      _speakNative(text, onFinish, currentFetchId);
-    }
-  }, [stop, _speakNative]);
+    // Native speechSynthesis starts in ~50ms — no network round-trip.
+    // Edge/Chrome ship built-in Neural voices (Online Natural) that sound human.
+    _speakNative(text, onFinish, currentFetchId);
+  }, [_speakNative]);
 
   return { speak, stop, isSpeaking };
 }
