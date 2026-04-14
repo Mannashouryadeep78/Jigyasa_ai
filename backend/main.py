@@ -11,7 +11,7 @@ from langchain_core.messages import HumanMessage, AIMessage
 
 from models.schemas import SessionCreate, ChatTurn
 from graph.builder import interview_graph
-from services.supabase_client import get_supabase_client, log_session, save_assessment, update_session_status, get_session as db_get_session
+from services.supabase_client import get_supabase_client, log_session, save_assessment, update_session_status, get_session as db_get_session, save_session_state, load_session_state
 from services.pdf_parser import extract_text_from_pdf
 import httpx
 import os
@@ -191,6 +191,14 @@ async def create_session(
 
     last_message = state.values.get("messages", [])[-1].content if state.values.get("messages") else ""
 
+    # Persist initial state so session can be recovered after a server restart
+    save_session_state(session_id, {
+        "interview_mode": interview_mode,
+        "resume_text": resume_text[:8000],
+        "current_phase": "greeting",
+        "messages": [{"role": "ai", "content": last_message}]
+    })
+
     return {"session_id": session_id, "message": last_message}
 
 
@@ -210,7 +218,33 @@ async def respond(
     state = interview_graph.get_state(config)
 
     if not state.values:
-        raise HTTPException(status_code=404, detail="Session not found or expired. The server may have restarted. Please start a new session.")
+        # Attempt lazy reconstruction from persisted Supabase state before giving up
+        rows = db_get_session(turn.session_id)
+        db_row = rows[0] if rows else {}
+        saved = load_session_state(turn.session_id)
+        if saved and saved.get("messages"):
+            messages = []
+            for m in saved["messages"]:
+                if m.get("role") == "user":
+                    messages.append(HumanMessage(content=m["content"]))
+                elif m.get("role") == "ai":
+                    messages.append(AIMessage(content=m["content"]))
+            human_count = sum(1 for m in messages if isinstance(m, HumanMessage))
+            interview_graph.update_state(config, {
+                "session_id": turn.session_id,
+                "candidate_name": db_row.get("name", "Candidate"),
+                "resume_text": saved.get("resume_text", ""),
+                "interview_mode": saved.get("interview_mode", "hr"),
+                "messages": messages,
+                "current_phase": "question",
+                "questions_asked": [],
+                "answers_given": [],
+                "followup_count": 0,
+                "turn_count": human_count,
+            })
+            print(f"[INFO] Reconstructed session {turn.session_id} from Supabase ({len(messages)} messages)")
+        else:
+            raise HTTPException(status_code=404, detail="Session not found or expired. The server may have restarted. Please start a new session.")
 
     # Atomic try-acquire: raise 409 immediately if already locked
     lock = await get_session_lock(turn.session_id)
@@ -239,6 +273,21 @@ async def respond(
             assessment = state.values.get("assessment", {})
             save_assessment(turn.session_id, assessment.get("scores", {}), assessment.get("quotes", {}))
             update_session_status(turn.session_id, "finished")
+
+        # Persist message history after every exchange for crash-recovery
+        all_messages = state.values.get("messages", [])
+        serialized = []
+        for m in all_messages:
+            if isinstance(m, HumanMessage):
+                serialized.append({"role": "user", "content": m.content})
+            elif isinstance(m, AIMessage):
+                serialized.append({"role": "ai", "content": m.content})
+        save_session_state(turn.session_id, {
+            "interview_mode": state.values.get("interview_mode", "hr"),
+            "resume_text": state.values.get("resume_text", "")[:8000],
+            "current_phase": status,
+            "messages": serialized
+        })
     finally:
         lock.release()
 
@@ -279,15 +328,58 @@ async def get_session(
     state = interview_graph.get_state(config)
 
     if not state.values:
-        # Graph state wiped (server restart / MemorySaver). Fall back to DB metadata so
-        # the frontend can show a meaningful message instead of a blank 404 crash.
+        # Graph state wiped (server restart / MemorySaver). Try to reconstruct from persisted state.
         rows = db_get_session(session_id)
         db_row = rows[0] if rows else {}
+
+        # Finished/discontinued sessions don't need graph reconstruction
+        if db_row.get("status") in ("finished", "discontinued"):
+            return {
+                "candidate_name": db_row.get("name", "Candidate"),
+                "history": [],
+                "status": db_row.get("status"),
+                "restarted": True
+            }
+
+        saved = load_session_state(session_id)
+        if saved and saved.get("messages"):
+            # Rebuild messages from saved JSON
+            messages = []
+            for m in saved["messages"]:
+                if m.get("role") == "user":
+                    messages.append(HumanMessage(content=m["content"]))
+                elif m.get("role") == "ai":
+                    messages.append(AIMessage(content=m["content"]))
+
+            human_count = sum(1 for m in messages if isinstance(m, HumanMessage))
+
+            # Inject the full conversation back into MemorySaver so /respond works again
+            interview_graph.update_state(config, {
+                "session_id": session_id,
+                "candidate_name": db_row.get("name", "Candidate"),
+                "resume_text": saved.get("resume_text", ""),
+                "interview_mode": saved.get("interview_mode", "hr"),
+                "messages": messages,
+                "current_phase": "question",  # route to followup_decider on next message
+                "questions_asked": [],
+                "answers_given": [],
+                "followup_count": 0,
+                "turn_count": human_count,
+            })
+
+            history = [{"role": m["role"], "content": m["content"]} for m in saved["messages"]]
+            return {
+                "candidate_name": db_row.get("name", "Candidate"),
+                "history": history,
+                "status": "question",  # no restarted flag — session is live again
+            }
+
+        # No saved state found at all — tell frontend to start fresh
         return {
             "candidate_name": db_row.get("name", "Candidate"),
             "history": [],
             "status": db_row.get("status", "active"),
-            "restarted": True  # Frontend uses this to redirect to a fresh start
+            "restarted": True
         }
 
     messages = state.values.get("messages", [])

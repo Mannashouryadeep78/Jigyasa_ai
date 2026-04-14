@@ -61,3 +61,30 @@ def save_assessment(session_id: str, scores: dict, quotes: dict):
         return response.json()
     except Exception as e:
         print(f"Failed to save assessment: {e}")
+
+def save_session_state(session_id: str, state_data: dict):
+    """
+    Persist serialized session messages + metadata to Supabase for crash-recovery.
+    Requires a `state_json JSONB` column on the sessions table:
+        ALTER TABLE sessions ADD COLUMN IF NOT EXISTS state_json JSONB DEFAULT NULL;
+    """
+    try:
+        url = f"{SUPABASE_URL}/rest/v1/sessions?id=eq.{session_id}"
+        response = httpx.patch(url, headers=_get_headers(), json={"state_json": state_data})
+        response.raise_for_status()
+    except Exception as e:
+        print(f"[WARN] save_session_state failed (is state_json column added to sessions table?): {e}")
+
+def load_session_state(session_id: str) -> dict:
+    """Load persisted session state for crash-recovery."""
+    try:
+        url = f"{SUPABASE_URL}/rest/v1/sessions?id=eq.{session_id}&select=state_json,name,status"
+        response = httpx.get(url, headers=_get_headers())
+        response.raise_for_status()
+        rows = response.json()
+        if rows and rows[0].get("state_json"):
+            return rows[0]["state_json"]
+        return {}
+    except Exception as e:
+        print(f"[WARN] load_session_state failed: {e}")
+        return {}

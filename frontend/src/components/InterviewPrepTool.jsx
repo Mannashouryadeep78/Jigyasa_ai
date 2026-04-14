@@ -46,15 +46,13 @@ export default function InterviewPrepTool({ onBack }) {
     };
 
     const handlePrint = () => {
-        // Expand everything before printing
+        // Expand everything so sighted users see all Q&As before the dialog opens
         const allExpanded = {};
         results.forEach((_, i) => allExpanded[i] = true);
         setExpanded(allExpanded);
-        
-        // Wait for DOM to update
-        setTimeout(() => {
-            window.print();
-        }, 100);
+        // CSS (.qa-answer in @media print) ensures all answers render even if React
+        // hasn't re-painted yet — 400ms is just a visual nicety for the user.
+        setTimeout(() => window.print(), 400);
     };
 
     if (status === 'processing') {
@@ -144,12 +142,11 @@ export default function InterviewPrepTool({ onBack }) {
                                         </div>
                                     </button>
                                     
-                                    {(isExp || window.matchMedia('print').matches) && (
-                                        <div className="p-6 pt-0 text-white/70 border-t border-white/5 print:border-slate-200 print:text-slate-800">
-                                            <div className="text-xs font-bold uppercase tracking-widest text-green-400 mb-3 mt-4 print:text-green-700">Suggested Approach</div>
-                                            <p className="leading-relaxed text-sm md:text-base italic border-l-2 border-green-500/30 pl-4">{item.suggested_answer}</p>
-                                        </div>
-                                    )}
+                                    {/* Always in DOM — hidden via CSS when collapsed, shown in print via .qa-answer rule */}
+                                    <div className={`qa-answer p-6 pt-0 text-white/70 border-t border-white/5 print:border-slate-200 print:text-slate-800${!isExp ? ' hidden' : ''}`}>
+                                        <div className="text-xs font-bold uppercase tracking-widest text-green-400 mb-3 mt-4 print:text-green-700">Suggested Approach</div>
+                                        <p className="leading-relaxed text-sm md:text-base italic border-l-2 border-green-500/30 pl-4">{item.suggested_answer}</p>
+                                    </div>
                                 </motion.div>
                             )
                         })}

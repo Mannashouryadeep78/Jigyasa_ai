@@ -122,6 +122,8 @@ body {
   /* ── Layout helpers ── */
   .print-hidden { display: none !important; }
   .print-visible-text { color: #111 !important; }
+  /* Show all Q&A answer sections regardless of expanded state */
+  .qa-answer { display: block !important; }
   .print-bg {
     background-color: #f8fafc !important;
     border-color: #e2e8f0 !important;
