@@ -7,6 +7,7 @@ import { api } from '../api/client';
 import WaveformVisualizer from './WaveformVisualizer';
 
 export default function InterviewRoom({ sessionId, candidateName, initialMessage, initialHistory = null, onFinish, onCancel }) {
+    const [typedAnswer, setTypedAnswer] = useState('');
     const [history, setHistory] = useState(() => {
         if (initialHistory) {
             return initialHistory.map((m, i) => ({ ...m, id: m.id || `${m.role}-${i}-${Date.now()}` }));
@@ -94,7 +95,7 @@ export default function InterviewRoom({ sessionId, candidateName, initialMessage
         }
     };
 
-    const { isListening, transcript, startListening, toggleListening, stopListening } = useSpeechRecognition({
+    const { isSupported, isListening, transcript, startListening, toggleListening, stopListening } = useSpeechRecognition({
         onTranscriptSubmit: handleTranscriptSubmit
     });
 
@@ -110,7 +111,7 @@ export default function InterviewRoom({ sessionId, candidateName, initialMessage
     }, []);
 
     return (
-        <div className="flex flex-col h-screen sm:min-h-screen bg-[#e0ccb8] text-white font-sans selection:bg-black selection:text-white pb-2 md:pb-8">
+        <div className="flex flex-col min-h-dvh bg-[#e0ccb8] text-white font-sans selection:bg-black selection:text-white pb-2 md:pb-8">
 
             <header className="p-4 sm:p-6 md:px-12 flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-2 group">
@@ -190,20 +191,46 @@ export default function InterviewRoom({ sessionId, candidateName, initialMessage
                     </div>
 
                     {/* Controls */}
-                    <div className="w-full bg-[#1a0f0a]/90 backdrop-blur-sm flex flex-col items-center justify-center pb-6 sm:pb-12 pt-4 sm:pt-6 border-t border-white/5 relative z-10 shrink-0">
-                        <button
-                            onClick={toggleListening}
-                            disabled={isSpeaking || isProcessing}
-                            className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full transition-all flex items-center justify-center border-2 sm:border-4 ${isListening
-                                    ? 'bg-red-500 hover:bg-red-600 text-white border-red-400 shadow-[0_0_40px_rgba(239,68,68,0.4)]'
-                                    : 'bg-white hover:bg-white/90 text-[#1a0f0a] grayscale hover:grayscale-0 border-white/10 shadow-[0_0_40px_rgba(255,255,255,0.05)]'
-                                } disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed group`}
-                        >
-                            {isListening ? <Mic className="w-8 h-8 sm:w-10 sm:h-10 animate-pulse" /> : <MicOff className="w-8 h-8 sm:w-10 sm:h-10 group-hover:scale-110 transition-transform" />}
-                        </button>
-                        <p className="mt-4 sm:mt-6 text-[8px] sm:text-[10px] tracking-widest font-bold uppercase text-white/50 text-center max-w-[200px] sm:max-w-sm px-4">
-                            {isListening ? 'Speak naturally. Pausing for 3 seconds will auto-submit.' : 'Microphone disabled'}
-                        </p>
+                    <div className="w-full bg-[#1a0f0a]/90 backdrop-blur-sm flex flex-col items-center justify-center pb-6 sm:pb-12 pb-safe pt-4 sm:pt-6 border-t border-white/5 relative z-10 shrink-0">
+                        {isSupported ? (
+                            <>
+                                <button
+                                    onClick={toggleListening}
+                                    disabled={isSpeaking || isProcessing}
+                                    className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full transition-all flex items-center justify-center border-2 sm:border-4 ${isListening
+                                            ? 'bg-red-500 active:bg-red-600 text-white border-red-400 shadow-[0_0_40px_rgba(239,68,68,0.4)]'
+                                            : 'bg-white active:bg-white/90 text-[#1a0f0a] grayscale active:grayscale-0 border-white/10 shadow-[0_0_40px_rgba(255,255,255,0.05)]'
+                                        } disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed group`}
+                                >
+                                    {isListening ? <Mic className="w-8 h-8 sm:w-10 sm:h-10 animate-pulse" /> : <MicOff className="w-8 h-8 sm:w-10 sm:h-10 group-hover:scale-110 transition-transform" />}
+                                </button>
+                                <p className="mt-4 sm:mt-6 text-[8px] sm:text-[10px] tracking-widest font-bold uppercase text-white/50 text-center max-w-[200px] sm:max-w-sm px-4">
+                                    {isListening ? 'Speak naturally. Pausing for 3 seconds will auto-submit.' : 'Microphone disabled'}
+                                </p>
+                            </>
+                        ) : (
+                            /* iOS / browsers without Web Speech API — text input fallback */
+                            <div className="w-full max-w-xl px-4 flex flex-col items-center gap-3">
+                                <textarea
+                                    value={typedAnswer}
+                                    onChange={e => setTypedAnswer(e.target.value)}
+                                    disabled={isSpeaking || isProcessing}
+                                    placeholder="Type your answer here…"
+                                    rows={3}
+                                    className="w-full rounded-2xl bg-white/10 border border-white/10 text-white text-base placeholder:text-white/30 px-4 py-3 outline-none focus:border-white/30 resize-none disabled:opacity-50"
+                                />
+                                <button
+                                    onClick={() => { handleTranscriptSubmit(typedAnswer); setTypedAnswer(''); }}
+                                    disabled={isSpeaking || isProcessing || !typedAnswer.trim()}
+                                    className="w-full py-3 rounded-full bg-[#b45309] active:bg-[#b45309]/80 text-white text-[11px] font-black uppercase tracking-widest transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                                >
+                                    {isProcessing ? 'Processing…' : 'Submit Answer'}
+                                </button>
+                                <p className="text-[9px] text-white/30 font-bold uppercase tracking-widest">
+                                    Voice unavailable on this device — type your answer above
+                                </p>
+                            </div>
+                        )}
                     </div>
                 </div>
             </main>

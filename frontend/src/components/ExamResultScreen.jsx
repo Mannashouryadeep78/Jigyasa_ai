@@ -13,7 +13,7 @@ export default function ExamResultScreen({ examScores, onBackToDashboard }) {
   ];
 
   return (
-    <div className="min-h-screen bg-[#1a0f0a] flex items-center justify-center p-4 sm:p-8 font-sans">
+    <div className="min-h-dvh bg-[#1a0f0a] flex items-center justify-center p-4 sm:p-8 font-sans">
       {/* Background decoration */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none opacity-20">
         <div className="absolute top-[10%] left-[10%] w-[40%] h-[40%] bg-[#b45309] rounded-full blur-[120px]" />

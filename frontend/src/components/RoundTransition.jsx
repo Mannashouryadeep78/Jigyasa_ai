@@ -19,7 +19,7 @@ export default function RoundTransition({ lastRoundName, lastRoundScore, nextRou
   }, [timeLeft, onProceed]);
 
   return (
-    <div className="min-h-screen bg-[#1a0f0a] flex items-center justify-center p-4 sm:p-8 font-sans selection:bg-[#b45309]">
+    <div className="min-h-dvh bg-[#1a0f0a] flex items-center justify-center p-4 sm:p-8 font-sans selection:bg-[#b45309]">
       {/* Background decoration */}
       <div className="absolute inset-0 pointer-events-none opacity-20 overflow-hidden">
         <div className="absolute top-[20%] right-[-10%] w-[60%] h-[60%] bg-[#b45309] rounded-full blur-[120px]" />

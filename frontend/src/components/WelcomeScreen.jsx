@@ -5,7 +5,7 @@ import { FileSearch, CheckCircle2, Mic } from 'lucide-react';
 export default function WelcomeScreen({ onStart, onBack, candidateName, isInitializing }) {
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#e0ccb8] text-white p-4 md:p-8 selection:bg-black selection:text-white">
+    <div className="flex flex-col items-center justify-center min-h-dvh bg-[#e0ccb8] text-white p-4 md:p-8 selection:bg-black selection:text-white">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

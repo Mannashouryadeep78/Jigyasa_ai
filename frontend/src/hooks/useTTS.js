@@ -1,6 +1,9 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { api } from '../api/client';
 
+// iOS Safari does not have Neural voices and blocks Audio() autoplay without gesture
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
 export function useTTS() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const audioRef = useRef(null);
@@ -15,13 +18,15 @@ export function useTTS() {
     // Pre-load the best available English voice so it's ready when TTS is called
     const loadVoice = () => {
       const voices = window.speechSynthesis?.getVoices() || [];
-      // Priority: en-US Neural > en-US any > en-GB > en fallback
-      const preferred = [
-        voices.find(v => v.name.includes('Neural') && v.lang.startsWith('en-US')),
-        voices.find(v => v.lang === 'en-US'),
-        voices.find(v => v.lang.startsWith('en-GB')),
-        voices.find(v => v.lang.startsWith('en')),
-      ].find(Boolean);
+      // iOS only ships 1-2 system voices — Neural voices don't exist there
+      const preferred = isIOS
+        ? (voices.find(v => v.lang === 'en-US') || voices.find(v => v.lang.startsWith('en')) || voices[0])
+        : [
+            voices.find(v => v.name.includes('Neural') && v.lang.startsWith('en-US')),
+            voices.find(v => v.lang === 'en-US'),
+            voices.find(v => v.lang.startsWith('en-GB')),
+            voices.find(v => v.lang.startsWith('en')),
+          ].find(Boolean);
       if (preferred) nativeVoiceRef.current = preferred;
     };
 
@@ -136,12 +141,13 @@ export function useTTS() {
     const currentFetchId = ++fetchIdRef.current;
     if (isMountedRef.current) setIsSpeaking(true);
 
+    // iOS blocks Audio() autoplay without a prior user gesture — always use native speechSynthesis.
     // On production (non-localhost), browser SpeechSynthesis is always reliable.
     // Backend TTS (gTTS / edge-tts) only works predictably in local dev.
     const isLocalhost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
 
-    if (!isLocalhost) {
-      // Production: go straight to native — zero latency, zero cloud IP issues
+    if (isIOS || !isLocalhost) {
+      // iOS or production: go straight to native — zero latency, no autoplay block
       _speakNative(text, onFinish, currentFetchId);
       return;
     }

@@ -59,7 +59,7 @@ export default function ResumeUpload({ type = 'practice', onUpload, onBack }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#1a0f0a] p-4 sm:p-8 flex items-center justify-center selection:bg-[#b45309] selection:text-white relative overflow-hidden">
+    <div className="min-h-dvh bg-[#1a0f0a] p-4 sm:p-8 flex items-center justify-center selection:bg-[#b45309] selection:text-white relative overflow-hidden">
       
       {/* Background decoration */}
       <div className="absolute inset-0 pointer-events-none opacity-20">

@@ -35,10 +35,10 @@ export default function LandingPage({ onGoToAuth }) {
     ];
 
     return (
-        <div className="min-h-screen font-sans" style={{ fontFamily: "'Outfit', sans-serif" }}>
+        <div className="min-h-dvh font-sans" style={{ fontFamily: "'Outfit', sans-serif" }}>
 
             {/* ───── SECTION 1: AMBER-BROWN MAIN WITH ORBITAL BACKGROUND ───── */}
-            <div className="relative min-h-screen overflow-hidden" style={{
+            <div className="relative min-h-dvh overflow-hidden" style={{
                 background: 'radial-gradient(ellipse 80% 90% at 35% 50%, #c45c00 0%, #8b3300 40%, #2a0e00 75%, #150800 100%)',
             }}>
 
@@ -151,7 +151,7 @@ export default function LandingPage({ onGoToAuth }) {
                 </nav>
 
                 {/* ── HERO ── */}
-                <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-8 md:px-14 pt-8 sm:pt-20 pb-20 flex flex-col lg:flex-row items-center lg:items-start gap-4 lg:gap-0 min-h-[calc(100vh-120px)] sm:min-h-[calc(100vh-160px)]">
+                <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-8 md:px-14 pt-8 sm:pt-20 pb-20 flex flex-col lg:flex-row items-center lg:items-start gap-4 lg:gap-0 min-h-[calc(100dvh-120px)] sm:min-h-[calc(100dvh-160px)]">
                     {/* Left: Headline */}
                     <div className="lg:w-3/5 w-full text-center lg:text-left">
                         <motion.div

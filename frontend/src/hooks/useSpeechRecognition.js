@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
 export function useSpeechRecognition({ onTranscriptSubmit }) {
+  const isSupported = ('webkitSpeechRecognition' in window) || ('SpeechRecognition' in window);
+
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
   const recognitionRef = useRef(null);
@@ -193,5 +195,5 @@ export function useSpeechRecognition({ onTranscriptSubmit }) {
     else startListening();
   }, [startListening, stopListening]);
 
-  return { isListening, transcript, startListening, stopListening, toggleListening };
+  return { isSupported, isListening, transcript, startListening, stopListening, toggleListening };
 }

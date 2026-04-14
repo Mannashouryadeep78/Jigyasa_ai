@@ -55,7 +55,7 @@ export default function AssessmentReport({ sessionId }) {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-[#e0ccb8] flex flex-col items-center justify-center text-white selection:bg-black selection:text-white p-4 font-sans">
+            <div className="min-h-dvh bg-[#e0ccb8] flex flex-col items-center justify-center text-white selection:bg-black selection:text-white p-4 font-sans">
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -153,7 +153,7 @@ export default function AssessmentReport({ sessionId }) {
     };
 
     return (
-        <div className="min-h-screen bg-[#e0ccb8] text-white p-4 md:p-8 font-sans overflow-y-auto print:overflow-visible print:min-h-0 print:h-auto print:bg-white print:text-black selection:bg-black selection:text-white">
+        <div className="min-h-dvh bg-[#e0ccb8] text-white p-4 md:p-8 font-sans overflow-y-auto print:overflow-visible print:min-h-0 print:h-auto print:bg-white print:text-black selection:bg-black selection:text-white">
             {/* Watermark for Print */}
             <div className="hidden print:flex fixed inset-0 items-center justify-center pointer-events-none z-0 overflow-hidden">
                 <div className="text-[10rem] font-black text-black opacity-[0.03] transform -rotate-45 whitespace-nowrap select-none">
