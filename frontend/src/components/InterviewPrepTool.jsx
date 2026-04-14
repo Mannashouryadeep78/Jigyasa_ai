@@ -108,7 +108,7 @@ export default function InterviewPrepTool({ onBack }) {
                             <h1 className="text-2xl md:text-4xl font-medium tracking-tighter leading-tight">
                                 <span className="text-[#b45309]">{"}"}</span> Interview Prep Sheet
                             </h1>
-                            <p className="text-white/60 font-medium mt-2">Customized top 20 highly-targeted questions & suggested responses.</p>
+                            <p className="text-white/60 font-medium mt-2">Up to 20 resume-targeted questions & suggested responses.</p>
                         </div>
                         <button 
                             onClick={handlePrint}
