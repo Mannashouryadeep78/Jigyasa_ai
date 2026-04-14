@@ -86,7 +86,7 @@ export default function InterviewPrepTool({ onBack }) {
                   </div>
 
                   <p className="text-[10px] font-bold tracking-widest uppercase text-white/40 mt-10 animate-pulse">
-                      Generating Top 15 Targeted Questions... (approx 15s)
+                      Generating Top 20 Targeted Questions... (approx 20s)
                   </p>
               </motion.div>
           </div>
@@ -96,11 +96,9 @@ export default function InterviewPrepTool({ onBack }) {
     if (status === 'complete') {
         return (
             <div className="text-[#1a0f0a] p-4 md:p-8 font-sans selection:bg-black selection:text-white print:bg-white print:p-0 pb-20">
-                {/* Watermark for Print */}
-                <div className="hidden print:flex fixed inset-0 items-center justify-center pointer-events-none z-0 overflow-hidden">
-                    <div className="text-[10rem] font-black text-black opacity-[0.03] transform -rotate-45 whitespace-nowrap select-none">
-                        Jigyasa.ai
-                    </div>
+                {/* Per-page watermark for Print (position:fixed repeats on every page) */}
+                <div className="hidden print-watermark">
+                    <span className="print-watermark-text">Jigyasa.ai</span>
                 </div>
                 
                 <div className="max-w-4xl mx-auto space-y-6">
@@ -112,7 +110,7 @@ export default function InterviewPrepTool({ onBack }) {
                             <h1 className="text-2xl md:text-4xl font-medium tracking-tighter leading-tight">
                                 <span className="text-[#b45309]">{"}"}</span> Interview Prep Sheet
                             </h1>
-                            <p className="text-white/60 font-medium mt-2">Customized top 15 highly-targeted questions & suggested responses.</p>
+                            <p className="text-white/60 font-medium mt-2">Customized top 20 highly-targeted questions & suggested responses.</p>
                         </div>
                         <button 
                             onClick={handlePrint}

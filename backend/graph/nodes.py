@@ -1,5 +1,6 @@
 from typing import Dict, Any
 import json
+import random
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from graph.state import InterviewState
 from services.groq_client import get_llm, get_json_llm
@@ -41,12 +42,57 @@ def question_selector(state: InterviewState):
         resume_text=safe_resume
     ))
     
+    # Inject a random variation seed so the LLM doesn't repeat the same phrasing each session
+    variation_seed = random.randint(1000, 9999)
+    hr_angles = [
+        "Focus on a challenge or failure they faced and how they grew from it.",
+        "Probe their motivation and what drives them professionally.",
+        "Explore how they collaborate with difficult team members.",
+        "Ask about their proudest achievement and the specific impact they made.",
+        "Dig into their long-term career vision and how this role fits.",
+        "Ask about a time they had to adapt quickly to unexpected change.",
+        "Explore how they handle feedback or criticism from a manager.",
+    ]
+    gd_pivots = [
+        "Introduce a sharp counterargument to their last point.",
+        "Ask them to steelman the opposing side of the argument.",
+        "Bring in a real-world statistic or scenario to challenge their view.",
+        "Ask them to summarise all perspectives and give a final verdict.",
+        "Introduce a completely new angle: ethical implications.",
+        "Ask: what would the policy implications be if their view were adopted?",
+    ]
+    tutor_scenarios = [
+        "Ask them to explain a concept to a 7-year-old using only one analogy.",
+        "Probe how they'd handle a student who keeps making the same mistake.",
+        "Ask how they'd re-engage a student who has completely zoned out.",
+        "Ask how they'd adapt a lesson plan mid-session if the student is clearly lost.",
+        "Probe how they'd give encouraging feedback after a really poor performance.",
+        "Ask them to describe a time they had to simplify something complex for a struggling learner.",
+    ]
+
     # Mode-specific instruction for question selection
     instructions = {
-        "hr": "Please ask the next HR question from your question bank that hasn't been asked yet. Keep it brief and conversational.",
-        "technical": "Ask the next technical question about a specific part of their resume that hasn't been explored yet. Be specific and targeted.",
-        "gd": "Introduce the discussion topic if you haven't already, or introduce a new angle / counterpoint to keep the debate alive. Stay sharp and brief.",
-        "tutor": "Present the next pedagogical scenario or analytical teaching challenge. If no resume is present, focus on your core question bank. Keep it professional and concise.",
+        "hr": (
+            f"[Session variation #{variation_seed}] "
+            f"Ask the next HR question from your bank that hasn't been covered yet. "
+            f"Angle for this question: {random.choice(hr_angles)} "
+            "Rephrase naturally — never read verbatim from the bank. Keep it brief and conversational."
+        ),
+        "technical": (
+            f"[Session variation #{variation_seed}] "
+            "Ask the next technical question about a DIFFERENT part of their resume that hasn't been explored yet. "
+            "Pick a random project, technology, or decision they made. Be specific and targeted. "
+            "Never ask the same angle twice."
+        ),
+        "gd": (
+            f"[Session variation #{variation_seed}] "
+            f"{random.choice(gd_pivots)} Stay sharp, brief (1-2 sentences), and intellectually honest."
+        ),
+        "tutor": (
+            f"[Session variation #{variation_seed}] "
+            f"{random.choice(tutor_scenarios)} "
+            "Present it naturally and conversationally. Keep it to 1-2 sentences."
+        ),
     }
     prompt = instructions.get(mode, instructions["hr"])
     

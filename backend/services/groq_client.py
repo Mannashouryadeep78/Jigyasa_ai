@@ -24,13 +24,14 @@ def get_llm():
 
 def get_json_llm():
     """
-    Returns a ChatGroq instance optimized for structured JSON output (e.g., Assessment)
+    Returns a ChatGroq instance optimized for structured JSON output (e.g., Assessment, ATS, Prep).
+    Uses the 70B model for accurate scoring and analysis.
     """
     return ChatGroq(
         temperature=0.1,
-        model_name="llama-3.1-8b-instant",
+        model_name="llama-3.3-70b-versatile",
         groq_api_key=GROQ_API_KEY,
-        request_timeout=25,
+        request_timeout=40,
         model_kwargs={"response_format": {"type": "json_object"}}
     )
 

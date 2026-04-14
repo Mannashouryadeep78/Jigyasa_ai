@@ -81,11 +81,97 @@ body {
   100% { top: 100%; opacity: 0; }
 }
 
-/* Print styles for AssessmentReport and InterviewPrepTool (moved from dangerouslySetInnerHTML) */
+/* ─── Print / PDF Styles ──────────────────────────────────────────────────── */
+@page {
+  size: A4;
+  margin: 18mm 16mm 18mm 16mm;
+}
+
 @media print {
-  body { background-color: white !important; }
+  /* Reset sizing */
+  html, body {
+    background-color: white !important;
+    font-size: 10pt !important;
+    line-height: 1.45 !important;
+    color: #1a1a1a !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* ── Per-page watermark: position:fixed repeats on every printed page ── */
+  .print-watermark {
+    display: flex !important;
+    position: fixed !important;
+    inset: 0 !important;
+    align-items: center !important;
+    justify-content: center !important;
+    pointer-events: none !important;
+    z-index: 0 !important;
+    overflow: hidden !important;
+  }
+  .print-watermark-text {
+    font-size: 72pt !important;
+    font-weight: 900 !important;
+    color: rgba(0,0,0,0.04) !important;
+    transform: rotate(-40deg) !important;
+    white-space: nowrap !important;
+    user-select: none !important;
+    letter-spacing: -2px !important;
+  }
+
+  /* ── Layout helpers ── */
   .print-hidden { display: none !important; }
-  .print-visible-text { color: black !important; }
-  .print-bg { background-color: #f1f5f9 !important; border-color: #cbd5e1 !important; color: black !important; }
+  .print-visible-text { color: #111 !important; }
+  .print-bg {
+    background-color: #f8fafc !important;
+    border-color: #e2e8f0 !important;
+    color: #111 !important;
+    box-shadow: none !important;
+  }
   .page-break { page-break-inside: avoid; }
+
+  /* ── Compact headings ── */
+  h1 { font-size: 18pt !important; margin-bottom: 6pt !important; }
+  h2 { font-size: 14pt !important; margin-bottom: 4pt !important; }
+  h3 { font-size: 11pt !important; margin-bottom: 3pt !important; }
+
+  /* ── Tighten card spacing ── */
+  .rounded-\[2rem\], .rounded-\[3rem\], .rounded-\[1\.5rem\] {
+    border-radius: 8pt !important;
+    padding: 10pt 12pt !important;
+  }
+
+  /* ── Remove Framer Motion interference ── */
+  [style*="transform"], [style*="opacity"] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /* ── Text size reductions ── */
+  p, li, blockquote { font-size: 9.5pt !important; }
+  .text-xs, .text-\[10px\], .text-\[9px\] { font-size: 7.5pt !important; }
+  .text-sm { font-size: 8.5pt !important; }
+  .text-base { font-size: 9.5pt !important; }
+  .text-lg { font-size: 10.5pt !important; }
+  .text-xl { font-size: 11pt !important; }
+  .text-2xl { font-size: 14pt !important; }
+  .text-4xl, .text-5xl, .text-6xl { font-size: 20pt !important; }
+
+  /* ── Score badges ── */
+  .text-green-400  { color: #15803d !important; }
+  .text-red-400    { color: #b91c1c !important; }
+  .text-\[#f5cca8\] { color: #92400e !important; }
+  .text-\[#b45309\] { color: #92400e !important; }
+  .border-\[#b45309\] { border-color: #92400e !important; }
+
+  /* ── Spacing resets ── */
+  .space-y-6 > * + * { margin-top: 10pt !important; }
+  .space-y-8 > * + * { margin-top: 12pt !important; }
+  .p-8, .p-12 { padding: 10pt 12pt !important; }
+  .mb-8, .mb-6 { margin-bottom: 8pt !important; }
+  .mt-4, .mt-8, .mt-10 { margin-top: 6pt !important; }
+  .gap-6 { gap: 8pt !important; }
+
+  /* ── Grid: force single column for narrow pages ── */
+  .md\:grid-cols-2 { grid-template-columns: 1fr 1fr !important; }
 }

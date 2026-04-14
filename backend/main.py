@@ -336,14 +336,23 @@ async def generate_prep(
 
         safe_resume = resume_text[:6000].replace("{", "{{").replace("}", "}}")
 
-        prompt = f"""You are an elite technical interviewer and career coach.
-Based on the following candidate's resume, thoughtfully generate exactly 15 likely interview questions (both technical deep-dives and behavioral).
-For every question, provide a suggested high-quality answer demonstrating their specific expertise.
+        prompt = f"""You are an elite technical interviewer and career coach with 15+ years of hiring experience.
+Analyse the following resume deeply and generate exactly 20 highly targeted interview questions — a mix of:
+- 8 technical/domain-specific questions (probe actual tools, projects, and decisions from their resume)
+- 7 behavioral questions (STAR-method style — challenges, teamwork, leadership, failures, growth)
+- 3 strategic questions (career goals, motivation, why this role, vision)
+- 2 curveball questions (a tough scenario or a creative problem relevant to their field)
+
+For every question, write a high-quality suggested answer (4-6 sentences) that:
+- References specific details from their actual resume
+- Follows the STAR method for behavioral questions
+- Demonstrates expert-level thinking, not just textbook answers
+- Sounds natural and confident, as if spoken in a real interview
 
 Resume Data:
 {safe_resume}
 
-You MUST output strictly in JSON format. The root must be a JSON object with a single key \"qa_pairs\" containing an array of exactly 15 objects. Each object must have a \"question\" (string) and \"suggested_answer\" (string). Output nothing else but the JSON."""
+CRITICAL: Output ONLY valid JSON. Root object must have a single key \"qa_pairs\" containing an array of exactly 20 objects. Each object must have \"question\" (string) and \"suggested_answer\" (string). No markdown, no extra text."""
 
         json_llm = get_json_llm()
         response = json_llm.invoke([HumanMessage(content=prompt)])
@@ -358,7 +367,7 @@ You MUST output strictly in JSON format. The root must be a JSON object with a s
             data = json.loads(raw_content.replace("```json", "").replace("```", "").strip())
 
         if "qa_pairs" in data and isinstance(data["qa_pairs"], list):
-            data["qa_pairs"] = data["qa_pairs"][:15]
+            data["qa_pairs"] = data["qa_pairs"][:20]
 
         return data
     except Exception as e:
@@ -384,21 +393,32 @@ async def ats_check(
         resume_text = extract_text_from_pdf(file_bytes)
         safe_resume = resume_text[:6000].replace("{", "{{").replace("}", "}}")
 
-        prompt = f"""You are an elite ATS (Applicant Tracking System) expert and resume coach. Analyse the following resume and produce a detailed ATS compatibility report.
+        prompt = f"""You are a senior ATS (Applicant Tracking System) expert who has reviewed 10,000+ resumes and knows exactly how Workday, Greenhouse, Lever, and iCIMS parse and rank candidates.
+
+Carefully analyse the following resume and produce an accurate, honest ATS compatibility report.
+
+SCORING GUIDE (be strict and realistic — do not inflate scores):
+- 90-100: Near-perfect ATS resume. Clean formatting, all key sections, quantified achievements, strong action verbs, relevant keywords. Likely to pass any ATS.
+- 75-89: Good resume with minor gaps. Passes most ATS systems but may lose ranking on competitive roles.
+- 55-74: Average. Will pass some ATS filters but gets deprioritised. Needs meaningful improvements.
+- 35-54: Weak. Likely rejected by strict ATS filters. Missing key elements or has parsing-breaking formatting.
+- 0-34: Critical failures. Tables, graphics, missing contact info, or keyword-free — most ATS will reject automatically.
+
+Grade mapping: 90+=A, 75-89=B, 55-74=C, 35-54=D, <35=F
 
 Resume:
 {safe_resume}
 
-Evaluate across these criteria and return ONLY valid JSON:
+Return ONLY valid JSON:
 {{
-  "ats_score": <integer 0-100>,
+  "ats_score": <integer 0-100, calibrated strictly per the guide above>,
   "grade": <"A" | "B" | "C" | "D" | "F">,
-  "sections_found": [<list of section headings detected>],
-  "sections_missing": [<important sections that are absent, e.g. "Professional Summary", "LinkedIn URL", "Certifications">],
-  "keyword_gaps": [<3-6 specific things missing, e.g. "Quantified achievements (numbers/metrics)", "Strong action verbs", "Industry keywords">],
-  "formatting_issues": [<2-4 formatting problems that hurt ATS parsing, e.g. "Tables detected — ATS cannot parse tables", "No clear section dividers">],
-  "quick_wins": [<exactly 4 specific, actionable one-sentence improvements the candidate can make TODAY>],
-  "ats_verdict": <one sentence honest verdict on ATS pass likelihood>
+  "sections_found": [<exact section headings detected in the resume>],
+  "sections_missing": [<important sections absent, e.g. "Professional Summary", "LinkedIn URL", "GitHub Profile", "Certifications", "Skills Section">],
+  "keyword_gaps": [<4-6 specific missing elements that cost ATS ranking, e.g. "No quantified achievements (add numbers: % improved, $ saved, X users)", "Missing industry-standard tool keywords for their field", "Weak action verbs — replace with impact verbs like Architected, Spearheaded, Reduced">],
+  "formatting_issues": [<2-4 concrete formatting problems, e.g. "Resume likely uses a table layout — ATS cannot parse tables", "No consistent date formatting", "Headers may use text boxes which ATS ignores">],
+  "quick_wins": [<exactly 4 specific one-sentence actions the candidate can do TODAY to improve their score — be concrete, not generic>],
+  "ats_verdict": <one honest, specific sentence on their ATS pass likelihood for a competitive job posting>
 }}
 
 Output nothing but the JSON."""

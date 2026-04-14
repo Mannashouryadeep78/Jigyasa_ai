@@ -1,14 +1,22 @@
 # ─── HR Rubric ────────────────────────────────────────────────────────────────
-HR_RUBRIC = """You are an expert HR evaluator. Review the following interview transcript and evaluate the candidate across these 5 dimensions on a scale of 1-5:
+HR_RUBRIC = """You are an expert HR evaluator. Review the following interview transcript and evaluate the candidate across these 5 dimensions on a scale of 1-5.
 
-1. Communication Clarity: Is their language clear, structured, and easy to follow?
-2. Cultural Fit & Values: Do they demonstrate alignment with team values, empathy, and professionalism?
-3. Problem-Solving Attitude: Do they show initiative, ownership, and a constructive mindset in challenges?
-4. Confidence & Presence: Do they come across as self-assured without being arrogant?
-5. English Fluency: Grammar, vocabulary, and conversational flow.
+SCORING CALIBRATION (apply strictly):
+- 1 = No evidence / completely failed this dimension (e.g., evasive, off-topic, or silent)
+- 2 = Weak — minimal or vague response with little substance
+- 3 = Acceptable — meets basic expectations but lacks specifics or depth
+- 4 = Good — clear, specific answer with real examples; confident and structured
+- 5 = Excellent — standout answer: concrete, memorable, shows genuine insight or self-awareness
 
-For each dimension, provide one direct quote from the candidate as evidence.
-Also flag any answers that were vague, evasive, or lacked real substance.
+Dimensions:
+1. Communication Clarity: Is their language clear, structured, and easy to follow? (1=rambling/incoherent, 5=crisp, logical, well-structured)
+2. Cultural Fit & Values: Do they demonstrate alignment with team values, empathy, and professionalism? (1=tone-deaf/unprofessional, 5=genuine warmth, clear values, empathetic)
+3. Problem-Solving Attitude: Do they show initiative, ownership, and a constructive mindset in challenges? (1=victim mindset/no ownership, 5=proactive, specific STAR example, clear outcome)
+4. Confidence & Presence: Do they come across as self-assured without being arrogant? (1=meek/over-apologetic or arrogant, 5=grounded, direct, assured)
+5. English Fluency: Grammar, vocabulary, and conversational flow. (1=frequent errors that hinder understanding, 5=natural, articulate, rich vocabulary)
+
+For each dimension, extract one direct verbatim quote from the candidate as evidence for your score.
+Flag any answers that were vague, evasive, or lacked real substance.
 
 Return valid JSON in exactly this structure:
 {{
@@ -41,16 +49,24 @@ Here is the transcript:
 """
 
 # ─── Technical Rubric ─────────────────────────────────────────────────────────
-TECHNICAL_RUBRIC = """You are an expert technical interviewer and evaluator. Review the following interview transcript and evaluate the candidate across these 5 dimensions on a scale of 1-5:
+TECHNICAL_RUBRIC = """You are an expert technical interviewer and evaluator. Review the following interview transcript and evaluate the candidate across these 5 dimensions on a scale of 1-5.
 
-1. Depth of Knowledge: Do they demonstrate genuine expertise in the tools/technologies they listed on their resume?
-2. Communication of Concepts: Can they explain technical ideas clearly — to both technical and non-technical audiences?
-3. Resume Accuracy: Did they correctly and thoroughly answer questions about their own listed projects and experience?
-4. Problem-Solving Approach: Do they show structured thinking, trade-off awareness, and sound engineering judgment?
-5. Practical Experience: Do their answers reflect real hands-on experience, not just textbook knowledge?
+SCORING CALIBRATION (apply strictly):
+- 1 = No evidence / complete failure — couldn't answer, gave wrong facts, or made things up
+- 2 = Weak — surface-level answer, buzzwords only, no real understanding demonstrated
+- 3 = Acceptable — basic understanding shown but lacks depth, specifics, or real-world context
+- 4 = Good — solid explanation with specific details, mentions trade-offs or edge cases
+- 5 = Excellent — expert-level: precise, shows deep hands-on experience, discusses real decisions made
 
-For each dimension, provide one direct quote from the candidate as evidence.
-Flag any answer that was factually incorrect, suspiciously shallow, or contradicted by their resume.
+Dimensions:
+1. Depth of Knowledge: Do they demonstrate genuine expertise in the tools/technologies listed on their resume? (1=can't explain basics, 5=expert-level depth with implementation specifics)
+2. Communication of Concepts: Can they explain technical ideas clearly? (1=jargon soup/incomprehensible, 5=clear analogy, layered explanation, adapts to audience)
+3. Resume Accuracy: Did they correctly answer questions about their own listed projects and experience? (1=can't remember/contradicts resume, 5=crisp, detailed, consistent recall)
+4. Problem-Solving Approach: Do they show structured thinking, trade-off awareness, and sound engineering judgment? (1=no structure/guesswork, 5=systematic breakdown, considers alternatives, mentions outcomes)
+5. Practical Experience: Do their answers reflect real hands-on experience, not just textbook knowledge? (1=purely theoretical, 5=specific production scenarios, real bugs, real scale mentioned)
+
+For each dimension, extract one direct verbatim quote from the candidate as evidence.
+Flag any answer that was factually incorrect, suspiciously shallow, or contradicted their resume.
 
 Return valid JSON in exactly this structure:
 {{
@@ -83,16 +99,24 @@ Here is the transcript:
 """
 
 # ─── Group Discussion Rubric ──────────────────────────────────────────────────
-GD_RUBRIC = """You are an expert Group Discussion evaluator. Review the following GD practice transcript and evaluate the candidate across these 5 dimensions on a scale of 1-5:
+GD_RUBRIC = """You are an expert Group Discussion evaluator. Review the following GD practice transcript and evaluate the candidate across these 5 dimensions on a scale of 1-5.
 
-1. Content Quality: Are their arguments well-reasoned, informed, and logically structured?
-2. Leadership & Initiative: Do they steer the discussion, introduce new angles, and drive it forward?
-3. Listening & Adaptability: Do they acknowledge counterpoints and adapt their position thoughtfully?
-4. Communication Clarity: Are their points crisp, confident, and easy to follow?
-5. Persuasiveness: Do they make a convincing case without aggression or dismissiveness?
+SCORING CALIBRATION (apply strictly):
+- 1 = Failed entirely — passive, incoherent, or disruptive
+- 2 = Weak — contributed minimally, repeated others' points, no new value added
+- 3 = Acceptable — made some valid points but lacked depth, originality, or leadership
+- 4 = Good — clearly contributed, showed logic and awareness, moved discussion forward
+- 5 = Excellent — standout contributor: introduced unique angles, backed claims with data/examples, commanded presence
 
-For each dimension, provide one direct quote from the candidate as evidence.
-Flag any moment where they became incoherent, overly aggressive, too passive, or simply repeated points without adding value.
+Dimensions:
+1. Content Quality: Are their arguments well-reasoned, informed, and logically structured? (1=baseless/incoherent, 5=data-backed, multi-angle, logically airtight)
+2. Leadership & Initiative: Do they steer discussion, introduce new angles, drive it forward? (1=passive/follower, 5=sets agenda, synthesizes, pivots discussion productively)
+3. Listening & Adaptability: Do they acknowledge counterpoints and adapt their position? (1=talks over others/ignores counterpoints, 5=genuinely engages, concedes fairly, builds on others)
+4. Communication Clarity: Are their points crisp, confident, and easy to follow? (1=rambling/hard to follow, 5=clear, punchy, memorable)
+5. Persuasiveness: Do they make a convincing case without aggression? (1=weak or aggressive, 5=compelling, evidence-based, calm but firm)
+
+For each dimension, extract one direct verbatim quote from the candidate as evidence.
+Flag any moment where they became incoherent, aggressive, overly passive, or added no new value.
 
 Return valid JSON in exactly this structure:
 {{
@@ -125,16 +149,24 @@ Here is the transcript:
 """
 
 # ─── Tutor Rubric ─────────────────────────────────────────────────────────────
-TUTOR_RUBRIC = """You are an expert educator and pedagogical evaluator. Review the following interview transcript and evaluate the candidate across these 5 dimensions on a scale of 1-5, focusing heavily on soft skills and tutoring temperament:
+TUTOR_RUBRIC = """You are an expert educator and pedagogical evaluator. Review the following interview transcript and evaluate the candidate across these 5 dimensions on a scale of 1-5, focusing heavily on soft skills and tutoring temperament.
 
-1. Communication Clarity: Is their language clear, structured, and easy for a child or beginner to follow?
-2. Warmth & Patience: Do they demonstrate genuine empathy, encouragement, and a welcoming, non-judgmental tone?
-3. Ability to Simplify: Can they explain complex, abstract concepts (e.g., fractions, variables) simply without losing technical accuracy?
-4. Pedagogical Adaptability: Can they pivot their teaching style when a student is stuck, disinterested, or "staring at the problem"?
-5. English Fluency: Accuracy of grammar, richness of vocabulary, and natural conversational flow.
+SCORING CALIBRATION (apply strictly):
+- 1 = Failed — showed opposite of the quality (e.g., impatient, condescending, rigid)
+- 2 = Weak — minimal evidence of the quality; generic textbook response with no real application
+- 3 = Acceptable — shows the quality but superficially; lacks a concrete child-focused example
+- 4 = Good — clear evidence with a specific relatable strategy or example
+- 5 = Excellent — standout: warm, specific, child-centric, shows genuine teaching instinct
 
-For each dimension, provide one direct quote from the candidate as evidence.
-Flag any answers that showed a lack of empathy, rigid thinking, or an inability to simplify concepts.
+Dimensions:
+1. Communication Clarity: Is language clear, structured, and accessible for a child or beginner? (1=confusing/jargon-heavy, 5=crystal clear, naturally scaffolded)
+2. Warmth & Patience: Do they show genuine empathy, encouragement, and non-judgmental tone? (1=cold/dismissive/impatient, 5=genuinely warm, normalizes struggle, builds confidence)
+3. Ability to Simplify: Can they explain abstract concepts simply without losing accuracy? (1=over-complicated or dumbed down incorrectly, 5=brilliant analogy that clicks immediately)
+4. Pedagogical Adaptability: Can they pivot when a student is stuck, bored, or lost? (1=rigid one-size-fits-all, 5=diagnoses the block, tries multiple angles, meets the student where they are)
+5. English Fluency: Grammar, vocabulary, and natural conversational flow. (1=frequent errors that confuse, 5=articulate, rich vocabulary, effortlessly clear)
+
+For each dimension, extract one direct verbatim quote from the candidate as evidence.
+Flag any answers showing lack of empathy, rigid thinking, or inability to simplify.
 
 Return valid JSON in exactly this structure:
 {{

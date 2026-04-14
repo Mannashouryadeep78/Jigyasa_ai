@@ -154,11 +154,9 @@ export default function AssessmentReport({ sessionId }) {
 
     return (
         <div className="min-h-dvh bg-[#e0ccb8] text-white p-4 md:p-8 font-sans overflow-y-auto print:overflow-visible print:min-h-0 print:h-auto print:bg-white print:text-black selection:bg-black selection:text-white">
-            {/* Watermark for Print */}
-            <div className="hidden print:flex fixed inset-0 items-center justify-center pointer-events-none z-0 overflow-hidden">
-                <div className="text-[10rem] font-black text-black opacity-[0.03] transform -rotate-45 whitespace-nowrap select-none">
-                    Jigyasa.ai
-                </div>
+            {/* Per-page watermark for Print (position:fixed repeats on every page) */}
+            <div className="hidden print-watermark">
+                <span className="print-watermark-text">Jigyasa.ai</span>
             </div>
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
