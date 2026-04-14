@@ -333,7 +333,6 @@ export default function Dashboard({ onStartNew, onViewReport, onContinue }) {
                     </div>
                     <span className="text-white font-bold tracking-widest uppercase text-xs mb-2">Exam Mode</span>
                     <span className="text-white/40 text-[10px] italic">Complete 3-round assessment</span>
-                    <div className="absolute top-4 right-4 px-2 py-0.5 bg-[#b45309] text-[#1a0f0a] text-[8px] font-black uppercase rounded-full">Pro</div>
                 </button>
               </div>
 

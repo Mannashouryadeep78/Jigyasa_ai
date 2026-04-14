@@ -212,7 +212,13 @@ export default function LandingPage({ onGoToAuth }) {
                 </section>
 
                 {/* ── RESUME-TO-PREP MATRIX BANNER ── */}
-                <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-8 md:px-14 pb-10 sm:pb-16">
+                <motion.div
+                    initial={{ opacity: 0, y: 50 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.3 }}
+                    transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                    className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-8 md:px-14 pb-10 sm:pb-16"
+                >
                     <div className="bg-[#1a0800]/90 backdrop-blur-sm border border-white/8 rounded-[1.5rem] sm:rounded-[1.8rem] px-6 sm:px-12 py-8 sm:py-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-2xl">
                         <div className="flex-1 min-w-0">
                             <div className="text-[10px] font-black tracking-[0.2em] text-[#f5cca8]/60 uppercase flex items-center gap-2 mb-3">
@@ -231,12 +237,19 @@ export default function LandingPage({ onGoToAuth }) {
                             ›
                         </button>
                     </div>
-                </div>
+                </motion.div>
 
                 {/* ── ATS CHECKER ── */}
-                <div id="ats-checker" className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-8 md:px-14 pb-16 sm:pb-20">
+                <motion.div
+                    id="ats-checker"
+                    initial={{ opacity: 0, y: 50 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.2 }}
+                    transition={{ delay: 0.1, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                    className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-8 md:px-14 pb-16 sm:pb-20"
+                >
                     <ATSChecker onGoToAuth={onGoToAuth} />
-                </div>
+                </motion.div>
             </div>
 
             {/* ───── SECTION 2: BEIGE "HOW IT WORKS" ───── */}

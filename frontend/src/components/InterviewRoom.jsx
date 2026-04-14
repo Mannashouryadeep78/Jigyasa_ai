@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Mic, MicOff, Loader2 } from 'lucide-react';
+import { Mic, MicOff, Loader2, XCircle } from 'lucide-react';
 import { useSpeechRecognition } from '../hooks/useSpeechRecognition';
 import { useTTS } from '../hooks/useTTS';
 import { api } from '../api/client';
 import WaveformVisualizer from './WaveformVisualizer';
 
-export default function InterviewRoom({ sessionId, candidateName, initialMessage, initialHistory = null, onFinish }) {
+export default function InterviewRoom({ sessionId, candidateName, initialMessage, initialHistory = null, onFinish, onCancel }) {
     const [history, setHistory] = useState(() => {
         if (initialHistory) {
             return initialHistory.map((m, i) => ({ ...m, id: m.id || `${m.role}-${i}-${Date.now()}` }));
@@ -120,6 +120,17 @@ export default function InterviewRoom({ sessionId, candidateName, initialMessage
                 <div className="hidden sm:block text-[9px] sm:text-xs text-[#1a0f0a]/50 font-bold tracking-widest uppercase">
                     ID: {sessionId?.split('-')[0] || 'TEST'}
                 </div>
+                <button
+                    onClick={async () => {
+                        stopTTS();
+                        stopListening();
+                        await api.discontinueSession(sessionId);
+                        onCancel();
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-500 text-[9px] font-bold uppercase tracking-widest transition-all"
+                >
+                    <XCircle className="w-3 h-3" /> Cancel
+                </button>
             </header>
 
             <main className="flex-1 flex flex-col items-center justify-center px-2 sm:px-4 md:px-8 w-full max-w-7xl mx-auto overflow-hidden">

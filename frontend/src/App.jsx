@@ -197,12 +197,13 @@ export default function App() {
          <WelcomeScreen onStart={handleStartInterview} onBack={() => setPhase('upload')} candidateName={candidateName} isInitializing={isInitializing} />
       )}
       {phase === 'interview' && (
-        <InterviewRoom 
-          sessionId={session} 
-          candidateName={candidateName} 
+        <InterviewRoom
+          sessionId={session}
+          candidateName={candidateName}
           initialMessage={initialMessage}
           initialHistory={initialHistory}
           onFinish={handleFinish}
+          onCancel={() => setPhase('dashboard')}
         />
       )}
       {phase === 'round_transition' && (
