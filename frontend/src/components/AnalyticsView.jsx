@@ -31,18 +31,27 @@ const AnalyticsContent = ({
   sessionSummaries,
   fetchGuidance,
   setLoadingGuidance
-}) => (
+}) => {
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(false);
+    const timer = setTimeout(() => setIsMounted(true), 150);
+    return () => clearTimeout(timer);
+  }, [isExpanded]);
+
+  return (
   <div className={`grid ${isExpanded ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1 md:grid-cols-2'} gap-6`}>
 
     {/* LEFT: CHART */}
-    <div className="bg-[#1e1d24]/50 border border-white/5 rounded-3xl p-5 backdrop-blur-sm flex flex-col">
+    <div className="bg-[#1e1d24]/50 border border-white/5 rounded-3xl p-5 backdrop-blur-sm flex flex-col min-w-0">
       <h3 className="text-[11px] font-bold uppercase tracking-widest text-white/70 mb-4 flex items-center gap-2">
         <TrendingUp className="w-4 h-4" /> Global Comparison
       </h3>
 
       {/* FIXED HEIGHT CONTAINER */}
       <div className="w-full h-[300px] sm:h-[350px]">
-        {chartData.length > 0 && (
+        {isMounted && chartData.length > 0 && (
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData} margin={{ top: 10, right: 30, left: -20, bottom: 60 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#ffffff1a" vertical={false} />
@@ -154,7 +163,8 @@ const AnalyticsContent = ({
       )}
     </div>
   </div>
-);
+  );
+};
 
 export default function AnalyticsView({ sessions, onBack }) {
   const [guidance, setGuidance] = useState(null);
