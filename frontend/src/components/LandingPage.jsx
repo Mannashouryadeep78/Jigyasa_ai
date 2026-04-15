@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, LogOut, LayoutDashboard, ChevronDown } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
@@ -13,6 +13,14 @@ const SparkleIcon = ({ className = "w-6 h-6" }) => (
 export default function LandingPage({ onGoToAuth }) {
     const { user, signOut } = useAuth();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+    // Wake up the Render backend as soon as the landing page loads.
+    // Render free tier sleeps after 15 min of inactivity — this fires a
+    // fire-and-forget ping so the server is warm by the time the user logs in.
+    useEffect(() => {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+        fetch(`${apiUrl}/ping`).catch(() => {}); // silent — we don't care about the response
+    }, []);
 
     const userInitial = user?.user_metadata?.full_name?.charAt(0) || user?.email?.charAt(0) || '?';
 

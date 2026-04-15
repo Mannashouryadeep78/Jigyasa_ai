@@ -44,6 +44,13 @@ app.add_middleware(
 
 supabase = get_supabase_client()
 
+# ─── Wake-up Ping ─────────────────────────────────────────────────────────────
+# Called by the frontend on LandingPage mount so Render spins up before
+# the user reaches the interview — eliminates the 90-second cold-start delay.
+@app.get("/ping")
+async def ping():
+    return {"status": "ok"}
+
 # ─── Per-Session Locking ──────────────────────────────────────────────────────
 # Prevents concurrent /respond calls corrupting the same session's graph state
 _session_locks: dict[str, tuple[asyncio.Lock, float]] = {}  # session_id -> (lock, last_used_timestamp)
