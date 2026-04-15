@@ -154,6 +154,11 @@ export const api = {
       return res.data;
   },
 
+  getAnalyticsBenchmark: async () => {
+      const res = await client.get('/analytics/benchmark');
+      return res.data; // { benchmark: { metric_key: max_score, ... } }
+  },
+
   // Public endpoint — no auth token needed
   checkATS: async (resumeFile) => {
       const formData = new FormData();

@@ -33,11 +33,6 @@ export default function InterviewRoom({ sessionId, candidateName, initialMessage
         };
     }, []);
 
-    // Auto-scroll to bottom whenever chat content changes
-    useEffect(() => {
-        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [history, isSpeaking, isListening, transcript, isProcessing]);
-
     const handleTranscriptSubmit = async (browserText, audioBlob) => {
         // Guard against submitting while already processing (Fix #6)
         if (isProcessingRef.current) return;
@@ -117,6 +112,11 @@ export default function InterviewRoom({ sessionId, candidateName, initialMessage
     const { isSupported, isListening, transcript, startListening, toggleListening, stopListening } = useSpeechRecognition({
         onTranscriptSubmit: handleTranscriptSubmit
     });
+
+    // Auto-scroll to bottom — MUST be after useSpeechRecognition so isListening/transcript are defined
+    useEffect(() => {
+        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [history, isSpeaking, isListening, transcript, isProcessing]);
 
     // Speak initial message on mount
     useEffect(() => {

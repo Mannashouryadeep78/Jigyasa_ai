@@ -97,7 +97,7 @@ const AnalyticsContent = ({
             />
 
             <Bar dataKey="Your Avg" fill="#f5cca8" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="Benchmark (3.5/5)" fill="#b4530980" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="Best in Class" fill="#b4530980" radius={[4, 4, 0, 0]} />
           </BarChart>
         )}
       </div>
@@ -177,6 +177,14 @@ export default function AnalyticsView({ sessions, onBack }) {
   const [chartData, setChartData] = useState([]);
   const [sessionSummaries, setSessionSummaries] = useState([]);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [benchmark, setBenchmark] = useState({});
+
+  useEffect(() => {
+    // Fetch global best-in-class scores (runs once on mount)
+    api.getAnalyticsBenchmark()
+      .then(data => setBenchmark(data?.benchmark || {}))
+      .catch(() => {}); // fail silently — chart still renders without benchmark
+  }, []);
 
   useEffect(() => {
     const completedSessions = sessions.filter(
@@ -212,7 +220,7 @@ export default function AnalyticsView({ sessions, onBack }) {
     const cData = Object.keys(keyTotals).map(key => ({
       name: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
       'Your Avg': parseFloat((keyTotals[key] / keyCounts[key]).toFixed(2)),
-      'Benchmark (3.5/5)': 3.5
+      _rawKey: key  // keep original key to look up benchmark later
     }));
 
     setChartData(cData);
@@ -253,7 +261,7 @@ export default function AnalyticsView({ sessions, onBack }) {
           ) : (
             <AnalyticsContent
               isExpanded={false}
-              chartData={chartData}
+              chartData={chartData.map(d => ({ ...d, 'Best in Class': benchmark[d._rawKey] ?? null }))}
               loadingGuidance={loadingGuidance}
               guidanceError={guidanceError}
               guidance={guidance}
@@ -274,7 +282,7 @@ export default function AnalyticsView({ sessions, onBack }) {
 
             <AnalyticsContent
               isExpanded={true}
-              chartData={chartData}
+              chartData={chartData.map(d => ({ ...d, 'Best in Class': benchmark[d._rawKey] ?? null }))}
               loadingGuidance={loadingGuidance}
               guidanceError={guidanceError}
               guidance={guidance}

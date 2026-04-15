@@ -623,6 +623,15 @@ async def transcribe(
             os.remove(tmp_path)
 
 
+# ─── /analytics/benchmark ────────────────────────────────────────────────────
+@app.get("/analytics/benchmark")
+async def get_analytics_benchmark(_current_user: dict = Depends(get_current_user)):
+    """Returns the highest score per metric across ALL users — powers the benchmark bar."""
+    from services.supabase_client import get_global_benchmark
+    benchmark = get_global_benchmark()
+    return {"benchmark": benchmark}
+
+
 # ─── /analytics/guidance ─────────────────────────────────────────────────────
 class AnalyticsRequest(BaseModel):
     history: list[dict]

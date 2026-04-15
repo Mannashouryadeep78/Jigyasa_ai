@@ -75,6 +75,33 @@ def save_session_state(session_id: str, state_data: dict):
     except Exception as e:
         print(f"[WARN] save_session_state failed (is state_json column added to sessions table?): {e}")
 
+def get_global_benchmark() -> dict:
+    """
+    Returns the highest score ever achieved per metric across ALL assessments.
+    Used to power the 'Best in Class' benchmark bar in Analytics.
+    """
+    try:
+        url = f"{SUPABASE_URL}/rest/v1/assessments?select=scores_json"
+        response = httpx.get(url, headers=_get_headers())
+        response.raise_for_status()
+        rows = response.json()
+        maxes: dict[str, float] = {}
+        for row in rows:
+            scores = row.get("scores_json", {})
+            if not isinstance(scores, dict):
+                continue
+            for key, val in scores.items():
+                try:
+                    num = float(val)
+                    if key not in maxes or num > maxes[key]:
+                        maxes[key] = num
+                except (ValueError, TypeError):
+                    pass
+        return maxes
+    except Exception as e:
+        print(f"[WARN] get_global_benchmark failed: {e}")
+        return {}
+
 def load_session_state(session_id: str) -> dict:
     """Load persisted session state for crash-recovery."""
     try:
