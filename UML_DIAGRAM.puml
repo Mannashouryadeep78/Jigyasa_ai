@@ -1,0 +1,1060 @@
+
+' ============================================================
+'  Jigyasa.ai — AI Tutor Screener
+'  COMPREHENSIVE UML DIAGRAM (PlantUML)
+'
+'  Sections:
+'    1. Component Overview
+'    2. Backend Class Diagram
+'    3. Frontend Class Diagram
+'    4. Database Schema Diagram
+'    5. Interview Session — Sequence Diagram
+'    6. Authentication — Sequence Diagram
+'    7. LangGraph State-Machine Diagram
+' ============================================================
+
+
+' ╔══════════════════════════════════════════════════════════╗
+' ║  1. COMPONENT OVERVIEW                                   ║
+' ╚══════════════════════════════════════════════════════════╝
+
+@startuml 1_Component_Overview
+
+title Jigyasa.ai — High-Level Component Architecture
+
+skinparam backgroundColor #0d0d1a
+skinparam componentBackgroundColor #1e1d24
+skinparam componentBorderColor #b45309
+skinparam componentFontColor #f5cca8
+skinparam packageBackgroundColor #13121a
+skinparam packageBorderColor #b4530950
+skinparam packageFontColor #ffffff80
+skinparam ArrowColor #b45309
+skinparam ArrowFontColor #f5cca8
+skinparam noteFontColor #ffffff80
+skinparam noteBackgroundColor #1e1d24
+skinparam noteBorderColor #b45309
+
+actor Candidate as user
+
+package "Browser (React 19 + Vite)" {
+  component [App.jsx\n<State Router>] as App
+  component [AuthContext] as Auth
+  component [InterviewRoom.jsx] as IR
+  component [Dashboard.jsx] as Dash
+  component [AssessmentReport.jsx] as AR
+  component [AnalyticsView.jsx] as AV
+  component [LandingPage.jsx] as LP
+  component [InterviewPrepTool.jsx] as IPT
+  component [ATSChecker.jsx] as ATS
+  component [useSpeechRecognition.js\n<Hook>] as STT
+  component [useTTS.js\n<Hook>] as TTS
+  component [api/client.js\n<Axios + Interceptors>] as AC
+  component [lib/supabase.js\n<Auth Client>] as SB_FE
+}
+
+package "Backend (FastAPI — Render)" {
+  component [main.py\n<API Gateway + Auth>] as Main
+  component [interview_graph.py\n<LangGraph>] as Graph
+  component [nodes.py\n<LangGraph Nodes>] as Nodes
+  component [edges.py\n<Routing Logic>] as Edges
+  component [state.py\n<InterviewState TypedDict>] as State
+  component [prompts/system.py\n<Persona Prompts>] as Prompts
+  component [prompts/rubric.py\n<Scoring Rubrics>] as Rubrics
+  component [services/groq_client.py\n<LLM + Whisper>] as Groq
+  component [services/supabase_client.py\n<DB HTTP Client>] as SB_BE
+}
+
+package "External Services" {
+  component [Groq API\nllama-3.3-70b-versatile\nwhisper-large-v3] as GROQ_API
+  component [Supabase\nPostgreSQL + Auth + JWT] as SUPA
+  component [Supabase Auth\n<JWT Issuer>] as SUPA_AUTH
+}
+
+' ─── User interactions ───
+user --> IR : speaks / types
+user --> Dash : browse sessions
+user --> LP : public tools
+
+' ─── Frontend internal ───
+App --> Auth : reads user
+App --> IR : renders interview
+App --> Dash : renders dashboard
+App --> AR : renders report
+App --> AV : renders analytics
+App --> LP : renders landing
+IR --> STT : voice input
+IR --> TTS : voice output
+IR --> AC : api.respond()
+AR --> AC : api.getReport()
+AV --> AC : api.getAnalyticsBenchmark()
+Dash --> SB_FE : select sessions
+IPT --> AC : generatePrepQuestions()
+ATS --> AC : checkATS()
+Auth --> SB_FE : signIn/signUp/signOut
+AC --> SB_FE : token refresh (401)
+
+' ─── API layer → Backend ───
+AC --> Main : HTTP/REST (Bearer JWT)
+STT --> Main : POST /transcribe (audio blob)
+
+' ─── Backend internal ───
+Main --> Graph : invoke(state, config)
+Main --> SB_BE : log/read/save sessions
+Graph --> Nodes : orchestrates
+Graph --> Edges : routing
+Nodes --> Prompts : get_system_prompt(mode)
+Nodes --> Rubrics : get_rubric_prompt(mode)
+Nodes --> Groq : LLM calls
+Groq --> GROQ_API : HTTP API
+
+' ─── External auth ───
+AC --> SUPA_AUTH : JWT issued here
+SB_FE --> SUPA_AUTH : auth ops
+Main --> SUPA_AUTH : JWT verification
+
+' ─── Database ───
+SB_BE --> SUPA : REST API (sessions, assessments)
+
+@enduml
+
+
+' ╔══════════════════════════════════════════════════════════╗
+' ║  2. BACKEND CLASS DIAGRAM                                ║
+' ╚══════════════════════════════════════════════════════════╝
+
+@startuml 2_Backend_Classes
+
+title Jigyasa.ai — Backend Class Diagram
+
+skinparam backgroundColor #0d0d1a
+skinparam classBackgroundColor #1e1d24
+skinparam classBorderColor #b45309
+skinparam classHeaderBackgroundColor #2a1f0a
+skinparam classFontColor #f5cca8
+skinparam classAttributeFontColor #ffffff90
+skinparam classStereotypeFontColor #b4530990
+skinparam packageBackgroundColor #13121a
+skinparam packageBorderColor #b4530960
+skinparam packageFontColor #f5cca8
+skinparam ArrowColor #b45309
+skinparam ArrowFontColor #f5cca8
+skinparam noteFontColor #ffffff80
+skinparam noteBackgroundColor #1e1d24
+
+' ─── graph/state.py ───
+package "graph/state.py" {
+  class InterviewState <<TypedDict>> {
+    + session_id : str
+    + candidate_name : str
+    + resume_text : str
+    + interview_mode : str
+    + messages : Annotated[List[BaseMessage], operator.add]
+    + current_phase : str
+    + questions_asked : List[str]
+    + answers_given : List[str]
+    + followup_count : int
+    + assessment : dict
+    + turn_count : int
+  }
+  note right of InterviewState
+    current_phase values:
+    "start" | "greeting" | "question"
+    | "followup" | "closer" | "finished"
+
+    interview_mode values:
+    "hr" | "technical" | "gd" | "tutor"
+  end note
+}
+
+' ─── graph/nodes.py ───
+package "graph/nodes.py" {
+  class GraphNodes <<module>> {
+    + greeter(state: InterviewState) : dict
+    + question_selector(state: InterviewState) : dict
+    + responder(state: InterviewState) : dict
+    + followup_decider(state: InterviewState) : dict
+    + edge_case_handler(state: InterviewState) : dict
+    + closer(state: InterviewState) : dict
+    + assessor(state: InterviewState) : dict
+  }
+  note bottom of GraphNodes
+    greeter        → phase: "greeting"
+    question_selector → phase: "question"
+    responder      → followup_count + 1
+    assessor       → scores JSON from LLM
+  end note
+}
+
+' ─── graph/edges.py ───
+package "graph/edges.py" {
+  class GraphEdges <<module>> {
+    + route_from_start(state: InterviewState) : str
+    + decide_followup(state: InterviewState) : str
+  }
+  note right of GraphEdges
+    route_from_start:
+      no messages        → "greeter"
+      phase=="greeting"  → "question_selector"
+      phase in [question,followup] → "followup_decider"
+      phase in [closer,finished]   → END
+
+    decide_followup:
+      turn_count >= 5               → "closer"
+      answer < 12 chars, fc==0      → "edge_case_handler"
+      followup_count >= 1           → "question_selector"
+      else                          → "responder"
+  end note
+}
+
+' ─── graph/interview_graph.py ───
+package "graph/interview_graph.py" {
+  class InterviewGraph <<StateGraph>> {
+    + add_node(name, fn)
+    + add_edge(from, to)
+    + add_conditional_edges(from, router, mapping)
+    + set_entry_point("router")
+    + compile(checkpointer: MemorySaver)
+    --
+    + invoke(state: InterviewState, config: dict) : InterviewState
+    + stream(state: InterviewState, config: dict) : Iterable
+    + update_state(config: dict, values: dict) : None
+    + get_state(config: dict) : StateSnapshot
+  }
+}
+
+' ─── prompts/system.py ───
+package "prompts/system.py" {
+  class PersonaPrompts <<module>> {
+    + HR_PROMPT : str
+    + TECHNICAL_PROMPT : str
+    + GD_PROMPT : str
+    + TUTOR_PROMPT : str
+    --
+    + get_system_prompt(mode: str) : str
+  }
+  note right of PersonaPrompts
+    HR_PROMPT      → "Alex"  (Career, values, conflict)
+    TECHNICAL_PROMPT → "Jordan" (Resume-specific domain)
+    GD_PROMPT      → "Morgan" (Education policy debate)
+    TUTOR_PROMPT   → "Prof. Maria" (Pedagogical scenarios)
+  end note
+}
+
+' ─── prompts/rubric.py ───
+package "prompts/rubric.py" {
+  class RubricPrompts <<module>> {
+    + HR_RUBRIC : str
+    + TECHNICAL_RUBRIC : str
+    + GD_RUBRIC : str
+    + TUTOR_RUBRIC : str
+    --
+    + get_rubric_prompt(mode: str) : str
+  }
+  note right of RubricPrompts
+    Each rubric evaluates 5 dimensions on 1-5 scale.
+    Output JSON: {
+      scores: {key: score},
+      quotes: {key: evidence},
+      wrong_answers: [{question, answer, reason}],
+      overall_score: float
+    }
+  end note
+}
+
+' ─── services/groq_client.py ───
+package "services/groq_client.py" {
+  class GroqClient <<module>> {
+    + GROQ_API_KEY : str
+    --
+    + get_llm() : ChatGroq
+    + get_json_llm() : ChatGroq
+    + transcribe_audio(file_path: str) : str
+  }
+  note right of GroqClient
+    get_llm():      llama-3.3-70b-versatile, temp=0.7, timeout=25s
+    get_json_llm(): llama-3.3-70b-versatile, temp=0.1, timeout=40s, json_mode
+    transcribe_audio(): whisper-large-v3
+  end note
+}
+
+' ─── services/supabase_client.py ───
+package "services/supabase_client.py" {
+  class SupabaseClient <<module>> {
+    + SUPABASE_URL : str
+    + SUPABASE_KEY : str
+    --
+    - _get_headers() : dict
+    + log_session(session_id, candidate_name, user_id)
+    + get_session(session_id: str) : list[dict]
+    + update_session_status(session_id, status: str)
+    + save_assessment(session_id, scores: dict, quotes: dict)
+    + save_session_state(session_id, state_data: dict)
+    + load_session_state(session_id: str) : dict
+    + get_global_benchmark() : dict[str, float]
+  }
+}
+
+' ─── main.py ───
+package "main.py (FastAPI API Gateway)" {
+  class FastAPIApp <<FastAPI>> {
+    + app : FastAPI
+    + sessions_memory : dict[str, InterviewState]
+    + session_locks : dict[str, asyncio.Lock]
+    + rate_limit_store : dict[str, list[float]]
+    --
+    + get_current_user(authorization: str) : dict
+    + get_session_lock(session_id: str) : asyncio.Lock
+    + check_rate_limit(ip: str) : None
+    - _sanitize_name(name: str) : str
+    - _validate_pdf(file: UploadFile) : None
+    - _verify_session_owner(session_id, user_id) : None
+    - _run_graph_sync(input_state, config) : dict
+  }
+
+  class PydanticModels <<models>> {
+    + ChatTurn : session_id, message
+    + TTSRequest : text
+    + AnalyticsRequest : history
+  }
+
+  class APIEndpoints <<routes>> {
+    + POST /session (auth)
+    + POST /respond (auth)
+    + GET  /report/{session_id} (auth)
+    + GET  /session/{session_id} (auth)
+    + POST /session/{session_id}/discontinue (auth)
+    + POST /prep/generate (public)
+    + POST /ats/check (public)
+    + POST /tts (auth)
+    + POST /transcribe (auth)
+    + GET  /analytics/benchmark (auth)
+    + POST /analytics/guidance (auth)
+  }
+}
+
+' ─── Relationships ───
+FastAPIApp ..> InterviewGraph : invoke / stream
+FastAPIApp ..> SupabaseClient : reads / writes
+FastAPIApp ..> GroqClient : TTS generation
+FastAPIApp ..> PydanticModels : validates requests
+FastAPIApp --> APIEndpoints
+
+InterviewGraph --> GraphNodes : orchestrates
+InterviewGraph --> GraphEdges : conditional routing
+InterviewGraph --> InterviewState : typed state
+
+GraphNodes --> InterviewState : reads/writes
+GraphNodes --> PersonaPrompts : get_system_prompt()
+GraphNodes --> RubricPrompts : get_rubric_prompt()
+GraphNodes --> GroqClient : LLM calls
+GraphEdges --> InterviewState : reads phase + turn_count
+
+@enduml
+
+
+' ╔══════════════════════════════════════════════════════════╗
+' ║  3. FRONTEND CLASS DIAGRAM                               ║
+' ╚══════════════════════════════════════════════════════════╝
+
+@startuml 3_Frontend_Classes
+
+title Jigyasa.ai — Frontend Class Diagram
+
+skinparam backgroundColor #0d0d1a
+skinparam classBackgroundColor #1e1d24
+skinparam classBorderColor #b45309
+skinparam classHeaderBackgroundColor #2a1f0a
+skinparam classFontColor #f5cca8
+skinparam classAttributeFontColor #ffffff90
+skinparam packageBackgroundColor #13121a
+skinparam packageBorderColor #b4530960
+skinparam packageFontColor #f5cca8
+skinparam ArrowColor #b45309
+skinparam ArrowFontColor #f5cca8
+skinparam noteFontColor #ffffff80
+skinparam noteBackgroundColor #1e1d24
+
+' ─── Contexts ───
+package "src/contexts/" {
+  class AuthContext <<Context + Provider>> {
+    - user : User | null
+    - session : Session | null
+    --
+    + signUp(email, password, name) : Promise
+    + signIn(email, password) : Promise
+    + signInWithGoogle() : Promise
+    + verifyOtp(email, token) : Promise
+    + signOut() : Promise
+    --
+    uses: supabase.auth.*
+  }
+}
+
+' ─── API / Lib ───
+package "src/api/ + src/lib/" {
+  class SupabaseJSClient <<singleton>> {
+    + createClient(VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY)
+    --
+    + auth.signUp / signIn / signOut
+    + auth.refreshSession()
+    + from('sessions').select()
+    + auth.onAuthStateChange()
+  }
+
+  class ApiClient <<axios singleton>> {
+    - baseURL : VITE_API_URL | 'http://localhost:8000'
+    - interceptors.request : inject Bearer token
+    - interceptors.response : handle 401 + token refresh queue
+    --
+    + createSession(userId, name, file?, mode?) : Promise<{session_id, message}>
+    + respond(sessionId, message) : Promise<{message, status}>
+    + getReport(sessionId) : Promise<Assessment>
+    + getSession(sessionId) : Promise<{name, history, status}>
+    + discontinueSession(sessionId) : Promise
+    + generateTTS(text) : Promise<Blob | null>
+    + generatePrepQuestions(file) : Promise<{qa_pairs[]}>
+    + generateAnalyticsGuidance(history) : Promise<{overview, action_items[]}>
+    + getAnalyticsBenchmark() : Promise<{benchmark: dict}>
+    + checkATS(file) : Promise<ATSReport>
+    + transcribeAudio(blob) : Promise<{transcript: str}>
+  }
+}
+
+' ─── Custom Hooks ───
+package "src/hooks/" {
+  class useSpeechRecognition <<Hook>> {
+    Params: { onTranscriptSubmit: (text: str) => void }
+    --
+    - recognitionRef : SpeechRecognition
+    - mediaRecorderRef : MediaRecorder
+    - accumulatedRef : string
+    - silenceTimer : NodeJS.Timeout
+    - isMobileDevice : boolean
+    --
+    Returns:
+    + isSupported : boolean
+    + isListening : boolean
+    + transcript : string
+    + startListening() : void
+    + stopListening(submit?: boolean) : void
+    + toggleListening() : void
+    --
+    Dual-stream: browser STT for live preview
+                 Whisper (via /transcribe) for accuracy
+    Mobile: continuous=true (no mic flicker)
+    Desktop: continuous=false (standard)
+    Auto-submit: 3s silence timer
+    Max duration: 120s
+  }
+
+  class useTTS <<Hook>> {
+    Returns:
+    + speak(text: str, onFinish?: () => void) : void
+    + stop() : void
+    + isSpeaking : boolean
+    --
+    - utteranceQueue : SpeechSynthesisUtterance[]
+    - isAndroid : boolean
+    --
+    Voice priority: Edge Online Neural
+                    > Chrome Google US English
+                    > Standard English
+    Android rate: 1.15x (compensates slow engine)
+    Sentence-split: chunks >200 chars (Chrome bug fix)
+  }
+}
+
+' ─── Entry / Router ───
+package "src/ (Entry + Router)" {
+  class Main <<entry>> {
+    + ReactDOM.createRoot(#root)
+    + render(<AuthProvider><App /></AuthProvider>)
+  }
+
+  class App <<Router Component>> {
+    - user : User (from AuthContext)
+    - publicPhase : 'landing'|'auth'|'prep'
+    - phase : 'dashboard'|'upload'|'welcome'|
+              'interview'|'report'|
+              'round_transition'|'exam_result'
+    - session : string (session_id)
+    - candidateName : string
+    - resumeFile : File | null
+    - interviewMode : 'hr'|'technical'|'gd'|'tutor'
+    - initialMessage : string
+    - initialHistory : Message[]
+    - sessionType : 'practice'|'exam'
+    - examRound : 0 | 1 | 2
+    - examScores : Assessment[]
+    - lastRoundScore : number
+    - isInitializing : boolean
+    --
+    + handleStartNew(type: 'practice'|'exam') : void
+    + handleUpload(file: File, mode: str) : void
+    + handleStartInterview() : Promise<void>
+    + handleContinue(sessionId: str) : Promise<void>
+    + handleFinish() : Promise<void>
+    + handleProceedNextRound() : void
+  }
+}
+
+' ─── Components ───
+package "src/components/" {
+
+  class LandingPage <<Component>> {
+    Props: onGoToAuth(mode: str)
+    --
+    + Hero section with animated headline
+    + 3 Feature cards
+    + Resume-to-Prep banner (public)
+    + Embedded ATSChecker (public)
+    + How-it-works steps
+    + User menu (if authenticated)
+  }
+
+  class Dashboard <<Component>> {
+    Props: onStartNew(type), onViewReport(id), onContinue(id)
+    --
+    - sessions : Session[]
+    - activeTab : 'completed'|'active'|'discontinued'
+    - activeView : 'list'|'analytics'|'prep'|'ats'|'help'
+    --
+    + Tab filtering
+    + Session cards (status, name, date, score)
+    + Mode choice modal (Practice vs Exam)
+    + Renders sub-views: AnalyticsView, InterviewPrepTool, ATSChecker
+    --
+    Reads: supabase.from('sessions').select()
+           filtered by user_id
+  }
+
+  class InterviewRoom <<Component>> {
+    Props:
+    + sessionId : string
+    + candidateName : string
+    + initialMessage : string
+    + initialHistory? : Message[]
+    + onFinish : () => void
+    + onCancel : () => void
+    --
+    - history : {id, role, content}[]
+    - typedAnswer : string
+    - isProcessing : boolean
+    - isProcessingRef : MutableRefObject<bool>
+    - isMountedRef : MutableRefObject<bool>
+    - blankCountRef : MutableRefObject<int>
+    - chatEndRef : MutableRefObject<HTMLDivElement>
+    --
+    + handleTranscriptSubmit(text: str) : Promise
+    + handleManualSubmit() : void
+    + handleCancel() : void
+    --
+    Auto-scroll: useEffect after useSpeechRecognition decl.
+    TTS: auto-plays each AI response
+    Voice flow: STT → submit → api.respond() → TTS
+  }
+
+  class AssessmentReport <<Component>> {
+    Props: sessionId: string
+    --
+    - assessment : Assessment | null
+    - loading : boolean
+    --
+    + Polls api.getReport() every 2s (max 2min)
+    + Score grid (1–5 per dimension with anchors)
+    + Evidence quotes per dimension
+    + Wrong answers with LLM analysis
+    + @media print CSS for PDF export
+  }
+
+  class AnalyticsView <<Component>> {
+    Props: sessions: Session[], onBack: () => void
+    --
+    - chartData : ChartPoint[]
+    - benchmark : {[key: str]: float}
+    - guidance : {overview: str, action_items: str[]}
+    - loadingGuidance : boolean
+    - guidanceError : boolean
+    - sessionSummaries : Summary[]
+    - isExpanded : boolean
+    --
+    + fetchGuidance(summaries: Summary[]) : Promise
+    + Expand modal (AnimatePresence)
+    + BarChart: "Your Avg" vs "Best in Class"
+    + AI executive coach report
+  }
+
+  class AnalyticsContent <<Sub-Component>> {
+    Props: isExpanded, chartData, loadingGuidance,
+           guidanceError, guidance, sessionSummaries,
+           fetchGuidance, setLoadingGuidance
+    --
+    - chartContainerRef : MutableRefObject<HTMLDivElement>
+    - chartDims : {width: int, height: int}
+    --
+    + useLayoutEffect: ResizeObserver for explicit dims
+    + Recharts BarChart (explicit pixel w/h, no ResponsiveContainer)
+    + Guidance panel (overview + action_items)
+  }
+
+  class InterviewPrepTool <<Component>> {
+    + Resume upload (PDF)
+    + api.generatePrepQuestions(file)
+    + Displays 20 Q&A pairs
+    + @media print PDF export
+  }
+
+  class ATSChecker <<Component>> {
+    + Resume upload (PDF)
+    + api.checkATS(file)
+    + ATS score vs Workday, Greenhouse, Lever, iCIMS
+    + Keyword gaps + formatting issues
+  }
+
+  class ResumeUpload <<Component>> {
+    Props: onUpload(file, mode), onBack()
+    --
+    + File picker (PDF only)
+    + Interview mode selector
+      (hr | technical | gd | tutor)
+  }
+
+  class WelcomeScreen <<Component>> {
+    Props: candidateName, onStart(), onBack()
+    --
+    + Name confirmation
+    + Start Interview button
+  }
+
+  class LoginScreen <<Component>> {
+    Props: onAuth()
+    --
+    + Email / password form
+    + Google OAuth button
+    + OTP verification
+  }
+
+  class RoundTransition <<Component>> {
+    Props: round: int, score: float, onNext()
+    --
+    + Shows round N score
+    + Preview of next round
+  }
+
+  class ExamResultScreen <<Component>> {
+    Props: scores: Assessment[], onBack()
+    --
+    + 3-round final scores
+    + Side-by-side comparison
+  }
+
+  class WaveformVisualizer <<Component>> {
+    Props: isActive: boolean
+    --
+    + Animated bar waveform
+    + Responds to isListening / isSpeaking
+  }
+}
+
+' ─── Relationships ───
+Main --> App
+App --> AuthContext : useAuth()
+App --> Dashboard
+App --> InterviewRoom
+App --> AssessmentReport
+App --> AnalyticsView
+App --> LandingPage
+App --> ResumeUpload
+App --> WelcomeScreen
+App --> LoginScreen
+App --> RoundTransition
+App --> ExamResultScreen
+
+Dashboard --> AnalyticsView
+Dashboard --> InterviewPrepTool
+Dashboard --> ATSChecker
+Dashboard --> SupabaseJSClient
+
+InterviewRoom --> useSpeechRecognition
+InterviewRoom --> useTTS
+InterviewRoom --> ApiClient
+InterviewRoom --> WaveformVisualizer
+
+AnalyticsView --> AnalyticsContent
+AnalyticsView --> ApiClient
+
+AssessmentReport --> ApiClient
+InterviewPrepTool --> ApiClient
+ATSChecker --> ApiClient
+
+AuthContext --> SupabaseJSClient
+ApiClient --> SupabaseJSClient : token refresh
+
+@enduml
+
+
+' ╔══════════════════════════════════════════════════════════╗
+' ║  4. DATABASE SCHEMA DIAGRAM                              ║
+' ╚══════════════════════════════════════════════════════════╝
+
+@startuml 4_Database_Schema
+
+title Jigyasa.ai — Supabase Database Schema
+
+skinparam backgroundColor #0d0d1a
+skinparam entityBackgroundColor #1e1d24
+skinparam entityBorderColor #b45309
+skinparam entityHeaderBackgroundColor #2a1f0a
+skinparam entityFontColor #f5cca8
+skinparam entityAttributeFontColor #ffffff90
+skinparam ArrowColor #b45309
+
+entity "auth.users\n<Supabase Managed>" as USERS {
+  * id : UUID <<PK>>
+  --
+  email : text
+  created_at : timestamp
+  user_metadata : jsonb
+}
+
+entity "public.sessions" as SESSIONS {
+  * id : UUID <<PK>>
+  --
+  name : text
+  user_id : UUID <<FK → auth.users>>
+  status : text
+  created_at : timestamptz
+  state_json : JSONB
+}
+
+note right of SESSIONS
+  status values:
+    'active' | 'finished' | 'discontinued'
+
+  state_json (crash recovery):
+    serialized LangGraph state —
+    messages, phase, metadata
+    written after every turn
+end note
+
+entity "public.assessments" as ASSESSMENTS {
+  * id : UUID <<PK>>
+  --
+  session_id : UUID <<FK → sessions>>
+  scores_json : JSONB
+  quotes_json : JSONB
+  created_at : timestamptz
+}
+
+note right of ASSESSMENTS
+  scores_json example (HR mode):
+  {
+    "communication_clarity": 4,
+    "cultural_fit_values": 3,
+    "problem_solving_attitude": 5,
+    "confidence_presence": 4,
+    "english_fluency": 4
+  }
+
+  quotes_json example:
+  {
+    "communication_clarity": "exact quote..."
+  }
+end note
+
+USERS ||--o{ SESSIONS : "1 user → many sessions"
+SESSIONS ||--o| ASSESSMENTS : "1 session → 0-1 assessment"
+
+@enduml
+
+
+' ╔══════════════════════════════════════════════════════════╗
+' ║  5. INTERVIEW SESSION — SEQUENCE DIAGRAM                 ║
+' ╚══════════════════════════════════════════════════════════╝
+
+@startuml 5_Session_Sequence
+
+title Jigyasa.ai — Interview Session Lifecycle (Sequence)
+
+skinparam backgroundColor #0d0d1a
+skinparam sequenceLifeLineBorderColor #b45309
+skinparam participantBackgroundColor #1e1d24
+skinparam participantBorderColor #b45309
+skinparam participantFontColor #f5cca8
+skinparam sequenceArrowColor #b45309
+skinparam sequenceArrowFontColor #f5cca8
+skinparam sequenceBoxBackgroundColor #13121a
+skinparam sequenceBoxBorderColor #b4530960
+skinparam noteFontColor #ffffff80
+skinparam noteBackgroundColor #1e1d24
+skinparam noteBorderColor #b45309
+
+actor Candidate as C
+participant "InterviewRoom.jsx" as IR
+participant "useSpeechRecognition" as STT
+participant "useTTS" as TTS
+participant "api/client.js" as API
+participant "main.py\n(FastAPI)" as BE
+participant "interview_graph.py\n(LangGraph)" as GR
+participant "nodes.py" as ND
+participant "groq_client.py\n(Groq LLM)" as LLM
+participant "supabase_client.py" as DB
+database "Supabase" as SUPA
+
+== Session Creation ==
+C -> IR : click "Start Interview"
+IR -> API : createSession(userId, name, file, mode)
+API -> BE : POST /session (multipart + JWT)
+BE -> BE : _sanitize_name()\n_validate_pdf()\n_verify_session_owner()
+BE -> DB : log_session(session_id, name, user_id)
+DB -> SUPA : POST /rest/v1/sessions
+BE -> GR : invoke(initial_state, config)
+GR -> ND : greeter(state)
+ND -> LLM : ChatGroq.invoke([SystemMsg, HumanMsg])
+LLM --> ND : greeting text
+ND --> GR : {messages: [AIMsg], phase: "greeting"}
+GR -> DB : save_session_state(session_id, state)
+DB -> SUPA : PATCH /rest/v1/sessions (state_json)
+BE --> API : {session_id, message: greeting}
+API --> IR : greeting message
+IR -> TTS : speak(greeting)
+TTS --> C : AI greeting audio
+
+== Question-Answer Turn Loop ==
+loop until turn_count >= 5 or phase == "finished"
+
+  C -> IR : starts speaking
+  IR -> STT : startListening()
+  STT --> IR : transcript (live preview, browser STT)
+
+  note over STT
+    MediaRecorder also capturing
+    raw audio in parallel
+  end note
+
+  STT -> STT : 3s silence detected
+  STT -> API : transcribeAudio(audioBlob)
+  API -> BE : POST /transcribe (audio blob)
+  BE -> LLM : whisper-large-v3.transcribe()
+  LLM --> BE : high-accuracy transcript
+  BE --> API : {transcript}
+  API --> STT : Whisper text replaces browser text
+
+  STT -> IR : onTranscriptSubmit(finalText)
+  IR -> API : respond(session_id, finalText)
+  API -> BE : POST /respond (JWT + body)
+  BE -> BE : get_session_lock(session_id) — concurrency guard
+  BE -> GR : invoke({messages: [HumanMsg]}, config)
+
+  GR -> ND : route_from_start(state)
+  note over GR, ND
+    Routing:
+    phase=="greeting" → question_selector
+    phase=="question" → followup_decider → decide_followup()
+  end note
+
+  ND -> LLM : ChatGroq.invoke([SystemMsg, ...last_6_messages])
+  LLM --> ND : interviewer response
+  ND --> GR : {messages: [AIMsg], phase: "question"}
+
+  GR -> DB : save_session_state()
+  DB -> SUPA : PATCH sessions
+
+  BE --> API : {message: AI_response, status: "question"}
+  API --> IR : response message
+  IR -> TTS : speak(AI_response)
+  TTS --> C : AI audio playback
+  IR -> STT : startListening() [auto-restart]
+
+end
+
+== Assessment Phase ==
+BE -> GR : phase transitions to "closer" then "assessor"
+GR -> ND : assessor(state)
+ND -> ND : format_transcript(messages)
+ND -> LLM : get_json_llm().invoke([rubric_prompt, transcript])
+LLM --> ND : JSON {scores, quotes, wrong_answers, overall_score}
+ND -> DB : save_assessment(session_id, scores, quotes)
+DB -> SUPA : POST /rest/v1/assessments
+ND -> DB : update_session_status(session_id, "finished")
+BE --> API : {message: closing, status: "finished"}
+API --> IR : status == "finished"
+IR -> IR : onFinish() callback
+IR --> C : navigates to AssessmentReport
+
+== Report Retrieval ==
+C -> IR : (in AssessmentReport)
+IR -> API : getReport(session_id) [polls every 2s]
+API -> BE : GET /report/{session_id}
+BE -> DB : read assessments table
+DB -> SUPA : GET /rest/v1/assessments?session_id=...
+SUPA --> DB : assessment row
+DB --> BE : {scores_json, quotes_json}
+BE --> API : assessment data
+API --> IR : render score cards
+
+@enduml
+
+
+' ╔══════════════════════════════════════════════════════════╗
+' ║  6. AUTHENTICATION — SEQUENCE DIAGRAM                    ║
+' ╚══════════════════════════════════════════════════════════╝
+
+@startuml 6_Auth_Sequence
+
+title Jigyasa.ai — Authentication & Token Lifecycle (Sequence)
+
+skinparam backgroundColor #0d0d1a
+skinparam participantBackgroundColor #1e1d24
+skinparam participantBorderColor #b45309
+skinparam participantFontColor #f5cca8
+skinparam sequenceArrowColor #b45309
+skinparam sequenceArrowFontColor #f5cca8
+skinparam noteFontColor #ffffff80
+skinparam noteBackgroundColor #1e1d24
+
+actor User as U
+participant "LoginScreen.jsx" as LS
+participant "AuthContext.jsx" as AC
+participant "supabase.js\n(JS client)" as SB_FE
+participant "api/client.js\n(axios interceptors)" as AXIOS
+participant "main.py\nget_current_user()" as BE
+database "Supabase Auth\n(JWT Issuer)" as SUPA_AUTH
+
+== Sign In ==
+U -> LS : submits email + password
+LS -> AC : signIn({email, password})
+AC -> SB_FE : supabase.auth.signInWithPassword()
+SB_FE -> SUPA_AUTH : POST /auth/v1/token
+SUPA_AUTH --> SB_FE : {access_token (JWT), refresh_token, user}
+SB_FE -> SB_FE : store in localStorage\n"sb-<ref>-auth-token"
+SB_FE --> AC : session
+AC --> LS : user set in context
+LS -> LS : navigate to dashboard
+
+== Authenticated API Request ==
+U -> AXIOS : any api.* call (e.g., createSession)
+AXIOS -> AXIOS : request interceptor:\nread localStorage → extract access_token
+AXIOS -> BE : HTTP request + "Authorization: Bearer <JWT>"
+BE -> BE : get_current_user(authorization)
+BE -> SUPA_AUTH : verify JWT signature + claims
+SUPA_AUTH --> BE : {user_id, email, ...}
+BE --> AXIOS : 200 response data
+
+== Token Expiry + Auto-Refresh ==
+AXIOS -> BE : request with expired JWT
+BE --> AXIOS : 401 Unauthorized
+AXIOS -> AXIOS : response interceptor:\n_retry not set → start refresh
+AXIOS -> SB_FE : supabase.auth.refreshSession()
+SB_FE -> SUPA_AUTH : POST /auth/v1/token (refresh_token)
+SUPA_AUTH --> SB_FE : new {access_token, refresh_token}
+SB_FE --> AXIOS : new token
+note over AXIOS
+  If multiple requests hit 401 simultaneously,
+  they queue behind the single refresh call
+  (refreshQueue pattern)
+end note
+AXIOS -> BE : retry original request + new token
+BE --> AXIOS : 200 OK
+
+== Token Refresh Failure ==
+AXIOS -> SB_FE : supabase.auth.refreshSession()
+SB_FE -> SUPA_AUTH : expired refresh token
+SUPA_AUTH --> SB_FE : error
+SB_FE --> AXIOS : refreshError
+AXIOS -> SB_FE : signOut()
+AXIOS -> AXIOS : window.location.href = '/'
+note right: Hard redirect clears all local state
+
+@enduml
+
+
+' ╔══════════════════════════════════════════════════════════╗
+' ║  7. LANGGRAPH STATE-MACHINE DIAGRAM                      ║
+' ╚══════════════════════════════════════════════════════════╝
+
+@startuml 7_LangGraph_StateMachine
+
+title Jigyasa.ai — LangGraph Interview State Machine
+
+skinparam backgroundColor #0d0d1a
+skinparam stateBackgroundColor #1e1d24
+skinparam stateBorderColor #b45309
+skinparam stateHeaderBackgroundColor #2a1f0a
+skinparam stateFontColor #f5cca8
+skinparam ArrowColor #b45309
+skinparam ArrowFontColor #f5cca8
+skinparam noteFontColor #ffffff80
+skinparam noteBackgroundColor #1e1d24
+skinparam noteBorderColor #b45309
+
+[*] --> ROUTER : invoke() called
+
+state ROUTER <<choice>>
+ROUTER --> GREETER : no messages in state
+ROUTER --> QUESTION_SELECTOR : phase == "greeting"
+ROUTER --> FOLLOWUP_DECIDER : phase in [question, followup]
+ROUTER --> [*] : phase in [closer, finished]
+
+state "greeter()\nPhase → greeting" as GREETER {
+  GREETER : Mode-specific greeting
+  GREETER : Alex / Jordan / Morgan / Prof. Maria
+}
+
+GREETER --> QUESTION_SELECTOR : next turn
+
+state "question_selector()\nPhase → question" as QUESTION_SELECTOR {
+  QUESTION_SELECTOR : System prompt + last 6 messages
+  QUESTION_SELECTOR : LLM generates next question
+  QUESTION_SELECTOR : followup_count = 0
+}
+
+state FOLLOWUP_DECIDER <<choice>>
+
+QUESTION_SELECTOR --> FOLLOWUP_DECIDER : next human turn arrives
+
+note right of FOLLOWUP_DECIDER
+  decide_followup() logic:
+  1. turn_count >= 5           → CLOSER
+  2. answer < 12 chars         → EDGE_CASE
+     AND followup_count == 0
+  3. followup_count >= 1       → QUESTION_SELECTOR
+  4. else                      → RESPONDER
+end note
+
+FOLLOWUP_DECIDER --> CLOSER : turn_count >= 5
+FOLLOWUP_DECIDER --> EDGE_CASE_HANDLER : short answer, fc==0
+FOLLOWUP_DECIDER --> RESPONDER : else
+FOLLOWUP_DECIDER --> QUESTION_SELECTOR : followup_count >= 1
+
+state "edge_case_handler()\nPhase → followup" as EDGE_CASE_HANDLER {
+  EDGE_CASE_HANDLER : Prompts candidate to elaborate
+}
+
+state "responder()\nPhase → followup" as RESPONDER {
+  RESPONDER : LLM probes deeper on answer
+  RESPONDER : followup_count + 1
+}
+
+EDGE_CASE_HANDLER --> FOLLOWUP_DECIDER : next human turn
+RESPONDER --> FOLLOWUP_DECIDER : next human turn
+
+state "closer()\nPhase → closer" as CLOSER {
+  CLOSER : Mode-specific closing message
+  CLOSER : Thank + transition phrase
+}
+
+CLOSER --> ASSESSOR : next turn
+
+state "assessor()\nPhase → finished" as ASSESSOR {
+  ASSESSOR : format_transcript(messages)
+  ASSESSOR : get_json_llm() + rubric prompt
+  ASSESSOR : Parse JSON: {scores, quotes, wrong_answers}
+  ASSESSOR : save_assessment() → Supabase
+  ASSESSOR : update_session_status("finished")
+}
+
+ASSESSOR --> [*] : session complete
+
+@enduml
