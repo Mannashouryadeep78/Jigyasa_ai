@@ -1,5 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 
+// On mobile (Android/iOS) keep recognition continuous to stop the browser's
+// native mic indicator from flashing every few seconds as recognition restarts.
+const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
 export function useSpeechRecognition({ onTranscriptSubmit }) {
   const isSupported = ('webkitSpeechRecognition' in window) || ('SpeechRecognition' in window);
 
@@ -146,7 +150,7 @@ export function useSpeechRecognition({ onTranscriptSubmit }) {
     const recognition = new SpeechRecognition();
     recognitionRef.current = recognition;
 
-    recognition.continuous = false;
+    recognition.continuous = isMobileDevice; // true on mobile = no restart flicker
     recognition.interimResults = true;
     recognition.lang = 'en-US';
     recognition.maxAlternatives = 1;
@@ -189,7 +193,7 @@ export function useSpeechRecognition({ onTranscriptSubmit }) {
         try {
           const newRec = new SpeechRecognition();
           recognitionRef.current = newRec;
-          newRec.continuous = false;
+          newRec.continuous = isMobileDevice;
           newRec.interimResults = true;
           newRec.lang = 'en-US';
           newRec.maxAlternatives = 1;

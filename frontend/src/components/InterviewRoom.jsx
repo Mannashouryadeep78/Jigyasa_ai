@@ -8,6 +8,7 @@ import WaveformVisualizer from './WaveformVisualizer';
 
 export default function InterviewRoom({ sessionId, candidateName, initialMessage, initialHistory = null, onFinish, onCancel }) {
     const [typedAnswer, setTypedAnswer] = useState('');
+    const chatEndRef = useRef(null);
     const [history, setHistory] = useState(() => {
         if (initialHistory) {
             return initialHistory.map((m, i) => ({ ...m, id: m.id || `${m.role}-${i}-${Date.now()}` }));
@@ -31,6 +32,11 @@ export default function InterviewRoom({ sessionId, candidateName, initialMessage
             isMountedRef.current = false;
         };
     }, []);
+
+    // Auto-scroll to bottom whenever chat content changes
+    useEffect(() => {
+        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [history, isSpeaking, isListening, transcript, isProcessing]);
 
     const handleTranscriptSubmit = async (browserText, audioBlob) => {
         // Guard against submitting while already processing (Fix #6)
@@ -200,6 +206,7 @@ export default function InterviewRoom({ sessionId, candidateName, initialMessage
                                     <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 text-[#b45309] animate-spin" />
                                 </div>
                             )}
+                            <div ref={chatEndRef} />
                         </div>
                     </div>
 

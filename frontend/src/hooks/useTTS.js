@@ -2,6 +2,8 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 
 // iOS Safari blocks Audio() autoplay without a prior user gesture
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+// Android TTS engines run at a slower perceived rate — nudge it up slightly
+const isAndroid = /Android/i.test(navigator.userAgent);
 
 export function useTTS() {
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -66,7 +68,7 @@ export function useTTS() {
     const makeUtt = (chunk) => {
       const utt = new SpeechSynthesisUtterance(chunk);
       utt.lang = 'en-US';
-      utt.rate = 1.0;   // natural conversational pace
+      utt.rate = isAndroid ? 1.15 : 1.0;  // Android TTS runs slow — compensate
       utt.pitch = 0.95; // slightly warmer tone
       if (nativeVoiceRef.current) utt.voice = nativeVoiceRef.current;
       return utt;
