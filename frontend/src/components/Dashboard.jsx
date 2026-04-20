@@ -290,20 +290,20 @@ export default function Dashboard({ onStartNew, onViewReport, onContinue }) {
       {/* Mode Choice Overlay */}
       <AnimatePresence>
         {showModeChoice && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[200] flex flex-col overflow-y-auto p-4">
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowModeChoice(false)}
-              className="absolute inset-0 bg-[#000]/80 backdrop-blur-xl" 
+              className="fixed inset-0 bg-[#000]/80 backdrop-blur-xl" 
             />
             
             <motion.div 
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative z-10 w-full max-w-2xl bg-[#1a0f0a] border border-white/10 rounded-[2.5rem] p-6 sm:p-14 shadow-3xl text-center"
+              className="relative z-10 w-full max-w-2xl bg-[#1a0f0a] border border-white/10 rounded-[2.5rem] p-6 sm:p-14 shadow-3xl text-center mx-auto my-auto shrink-0"
             >
               <h2 className="text-3xl sm:text-5xl font-medium tracking-tighter text-white mb-4 uppercase italic leading-tight">
                 Choose your <span className="text-[#f5cca8]">Path</span>
